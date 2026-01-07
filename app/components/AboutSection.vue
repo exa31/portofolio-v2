@@ -131,12 +131,15 @@
             <a href="/resume.pdf"
                class="primary-cta-btn inline-flex items-center gap-2 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition">
               <span>Download CV</span>
-              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path
-                    d="M13 7h-2v10M17 13h-2v4M9 13H7v4M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"
-                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-              </svg>
+              <Icon name="material-symbols:download" size="20"/>
             </a>
+            <div class="mt-4">
+              <NuxtLink to="#contact"
+                        class="inline-flex items-center gap-2 text-white/70 hover:text-white font-medium px-6 py-3 rounded-lg transition">
+                <span>Get in Touch</span>
+                <Icon name="material-symbols:arrow-forward-ios" size="16"/>
+              </NuxtLink>
+            </div>
           </div>
         </div>
       </div>

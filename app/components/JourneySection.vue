@@ -10,7 +10,7 @@ interface Experience {
   logo: string
   responsibilities: string[]
   technologies: string[]
-  attachment?: string
+  attachment: string | null
 }
 
 defineProps<{
@@ -27,7 +27,7 @@ const openModal = (experience: Experience) => {
 </script>
 
 <template>
-  <section id="work" class="py-20 bg-gradient-to-b from-[#071026] to-[#071023]">
+  <section id="work" class="py-20 bg-linear-to-b from-[#071026] to-[#071023]">
     <div class="container mx-auto px-6">
       <!-- Header -->
       <div class="text-center mb-16">
@@ -47,19 +47,19 @@ const openModal = (experience: Experience) => {
         <div class="relative">
           <!-- Timeline line -->
           <div
-              class="absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-primary via-primary/50 to-transparent"/>
+              class="absolute left-8 top-0 bottom-0 w-0.5 bg-linear-to-b from-primary via-primary/50 to-transparent"/>
 
           <!-- Timeline items -->
           <div class="space-y-8">
             <div
-                v-for="(experience, index) in experiences"
+                v-for="(experience) in experiences"
                 :key="experience.id"
                 class="relative pl-24"
             >
               <!-- Timeline dot -->
               <div class="absolute left-0 w-16 h-16 flex items-center justify-center">
                 <div
-                    class="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30 flex items-center justify-center backdrop-blur-sm">
+                    class="w-16 h-16 rounded-full bg-linear-to-br from-primary/20 to-primary/5 border border-primary/30 flex items-center justify-center backdrop-blur-sm">
                   <Icon name="carbon:star" size="24" class="text-primary"/>
                 </div>
               </div>

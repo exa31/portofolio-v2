@@ -137,15 +137,15 @@ const experiences = [
 
     <!-- Journey Section -->
     <JourneySection :experiences="experiences"/>
-
+  
     <!-- Skills Section -->
     <SkillsSection/>
 
     <!-- Projects Section -->
     <ProjectsSection :projects="projects"/>
 
-    <!-- Contact Section Anchor -->
-    <section id="contact" class="h-[20vh]"/>
+    <!-- Contact Section -->
+    <ContactSection/>
   </div>
 </template>
 
