@@ -135,6 +135,8 @@ const experiences = [
     <!-- About Section -->
     <AboutSection/>
 
+    <!-- Journey Section -->
+    <JourneySection :experiences="experiences"/>
 
     <!-- Skills Section -->
     <SkillsSection/>
