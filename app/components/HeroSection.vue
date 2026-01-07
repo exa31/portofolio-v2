@@ -2,7 +2,7 @@
 </script>
 
 <template>
-  <section class="py-20">
+  <section class="py-10">
     <div class="container mx-auto px-6">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
         <!-- Left Column -->

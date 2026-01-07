@@ -69,7 +69,7 @@ const submitForm = async () => {
                 </div>
                 <div class="flex-1">
                   <p class="text-xs text-white/50 font-semibold mb-1">BASED IN</p>
-                  <p class="text-white font-medium">San Francisco, CA</p>
+                  <p class="text-white font-medium">Tegal, Indonesia</p>
                   <div class="flex items-center gap-2 mt-2">
                     <div class="w-2 h-2 rounded-full bg-green-500"></div>
                     <span class="text-xs text-white/50">Currently Available</span>
