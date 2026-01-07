@@ -1,5 +1,7 @@
 <script setup lang="ts">
 // ========== PROJECTS DATA ==========
+import FooterSection from "~/components/FooterSection.vue";
+
 const projects = [
   {
     id: 1,
@@ -137,7 +139,7 @@ const experiences = [
 
     <!-- Journey Section -->
     <JourneySection :experiences="experiences"/>
-  
+
     <!-- Skills Section -->
     <SkillsSection/>
 
@@ -146,6 +148,13 @@ const experiences = [
 
     <!-- Contact Section -->
     <ContactSection/>
+
+    <!-- Footer Section -->
+    <FooterSection/>
+
+    <!-- AI Assistant Section -->
+    <AIAssistant/>
+
   </div>
 </template>
 
