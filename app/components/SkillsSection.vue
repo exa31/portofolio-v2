@@ -50,7 +50,7 @@
             class="group relative bg-[#1a2332] border border-white/5 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 hover:border-gray-300/30 hover:bg-gray-300/5 transition-all duration-300 cursor-pointer min-h-45">
           <div
               class="w-16 h-16 rounded-xl bg-gray-300/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-            <Icon name="mdi:nextjs" size="40" class="text-gray-300"/>
+            <Icon name="ri:nextjs-fill" size="40" class="text-gray-300"/>
           </div>
           <span class="text-sm font-medium text-white/80 group-hover:text-white">Next.js</span>
         </div>
@@ -100,7 +100,7 @@
             class="group relative bg-[#1a2332] border border-white/5 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 hover:border-purple-500/30 hover:bg-purple-500/5 transition-all duration-300 cursor-pointer min-h-45">
           <div
               class="w-16 h-16 rounded-xl bg-purple-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-            <Icon name="mdi:figma" size="40" class="text-purple-400"/>
+            <Icon name="solar:figma-bold-duotone" size="40" class="text-purple-400"/>
           </div>
           <span class="text-sm font-medium text-white/80 group-hover:text-white">Figma</span>
         </div>
@@ -130,7 +130,7 @@
             class="group relative bg-[#1a2332] border border-white/5 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 hover:border-red-500/30 hover:bg-red-500/5 transition-all duration-300 cursor-pointer min-h-45">
           <div
               class="w-16 h-16 rounded-xl bg-red-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-            <Icon name="mdi:redis" size="40" class="text-red-400"/>
+            <Icon name="devicon-plain:redis" size="40" class="text-red-400"/>
           </div>
           <span class="text-sm font-medium text-white/80 group-hover:text-white">Redis</span>
         </div>

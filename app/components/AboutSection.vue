@@ -70,7 +70,7 @@
           </p>
 
           <!-- Stats Row -->
-          <div class="flex gap-6 mb-8">
+          <div class="flex sm:flex-row flex-col gap-6 mb-8">
             <div class="flex items-center bg-[#1e2430] p-5 rounded-2xl gap-3">
               <div>
                 <div class="text-4xl font-black text-white">5+</div>
@@ -127,19 +127,17 @@
           </div>
 
           <!-- CTA Buttons -->
-          <div class="flex gap-3 pt-4">
+          <div class="flex sm:flex-row flex-col  gap-3 pt-4">
             <a href="/resume.pdf"
                class="primary-cta-btn inline-flex items-center gap-2 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition">
               <span>Download CV</span>
               <Icon name="material-symbols:download" size="20"/>
             </a>
-            <div class="mt-4">
-              <NuxtLink to="#contact"
-                        class="inline-flex items-center gap-2 text-white/70 hover:text-white font-medium px-6 py-3 rounded-lg transition">
-                <span>Get in Touch</span>
-                <Icon name="material-symbols:arrow-forward-ios" size="16"/>
-              </NuxtLink>
-            </div>
+            <NuxtLink to="#contact"
+                      class="inline-flex items-center gap-2 text-white/70 hover:text-white font-medium px-6 py-3 rounded-lg transition">
+              <span>Get in Touch</span>
+              <Icon name="material-symbols:arrow-forward-ios" size="16"/>
+            </NuxtLink>
           </div>
         </div>
       </div>

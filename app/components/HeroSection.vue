@@ -75,7 +75,7 @@
           <!-- Glow -->
           <div
               class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
-           w-125 h-125
+           max-w-125 max-h-125 w-full h-full
            bg-linear-to-tr from-blue-500/40 via-indigo-500/30 to-purple-500/20
            blur-3xl rounded-full">
           </div>
