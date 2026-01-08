@@ -7,14 +7,25 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "migrate:up": "dotenv -e .env npx node-pg-migrate up",
+    "migrate:down": "dotenv -e .env npx node-pg-migrate down",
+    "migrate:create": "npx node-pg-migrate npx create -m migrations"
   },
   "dependencies": {
     "@nuxt/icon": "^2.1.1",
     "@nuxt/image": "^2.0.0",
     "@nuxt/ui": "^4.3.0",
+    "@pinia/nuxt": "^0.11.3",
     "nuxt": "^4.2.2",
+    "pg": "^8.16.3",
+    "pinia": "^3.0.4",
     "vue": "^3.5.26",
     "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "@types/pg": "^8.16.0",
+    "dotenv-cli": "^11.0.0"
   }
 }

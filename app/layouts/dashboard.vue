@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import {ref} from 'vue'
+import {useBreadCrumbStore} from "~/stores/bread-crumb";
 
 const isSidebarOpen = ref(false)
+const breadCrumbStore = useBreadCrumbStore()
 
 const user = {
   name: 'Alex Morgan',
@@ -12,7 +14,7 @@ const user = {
 const menuItems = [
   {name: 'Dashboard', icon: 'carbon:dashboard', href: '/dashboard'},
   {name: 'Projects', icon: 'carbon:folder-open', href: '/dashboard/projects'},
-  {name: 'Blog Posts', icon: 'carbon:document-blank', href: '/dashboard/blog'},
+  {name: 'Skills', icon: 'carbon:skill-level', href: '/dashboard/skills'},
   {name: 'Messages', icon: 'carbon:email', href: '/dashboard/messages'},
   {name: 'Analytics', icon: 'carbon:chart-bar', href: '/dashboard/analytics'},
 ]
@@ -233,22 +235,25 @@ const getAvatarStyle = (name: string) => {
 
         <div class="flex-1 flex items-center gap-4">
           <div class="flex items-center gap-2 text-white/50 text-sm">
-            <NuxtLink to="/dashboard" class="hover:text-white transition-colors">Dashboard</NuxtLink>
-            <Icon name="carbon:chevron-right" size="16" class="hidden sm:block"/>
             <slot name="breadcrumb">
-              <span class="hidden sm:inline">Page</span>
+              <template v-for="(crumb, index) in breadCrumbStore.listBreadCrumbs" :key="index">
+                <NuxtLink
+                    v-if="crumb.link"
+                    :to="crumb.link"
+                    class="hover:text-white transition-colors"
+                >
+                  {{ crumb.title }}
+                </NuxtLink>
+                <span v-else class="text-white">{{ crumb.title }}</span>
+                <Icon
+                    v-if="index < breadCrumbStore.listBreadCrumbs.length - 1"
+                    name="carbon:chevron-right"
+                    size="16"
+                    class="hidden sm:block"
+                />
+              </template>
             </slot>
           </div>
-        </div>
-
-        <!-- Top Right Actions -->
-        <div class="flex items-center gap-2 lg:gap-4">
-          <button class="p-2 rounded-lg hover:bg-white/5 text-white/50 hover:text-white transition-all">
-            <Icon name="carbon:notification" size="20"/>
-          </button>
-          <button class="p-2 rounded-lg hover:bg-white/5 text-white/50 hover:text-white transition-all">
-            <Icon name="carbon:user-avatar" size="20"/>
-          </button>
         </div>
       </header>
 

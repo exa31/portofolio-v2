@@ -3,6 +3,8 @@ definePageMeta({
   layout: 'dashboard'
 })
 
+const breadCrumbStore = useBreadCrumbStore()
+
 const stats = [
   {
     label: 'Total Projects',
@@ -53,6 +55,8 @@ const recentProjects = [
     updatedAt: '3 weeks ago'
   }
 ]
+
+breadCrumbStore.setBreadCrumb([])
 </script>
 
 <template>

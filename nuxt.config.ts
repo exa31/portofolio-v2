@@ -4,14 +4,35 @@ export default defineNuxtConfig({
     devtools: {enabled: true},
 
     // ========== MODULES ==========
-    modules: [
-        '@nuxt/ui',
-        '@nuxt/icon',
-        '@nuxt/image'
-    ],
+    modules: ['@nuxt/ui', '@nuxt/icon', '@nuxt/image', '@pinia/nuxt'],
 
     // ========== STYLES ==========
     css: [
         '~/assets/css/main.css'
     ],
+
+    // ========== RUNTIME CONFIG ==========
+    runtimeConfig: {
+        // Server-side private variables
+        mode: process.env.MODE || 'production',
+        jwtSecret: process.env.JWT_SECRET,
+        googleClientId: process.env.GOOGLE_CLIENT_ID,
+        googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        redisUrl: process.env.REDIS_URL,
+        clientUrl: process.env.CLIENT_URL || 'http://localhost:3000',
+
+        pgHost: process.env.PG_HOST || 'localhost',
+        pgPort: process.env.PG_PORT ? Number(process.env.PG_PORT) : 5432,
+        pgUser: process.env.PG_USER || 'postgres',
+        pgPassword: process.env.PG_PASSWORD || 'password',
+        pgDatabase: process.env.PG_DATABASE || 'mydatabase',
+        pgMax: process.env.PG_MAX ? Number(process.env.PG_MAX) : 10,
+        pgIdleTimeoutMs: process.env.PG_IDLE_TIMEOUT_MS ? Number(process.env.PG_IDLE_TIMEOUT_MS) : 30000,
+        pgConnectionTimeoutMs: process.env.PG_CONNECTION_TIMEOUT_MS ? Number(process.env.PG_CONNECTION_TIMEOUT_MS) : 2000,
+        pgSsl: process.env.PG_SSL === 'true',
+        databaseUrl: process.env.DATABASE_URL,
+
+        // Client-side public variables
+        public: {},
+    },
 })

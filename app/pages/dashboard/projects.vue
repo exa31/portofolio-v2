@@ -16,6 +16,7 @@ interface Project {
   link?: string
 }
 
+const breadCrumbStore = useBreadCrumbStore()
 const projects = ref<Project[]>([
   {
     id: 1,
@@ -110,6 +111,10 @@ const openProject = (project: Project) => {
   // Navigate to edit page
   navigateTo(`/dashboard/projects/${project.id}`)
 }
+
+breadCrumbStore.setBreadCrumb([
+  {title: 'Projects'}
+])
 </script>
 
 <template>
