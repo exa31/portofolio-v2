@@ -13,7 +13,7 @@ const stats = [
   {
     label: 'Published',
     value: '8',
-    icon: 'carbon:checkmark-circle-filled',
+    icon: 'pepicons-pop:checkmark-circle-filled',
     color: 'from-green-500 to-green-600'
   },
   {
@@ -59,7 +59,7 @@ const recentProjects = [
   <div class="p-8">
     <!-- Welcome Section -->
     <div class="mb-12">
-      <h1 class="text-4xl font-black text-white mb-2">Welcome back, Alex! 👋</h1>
+      <h1 class="text-4xl font-black text-white mb-2">Welcome back, Eka! 👋</h1>
       <p class="text-white/60">Here's what's happening with your portfolio today.</p>
     </div>
 
@@ -72,12 +72,12 @@ const recentProjects = [
       >
         <!-- Background gradient -->
         <div
-            :class="['absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-5 transition-opacity', stat.color]"></div>
+            :class="['absolute inset-0 bg-linear-to-br opacity-0 group-hover:opacity-5 transition-opacity', stat.color]"></div>
 
         <!-- Content -->
         <div class="relative z-10">
           <div class="flex items-start justify-between mb-4">
-            <div :class="['w-12 h-12 rounded-lg flex items-center justify-center', `bg-gradient-to-br ${stat.color}`]">
+            <div :class="['w-12 h-12 rounded-lg flex items-center justify-center', `bg-linear-to-br ${stat.color}`]">
               <Icon :name="stat.icon" size="24" class="text-white"/>
             </div>
             <Icon name="carbon:arrow-up-right" size="20"

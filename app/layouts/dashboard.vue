@@ -12,6 +12,46 @@ const menuItems = [
   {name: 'Messages', icon: 'carbon:email', href: '/dashboard/messages'},
   {name: 'Analytics', icon: 'carbon:chart-bar', href: '/dashboard/analytics'},
 ]
+
+// Generate initials from name
+const getInitials = (name: string): string => {
+  return name
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase())
+      .join('')
+      .slice(0, 2)
+}
+
+// Generate consistent color based on name
+const getAvatarColor = (name: string) => {
+  const colors = [
+    {from: '#3b82f6', to: '#2563eb'},  // blue
+    {from: '#a855f7', to: '#9333ea'},  // purple
+    {from: '#ec4899', to: '#db2777'},  // pink
+    {from: '#10b981', to: '#059669'},  // green
+    {from: '#f97316', to: '#ea580c'},  // orange
+    {from: '#ef4444', to: '#dc2626'},  // red
+    {from: '#06b6d4', to: '#0891b2'},  // cyan
+    {from: '#6366f1', to: '#4f46e5'}   // indigo
+  ]
+
+  // Create consistent hash from name
+  let hash = 0
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  }
+
+  const index = Math.abs(hash) % colors.length
+  return colors[index]
+}
+
+// Get avatar background style
+const getAvatarStyle = (name: string) => {
+  const color = getAvatarColor(name)
+  return {
+    background: `linear-gradient(135deg, ${color!.from} 0%, ${color!.to} 100%)`
+  }
+}
 </script>
 
 <template>
@@ -31,7 +71,11 @@ const menuItems = [
       <!-- User Profile -->
       <div class="p-6 border-b border-white/10">
         <div class="flex items-center gap-3 mb-4">
-          <img :src="user.avatar" :alt="user.name" class="w-12 h-12 rounded-full bg-white/10"/>
+          <div
+              class="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0"
+              :style="getAvatarStyle(user.name)">
+            {{ getInitials(user.name) }}
+          </div>
           <div class="flex-1 min-w-0">
             <p class="text-white font-semibold text-sm truncate">{{ user.name }}</p>
             <p class="text-white/50 text-xs truncate">{{ user.role }}</p>
