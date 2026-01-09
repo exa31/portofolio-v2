@@ -28,7 +28,6 @@ export const up = (pgm) => {
         id: {type: 'uuid', notNull: true, primaryKey: true, default: pgm.func('gen_random_uuid()')},
         name: {type: 'varchar(255)', notNull: true},
         email: {type: 'varchar(255)', notNull: true, unique: true},
-        password: {type: 'varchar(255)', notNull: true},
         created_at: {type: 'timestamp with time zone', notNull: true, default: pgm.func('current_timestamp')},
         updated_at: {type: 'timestamp with time zone', notNull: true, default: pgm.func('current_timestamp')}
     })
