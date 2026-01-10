@@ -3,10 +3,10 @@ import {useAppConfig} from '~~/server/utils/config';
 import {withTransaction} from "~~/server/db/postgres";
 import {getUserByEmail} from "~~/server/repositories/user";
 import {HttpError} from "~~/server/errors/HttpError";
-import {signAccessToken, signRefreshToken} from "~~/server/utils/jwt";
-import {saveRefreshToken} from "~~/server/repositories/token";
+import {isRefreshTokenRotatingSoon, signAccessToken, signRefreshToken, verifyRefreshToken} from "~~/server/utils/jwt";
+import {findByHash, saveRefreshToken, updateToken} from "~~/server/repositories/token";
 import {hashToSha256} from "~~/server/utils/hash";
-import {set} from "~~/server/db/redis";
+import {del, set} from "~~/server/db/redis";
 import type {H3Event} from "h3";
 import {sendSuccess} from "~~/server/utils/response";
 
@@ -16,8 +16,6 @@ const googleClient = new OAuth2Client({
     client_id: Config.googleClientId,
     client_secret: Config.googleClientSecret,
 });
-
-const EXPIRATION_SECONDS = 30 * 24 * 60 * 60; // 2 hours
 
 export const loginWithGoogle = async (event: H3Event, idToken: string) => {
     const ticket = await googleClient.verifyIdToken({
@@ -49,7 +47,7 @@ export const loginWithGoogle = async (event: H3Event, idToken: string) => {
                 expiresAt
             })
 
-            await set(`user_refresh_token:${refreshToken}`, JSON.stringify(existingUser), EXPIRATION_SECONDS)
+            await set(`user_refresh_token:${refreshToken}`, JSON.stringify(existingUser))
 
             setCookie(
                 event,
@@ -93,7 +91,7 @@ export const loginByEmail = async (event: H3Event, email: string,) => {
                 expiresAt
             })
 
-            await set(`user_refresh_token:${refreshToken}`, JSON.stringify(existingUser), EXPIRATION_SECONDS)
+            await set(`user_refresh_token:${refreshToken}`, JSON.stringify(existingUser))
 
             setCookie(
                 event,
@@ -113,6 +111,61 @@ export const loginByEmail = async (event: H3Event, email: string,) => {
                 refresh_token: refreshToken,
                 refresh_expires_at: expiresAt,
             }, "Login successful", "LOGIN_SUCCESS", 200);
+        }
+    )
+}
+
+export const refreshToken = async (event: H3Event, oldRefreshToken: string) => {
+    return withTransaction(
+        async (client) => {
+            // verify refresh token
+            const {sub: userId, name, email} = verifyRefreshToken(oldRefreshToken);
+
+            const isActiveRefreshToken = await findByHash(client, hashToSha256(oldRefreshToken));
+
+            if (!isActiveRefreshToken) {
+                throw new HttpError(401, 'INVALID_REFRESH_TOKEN', 'Refresh token is invalid or expired');
+            }
+
+            const refreshTokenNeedRotation = isRefreshTokenRotatingSoon(isActiveRefreshToken.expires_at);
+
+            const accessToken = signAccessToken(name, email, userId!);
+
+            if (!refreshTokenNeedRotation) {
+                return sendSuccess(event, {
+                    access_token: accessToken,
+                    refresh_token: oldRefreshToken,
+                    refresh_expires_at: isActiveRefreshToken.expires_at,
+                }, "Token refreshed successfully", "TOKEN_REFRESHED", 200);
+            }
+
+            const {
+                token: newRefreshToken,
+                expiresAt
+            } = signRefreshToken(userId!, name, email);
+
+            await updateToken(client, hashToSha256(oldRefreshToken), expiresAt, hashToSha256(newRefreshToken));
+            await del(`user_refresh_token:${refreshToken}`)
+            await set(`user_refresh_token:${refreshToken}`, JSON.stringify({id: userId}))
+
+            setCookie(
+                event,
+                'refresh_token',
+                newRefreshToken,
+                {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax',
+                    path: '/api',
+                    expires: expiresAt,
+                }
+            )
+
+            return sendSuccess(event, {
+                access_token: accessToken,
+                refresh_token: newRefreshToken,
+                refresh_expires_at: expiresAt,
+            }, "Token refreshed successfully", "TOKEN_REFRESHED", 200);
         }
     )
 }

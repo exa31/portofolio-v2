@@ -1,5 +1,6 @@
 import type {PoolClient} from "pg";
 import type {TokenModel} from "~~/server/model/token";
+import {HttpError} from "~~/server/errors/HttpError";
 
 export const saveRefreshToken = async (client: PoolClient, {userId, tokenHash, expiresAt}: {
     userId: string,
@@ -17,7 +18,7 @@ export const saveRefreshToken = async (client: PoolClient, {userId, tokenHash, e
 
 export const findByHash = async (client: PoolClient, tokenHash: string): Promise<TokenModel | null> => {
     const query = `
-        SELECT token
+        SELECT token, expires_at
         FROM tokens
         WHERE token = $1
           AND expires_at > NOW() LIMIT 1
@@ -26,12 +27,12 @@ export const findByHash = async (client: PoolClient, tokenHash: string): Promise
 
     const res = await client.query<TokenModel>(query, values);
     if (res.rows.length === 0) {
-        throw new Error('token_not_found');
+        throw new HttpError(401, 'INVALID_TOKEN', 'The provided token is invalid or has expired');
     }
     return res.rows[0] || null;
 }
 
-export const updateToken = async (client: PoolClient, tokenHash: string, expiresAt: Date): Promise<boolean> => {
+export const updateToken = async (client: PoolClient, newTokenHash: string, expiresAt: Date, oldTokenHash: string): Promise<boolean> => {
     const query = `
         UPDATE tokens
         SET token      = $1,
@@ -39,7 +40,7 @@ export const updateToken = async (client: PoolClient, tokenHash: string, expires
         WHERE token = $3
     `
 
-    const values = [tokenHash, expiresAt.toISOString(), tokenHash];
+    const values = [newTokenHash, expiresAt.toISOString(), oldTokenHash];
 
     const res = await client.query(query, values);
     return (res.rowCount || 0) > 0;
