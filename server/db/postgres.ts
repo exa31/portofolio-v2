@@ -1,5 +1,5 @@
 import {Pool, type PoolClient, type QueryResult, type  QueryResultRow} from 'pg';
-import {useAppConfig} from '~/server/utils/config';
+import {useAppConfig} from '~~/server/utils/config';
 
 const Config = useAppConfig();
 

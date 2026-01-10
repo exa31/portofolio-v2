@@ -1,5 +1,5 @@
 import {createClient, type RedisClientType} from 'redis';
-import {useAppConfig} from '~/server/utils/config';
+import {useAppConfig} from '~~/server/utils/config';
 
 const Config = useAppConfig();
 
