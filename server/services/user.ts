@@ -51,6 +51,63 @@ export const loginWithGoogle = async (event: H3Event, idToken: string) => {
 
             await set(`user_refresh_token:${refreshToken}`, JSON.stringify(existingUser), EXPIRATION_SECONDS)
 
+            setCookie(
+                event,
+                'refresh_token',
+                refreshToken,
+                {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax',
+                    path: '/api',
+                    expires: expiresAt,
+                }
+            )
+
+            return sendSuccess(event, {
+                access_token: accessToken,
+                refresh_token: refreshToken,
+                refresh_expires_at: expiresAt,
+            }, "Login successful", "LOGIN_SUCCESS", 200);
+        }
+    )
+}
+
+export const loginByEmail = async (event: H3Event, email: string,) => {
+    return withTransaction(
+        async (client) => {
+            const existingUser = await getUserByEmail(client, email!);
+            if (!existingUser) {
+                throw new HttpError(404, 'USER_NOT_FOUND', 'User with this email does not exist');
+            }
+
+            const accessToken = signAccessToken(existingUser.name, existingUser.email, existingUser.id);
+            const {
+                token: refreshToken,
+                expiresAt
+            } = signRefreshToken(existingUser.id, existingUser.name, existingUser.email);
+
+            await saveRefreshToken(client, {
+                userId: existingUser.id,
+                tokenHash: hashToSha256(refreshToken),
+                expiresAt
+            })
+
+            await set(`user_refresh_token:${refreshToken}`, JSON.stringify(existingUser), EXPIRATION_SECONDS)
+
+            setCookie(
+                event,
+                'refresh_token',
+                refreshToken,
+                {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax',
+                    path: '/api',
+                    expires: expiresAt,
+                }
+            )
+
             return sendSuccess(event, {
                 access_token: accessToken,
                 refresh_token: refreshToken,
