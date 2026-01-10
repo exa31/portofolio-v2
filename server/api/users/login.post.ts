@@ -1,7 +1,7 @@
-import {loginRequestModel} from "~~/server/model/user";
+import {loginRequestModel} from "~~/server/model/user.model";
 import {HttpError} from "~~/server/errors/HttpError";
 import z from "zod";
-import {loginWithGoogle} from "~~/server/services/user";
+import {loginWithGoogle} from "~~/server/services/user.service";
 import {handleError} from "~~/server/utils/handleError";
 
 export default handleError(async (event) => {
@@ -13,7 +13,7 @@ export default handleError(async (event) => {
     const parsed = loginRequestModel.safeParse(body);
 
     if (!parsed.success) {
-        throw new HttpError(400, 'INVALID_REQUEST', 'Invalid request body', z.treeifyError(parsed.error)
+        throw new HttpError(400, 'INVALID_REQUEST', 'Invalid request body', z.treeifyError(parsed.error).properties
         );
     }
 

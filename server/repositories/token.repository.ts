@@ -1,19 +1,21 @@
 import type {PoolClient} from "pg";
-import type {TokenModel} from "~~/server/model/token";
+import type {TokenModel} from "~~/server/model/token.model";
 import {HttpError} from "~~/server/errors/HttpError";
 
 export const saveRefreshToken = async (client: PoolClient, {userId, tokenHash, expiresAt}: {
     userId: string,
     tokenHash: string,
     expiresAt: Date
-}) => {
+}): Promise<boolean> => {
     const query = `
         INSERT INTO tokens (user_id, token, expires_at)
         VALUES ($1, $2, $3)
     `;
     const values = [userId, tokenHash, expiresAt.toISOString()];
 
-    await client.query(query, values);
+    const row = await client.query(query, values);
+
+    return (row.rowCount || 0) > 0;
 }
 
 export const findByHash = async (client: PoolClient, tokenHash: string): Promise<TokenModel | null> => {

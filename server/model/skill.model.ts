@@ -1,0 +1,34 @@
+import z from "zod";
+
+export const skillModel = z.object({
+    id: z.uuidv4(),
+    name: z.string().min(1).max(100),
+    color: z.string().min(1).max(100),
+    icon: z.string().min(1).max(100),
+})
+
+export type SkillModel = z.infer<typeof skillModel>;
+
+export const createSkill = z.object({
+    name: z.string().min(1).max(100),
+    color: z.string().min(1).max(100),
+    icon: z.string().min(1).max(100),
+});
+
+export const createSkillSchema = z.object({
+    data: z.array(createSkill).min(1),
+});
+
+export type CreateSkill = z.infer<typeof createSkill>;
+
+export type CreateSkillsInput = CreateSkill[];
+
+
+export const updateSkillSchema = z.object({
+    name: z.string().min(1).max(100),
+    color: z.string().min(1).max(100),
+    icon: z.string().min(1).max(100),
+    id: z.number(),
+});
+
+export type UpdateSkillInput = z.infer<typeof updateSkillSchema>;

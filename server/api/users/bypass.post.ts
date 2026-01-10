@@ -1,5 +1,5 @@
 import {HttpError} from "~~/server/errors/HttpError";
-import {loginByEmail} from "~~/server/services/user";
+import {loginByEmail} from "~~/server/services/user.service";
 import {handleError} from "~~/server/utils/handleError";
 
 const Config = useAppConfig();

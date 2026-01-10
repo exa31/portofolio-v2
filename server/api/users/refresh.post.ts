@@ -1,6 +1,6 @@
 import {handleError} from "~~/server/utils/handleError";
 import {HttpError} from "~~/server/errors/HttpError";
-import {refreshToken} from "~~/server/services/user";
+import {refreshToken} from "~~/server/services/user.service";
 
 export default handleError(async (event) => {
     let oldRefreshToken: string | undefined

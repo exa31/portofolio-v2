@@ -7,36 +7,21 @@ export const handleError = <T extends EventHandlerRequest, D>(
     return defineEventHandler<T>(async (event: H3Event) => {
         try {
             if (!handler) {
-                setResponseStatus(event, 500)
-                return {
-                    status: 500,
-                    code: 'internal_error',
-                    message: 'No handler provided',
-                    data: null,
-                    timestamp: new Date().toISOString(),
-                }
+                return sendError(
+                    event, 500, 'handler_not_implemented', 'Handler not implemented'
+                )
             }
             return await handler(event)
         } catch (err: any) {
-            if (err instanceof HttpError) {
-                setResponseStatus(event, err.status)
-                return {
-                    status: err.status,
-                    code: err.code ?? 'error',
-                    message: err.message,
-                    data: err.data ?? null,
-                    timestamp: new Date().toISOString(),
-                }
-            }
             console.error("[error]:", err)
-            setResponseStatus(event, 500)
-            return {
-                status: 500,
-                code: 'internal_error',
-                message: 'Internal server error',
-                data: null,
-                timestamp: new Date().toISOString(),
+            if (err instanceof HttpError) {
+                return sendError(
+                    event, err.status, err.code, err.message, err.data
+                )
             }
+            return sendError(
+                event, 500, 'internal_error', 'An unexpected error occurred', err.data
+            )
         }
     })
 }

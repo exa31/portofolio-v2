@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import {useAppConfig} from '~~/server/utils/config';
-import type {TokenPayload} from "~~/server/model/token";
+import type {TokenPayload} from "~~/server/model/token.model";
 import {HttpError} from "~~/server/errors/HttpError";
 
 const Config = useAppConfig();

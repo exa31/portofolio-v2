@@ -1,5 +1,5 @@
 import type {PoolClient} from "pg";
-import type {UserModel} from "~~/server/model/user";
+import type {UserModel} from "~~/server/model/user.model";
 
 export const getUserByEmail = async (client: PoolClient, email: string): Promise<UserModel | null> => {
     const query = `

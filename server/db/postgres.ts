@@ -1,5 +1,7 @@
 import {Pool, type PoolClient, type QueryResult, type  QueryResultRow} from 'pg';
 import {useAppConfig} from '~~/server/utils/config';
+import {formatPgError} from "~~/server/utils/pgError";
+import {HttpError} from "~~/server/errors/HttpError";
 
 const Config = useAppConfig();
 
@@ -130,7 +132,10 @@ export async function withTransaction<T>(fn: (client: PoolClient) => Promise<T>)
             // eslint-disable-next-line no-console
             console.error('[postgres] rollback failed', rollbackErr);
         }
-        throw err;
+        if (err instanceof HttpError) {
+            throw err;
+        }
+        formatPgError(err);
     } finally {
         client.release();
     }

@@ -1,10 +1,10 @@
 import {OAuth2Client} from "google-auth-library";
 import {useAppConfig} from '~~/server/utils/config';
 import {withTransaction} from "~~/server/db/postgres";
-import {getUserByEmail} from "~~/server/repositories/user";
+import {getUserByEmail} from "~~/server/repositories/user.repository";
 import {HttpError} from "~~/server/errors/HttpError";
 import {isRefreshTokenRotatingSoon, signAccessToken, signRefreshToken, verifyRefreshToken} from "~~/server/utils/jwt";
-import {findByHash, saveRefreshToken, updateToken} from "~~/server/repositories/token";
+import * as repository from "~~/server/repositories/token.repository";
 import {hashToSha256} from "~~/server/utils/hash";
 import {del, set} from "~~/server/db/redis";
 import type {H3Event} from "h3";
@@ -41,7 +41,7 @@ export const loginWithGoogle = async (event: H3Event, idToken: string) => {
                 expiresAt
             } = signRefreshToken(existingUser.id, existingUser.name, existingUser.email);
 
-            await saveRefreshToken(client, {
+            await repository.saveRefreshToken(client, {
                 userId: existingUser.id,
                 tokenHash: hashToSha256(refreshToken),
                 expiresAt
@@ -85,7 +85,7 @@ export const loginByEmail = async (event: H3Event, email: string,) => {
                 expiresAt
             } = signRefreshToken(existingUser.id, existingUser.name, existingUser.email);
 
-            await saveRefreshToken(client, {
+            await repository.saveRefreshToken(client, {
                 userId: existingUser.id,
                 tokenHash: hashToSha256(refreshToken),
                 expiresAt
@@ -121,7 +121,7 @@ export const refreshToken = async (event: H3Event, oldRefreshToken: string) => {
             // verify refresh token
             const {sub: userId, name, email} = verifyRefreshToken(oldRefreshToken);
 
-            const isActiveRefreshToken = await findByHash(client, hashToSha256(oldRefreshToken));
+            const isActiveRefreshToken = await repository.findByHash(client, hashToSha256(oldRefreshToken));
 
             if (!isActiveRefreshToken) {
                 throw new HttpError(401, 'INVALID_REFRESH_TOKEN', 'Refresh token is invalid or expired');
@@ -144,7 +144,7 @@ export const refreshToken = async (event: H3Event, oldRefreshToken: string) => {
                 expiresAt
             } = signRefreshToken(userId!, name, email);
 
-            await updateToken(client, hashToSha256(oldRefreshToken), expiresAt, hashToSha256(newRefreshToken));
+            await repository.updateToken(client, hashToSha256(oldRefreshToken), expiresAt, hashToSha256(newRefreshToken));
             await del(`user_refresh_token:${refreshToken}`)
             await set(`user_refresh_token:${refreshToken}`, JSON.stringify({id: userId}))
 

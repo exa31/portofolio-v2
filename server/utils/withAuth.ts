@@ -1,6 +1,7 @@
 import {verifyAccessToken} from '~~/server/utils/jwt'
 import {HttpError} from '~~/server/errors/HttpError'
 import type {EventHandler, EventHandlerRequest, H3Event} from 'h3'
+import {sendError} from "~~/server/utils/response";
 
 export const withAuth = <T extends EventHandlerRequest, D>(
     handler?: EventHandler<T, D>
@@ -21,7 +22,7 @@ export const withAuth = <T extends EventHandlerRequest, D>(
             }
 
             if (!token) {
-                throw new HttpError(401, 'missing_token', 'Access token is missing')
+                return sendError(event, 401, 'missing_token', 'Access token is missing')
             }
 
             // 3️⃣ Verify JWT
@@ -29,7 +30,7 @@ export const withAuth = <T extends EventHandlerRequest, D>(
             try {
                 payload = verifyAccessToken(token)
             } catch {
-                throw new HttpError(401, 'invalid_token', 'Access token is invalid')
+                return sendError(event, 401, 'invalid_token', 'Access token is invalid')
             }
 
             // 4️⃣ Attach ke context (SOURCE OF TRUTH)
@@ -41,14 +42,25 @@ export const withAuth = <T extends EventHandlerRequest, D>(
 
             // 5️⃣ Lanjut ke handler kalau ada
             if (handler) {
-                return handler(event)
+                return await handler(event)
+            } else {
+                return sendError(
+                    event,
+                    500, 'no_handler',
+                    'No handler provided for authenticated route'
+                )
             }
         } catch (err: any) {
-            if (err instanceof HttpError) {
-                throw err
-            }
             console.error("[error]:", err)
-            throw new HttpError(500, 'internal_server_error', 'Internal server error')
+            if (err instanceof HttpError) {
+                return sendError(event, err.status, err.code, err.message, err.data)
+            }
+            return sendError(
+                event,
+                500, 'internal_error',
+                'An internal server error occurred',
+                err.data
+            )
         }
     })
 }
