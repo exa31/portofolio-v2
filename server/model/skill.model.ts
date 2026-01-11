@@ -1,7 +1,7 @@
 import z from "zod";
 
 export const skillModel = z.object({
-    id: z.uuidv4(),
+    id: z.number(),
     name: z.string().min(1).max(100),
     color: z.string().min(1).max(100),
     icon: z.string().min(1).max(100),

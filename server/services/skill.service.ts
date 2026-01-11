@@ -49,7 +49,7 @@ export const getSkillsNoPagination = async (event: H3Event) => {
     )
 }
 
-export const getSkillByCursor = async (event: H3Event, limit: number, cursor?: number, search?: string) => {
+export const getSkillsByCursor = async (event: H3Event, limit: number, cursor?: number, search?: string) => {
     return withTransaction(
         async (client) => {
             const skills = await repository.getSkillCursorPagination(client, limit, search, cursor);

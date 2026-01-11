@@ -1,8 +1,8 @@
-import {getSkillsByCursor, getSkillsNoPagination} from "~~/server/services/skill.service";
 import {paginationSchemaQuery} from "~~/server/utils/common";
 import {HttpError} from "~~/server/errors/HttpError";
 
 import z from "zod";
+import {getProjectsByCursor, getProjectsNoPagination} from "~~/server/services/project.service";
 
 export default defineEventHandler(async (event) => {
     const parsed = await getValidatedQuery(event, query => paginationSchemaQuery.extend({
@@ -18,12 +18,12 @@ export default defineEventHandler(async (event) => {
 
     if (!query.pagination) {
         console.log('Fetching skills without pagination')
-        return await getSkillsNoPagination(event)
+        return await getProjectsNoPagination(event)
     }
 
     const limit = query.limit ? query.limit : 10
     const cursor = query.cursor ? query.cursor : undefined
     const search = query.search ? query.search : undefined
 
-    return await getSkillsByCursor(event, limit, cursor, search)
+    return await getProjectsByCursor(event, limit, cursor, search)
 })
