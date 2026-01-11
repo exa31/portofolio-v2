@@ -1,4 +1,6 @@
 // plugins/apiFetch.ts
+import Cookie from "~/utils/cookie";
+
 export default defineNuxtPlugin(() => {
     let isRefreshing = false
     let refreshPromise: Promise<void> | null = null
@@ -14,6 +16,12 @@ export default defineNuxtPlugin(() => {
                     ...options.headers,
                     ...useRequestHeaders(['cookie']),
                 }
+            } else {
+                // Client: tambah Authorization header
+                const token = Cookie.get('token')
+                if (token) {
+                    options.headers.set('Authorization', `Bearer ${token}`)
+                }
             }
         },
 
@@ -23,7 +31,7 @@ export default defineNuxtPlugin(() => {
             }
 
             // ❌ jangan refresh kalau request refresh itu sendiri
-            if (request.toString().includes('/api/auth/refresh')) {
+            if (request.toString().includes('/api/users/refresh')) {
                 throw response
             }
 
@@ -32,11 +40,15 @@ export default defineNuxtPlugin(() => {
                 if (!isRefreshing) {
                     isRefreshing = true
 
-                    refreshPromise = $fetch('/api/auth/refresh', {
+                    refreshPromise = $fetch<BaseResponse<{
+                        access_token: string
+                    }>>('/api/users/refresh', {
                         method: 'POST',
                         credentials: 'include',
-                    }).then(() => {
+                    }).then((data) => {
                         isRefreshing = false
+                        // simpan token baru di cookie
+                        Cookie.set('token', data.data!.access_token, 1) // 1 day expiry
                     }).catch((err) => {
                         isRefreshing = false
                         throw err
@@ -45,8 +57,13 @@ export default defineNuxtPlugin(() => {
 
                 await refreshPromise
 
+                const newToken = Cookie.get('token')
+                if (newToken) {
+                    options.headers.set('Authorization', `Bearer ${newToken}`)
+                }
+
                 // 🔁 retry request awal
-                return apiFetch(request, {
+                return await apiFetch(request, {
                     ...options,
                     method: options.method as
                         | 'GET'

@@ -247,7 +247,7 @@ const getAvatarStyle = (name: string) => {
                 <span v-else class="text-white">{{ crumb.title }}</span>
                 <Icon
                     v-if="index < breadCrumbStore.listBreadCrumbs.length - 1"
-                    name="carbon:chevron-right"
+                    name="material-symbols:chevron-right"
                     size="16"
                     class="hidden sm:block"
                 />
