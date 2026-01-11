@@ -1,27 +1,49 @@
 <script setup lang="ts">
+import {ref, watch} from 'vue'
 
-definePageMeta(
+definePageMeta({
+  layout: false,
+})
+useHead({
+  title: 'Login - MyApp',
+  meta: [
     {
-      layout: false,
-    }
-)
-
-import {ref} from 'vue'
+      name: 'description',
+      content: 'Login to access your personalized dashboard and portfolio.',
+    },
+  ],
+  script: [
+    {
+      src: 'https://accounts.google.com/gsi/client',
+      async: true,
+      defer: true,
+    },
+  ],
+})
 
 const isLoading = ref(false)
+const localError = ref<string | null>(null)
+
+const {initGoogleSignIn, signInWithGooglePopup, signInError} = useGoogleSignIn()
+
+// Watch untuk reactive error dari composable
+watch(signInError, (newError) => {
+  if (newError) {
+    localError.value = newError
+  }
+})
 
 const handleGoogleLogin = async () => {
   isLoading.value = true
-  try {
-    // Google OAuth implementation
-    // This would typically redirect to Google OAuth endpoint
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    // navigateTo('/dashboard')
-  } catch (error) {
-    console.error('Google login error:', error)
-  } finally {
+  localError.value = null
+
+  // Trigger Google Sign-In pop-up
+  initGoogleSignIn()
+
+  // Pop-up adalah async, set loading false after a moment
+  setTimeout(() => {
     isLoading.value = false
-  }
+  }, 1000)
 }
 </script>
 
@@ -61,6 +83,11 @@ const handleGoogleLogin = async () => {
 
       <!-- Main Card -->
       <div class="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 sm:p-10 shadow-2xl">
+        <!-- Error Message -->
+        <div v-if="localError" class="mb-6 p-4 bg-red-500/20 border border-red-500/30 rounded-lg">
+          <p class="text-red-400 text-sm">{{ localError }}</p>
+        </div>
+
         <!-- Header -->
         <div class="text-center mb-8">
           <h2 class="text-2xl font-bold text-white mb-2">Sign in with Google</h2>
@@ -71,9 +98,9 @@ const handleGoogleLogin = async () => {
         <button
             @click="handleGoogleLogin"
             :disabled="isLoading"
-            class="w-full py-4 px-6 rounded-xl bg-white text-[#0a0e27] font-bold text-lg hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center gap-3 group shadow-lg hover:shadow-xl"
+            class="w-full py-4 cursor-pointer px-6 rounded-xl bg-white text-[#0a0e27] font-bold text-lg hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center gap-3 group shadow-lg hover:shadow-xl"
         >
-          <Icon v-if="isLoading" name="carbon:loading" size="24" class="animate-spin text-[#0a0e27]"/>
+          <Icon v-if="isLoading" name="icon-park-outline:loading-four" size="24" class="animate-spin text-[#0a0e27]"/>
           <Icon v-else name="mdi:google" size="24" class="text-[#0a0e27]"/>
           <span>{{ isLoading ? 'Signing in...' : 'Continue with Google' }}</span>
         </button>
