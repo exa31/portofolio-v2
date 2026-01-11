@@ -112,6 +112,16 @@ const openProject = (project: Project) => {
   navigateTo(`/dashboard/projects/${project.id}`)
 }
 
+const deleteProjectHandler = async (id: number) => {
+  if (confirm('Are you sure you want to delete this project?')) {
+    // Simulate API call
+    const index = projects.value.findIndex(p => p.id === id)
+    if (index > -1) {
+      projects.value.splice(index, 1)
+    }
+  }
+}
+
 breadCrumbStore.setBreadCrumb([
   {title: 'Projects'}
 ])
@@ -129,6 +139,7 @@ breadCrumbStore.setBreadCrumb([
 
       <!-- Add New Project Button -->
       <button
+          @click="navigateTo('/dashboard/projects/new')"
           class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-white font-semibold hover:brightness-110 transition-all whitespace-nowrap">
         <Icon name="carbon:add" size="20"/>
         Add New Project
@@ -261,10 +272,12 @@ breadCrumbStore.setBreadCrumb([
             <span class="text-xs text-white/50">Updated {{ project.updatedAt }}</span>
             <div class="flex gap-2">
               <button
+                  @click.stop="openProject(project)"
                   class="p-2 rounded-lg bg-white/5 hover:bg-primary/20 text-white/50 hover:text-primary transition-all">
                 <Icon name="carbon:pen" size="16"/>
               </button>
               <button
+                  @click.stop="deleteProjectHandler(project.id)"
                   class="p-2 rounded-lg bg-white/5 hover:bg-red-500/20 text-white/50 hover:text-red-400 transition-all">
                 <Icon name="carbon:trash-can" size="16"/>
               </button>
@@ -283,7 +296,7 @@ breadCrumbStore.setBreadCrumb([
           class="group flex items-center gap-4 p-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg hover:border-primary/50 hover:bg-white/10 transition-all duration-300 cursor-pointer"
       >
         <!-- Image Thumbnail -->
-        <div class="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-white/5">
+        <div class="relative w-20 h-20 shrink-0 rounded-lg overflow-hidden bg-white/5">
           <NuxtImg
               :src="project.image"
               :alt="project.title"
@@ -298,7 +311,7 @@ breadCrumbStore.setBreadCrumb([
               {{ project.title }}
             </h3>
             <span
-                :class="['px-3 py-1 rounded-full text-xs font-semibold border flex-shrink-0', getStatusColor(project.status)]">
+                :class="['px-3 py-1 rounded-full text-xs font-semibold border shrink-0', getStatusColor(project.status)]">
               {{ project.status }}
             </span>
           </div>
@@ -318,14 +331,16 @@ breadCrumbStore.setBreadCrumb([
         </div>
 
         <!-- Meta -->
-        <div class="text-right flex-shrink-0">
+        <div class="text-right shrink-0">
           <p class="text-xs text-white/50 mb-3">Updated {{ project.updatedAt }}</p>
           <div class="flex gap-2">
             <button
+                @click.stop="openProject(project)"
                 class="p-2 rounded-lg bg-white/5 hover:bg-primary/20 text-white/50 hover:text-primary transition-all">
               <Icon name="carbon:pen" size="16"/>
             </button>
             <button
+                @click.stop="deleteProjectHandler(project.id)"
                 class="p-2 rounded-lg bg-white/5 hover:bg-red-500/20 text-white/50 hover:text-red-400 transition-all">
               <Icon name="carbon:trash-can" size="16"/>
             </button>
@@ -340,6 +355,7 @@ breadCrumbStore.setBreadCrumb([
       <h3 class="text-xl font-bold text-white mb-2">No projects found</h3>
       <p class="text-white/60 text-center mb-6">Try adjusting your search or filter criteria</p>
       <button
+          @click="navigateTo('/dashboard/projects/new')"
           class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-white font-semibold hover:brightness-110 transition-all">
         <Icon name="carbon:add" size="20"/>
         Create Your First Project
