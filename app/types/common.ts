@@ -1,7 +1,7 @@
 export type BaseResponse<T> = {
     message: string;
     success: boolean;
-    data: T | null;
+    data: T;
     timestamp: string;
     code: string
 }

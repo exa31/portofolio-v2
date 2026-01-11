@@ -38,13 +38,13 @@ export const getSkillsNoPagination = async (event: H3Event) => {
             )
             if (cachedSkills) {
                 const skills = JSON.parse(cachedSkills);
-                return sendSuccess(event, skills, "Skills retrieved successfully", "skills_retrieved");
+                return sendSuccess(event, {data: skills}, "Skills retrieved successfully", "skills_retrieved");
             }
 
             const skills = await repository.getAllSkills(client);
             await set('skills:all', JSON.stringify(skills)); // Cache the skills list
 
-            return sendSuccess(event, skills, "Skills retrieved successfully", "skills_retrieved");
+            return sendSuccess(event, {data: skills}, "Skills retrieved successfully", "skills_retrieved");
         }
     )
 }

@@ -1,117 +1,95 @@
 <script setup lang="ts">
 import {computed, ref} from 'vue'
+import type {Skill} from "~/types/skill";
 
 definePageMeta({
   layout: 'dashboard'
 })
 
-interface Skill {
-  id: number
-  name: string
-  category: 'Frontend' | 'Backend' | 'DevOps' | 'Tools' | 'Other'
-  proficiency: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert'
-  icon: string
-  color: string
-  yearsOfExperience: number
-}
-
-const skills = ref<Skill[]>([
-  {
-    id: 1,
-    name: 'React',
-    category: 'Frontend',
-    proficiency: 'Expert',
-    icon: 'mdi:react',
-    color: 'blue',
-    yearsOfExperience: 5
-  },
-  {
-    id: 2,
-    name: 'Vue.js',
-    category: 'Frontend',
-    proficiency: 'Advanced',
-    icon: 'mdi:vuejs',
-    color: 'green',
-    yearsOfExperience: 4
-  },
-  {
-    id: 3,
-    name: 'TypeScript',
-    category: 'Frontend',
-    proficiency: 'Expert',
-    icon: 'mdi:language-typescript',
-    color: 'blue',
-    yearsOfExperience: 3
-  },
-  {
-    id: 4,
-    name: 'Node.js',
-    category: 'Backend',
-    proficiency: 'Advanced',
-    icon: 'mdi:nodejs',
-    color: 'green',
-    yearsOfExperience: 4
-  },
-  {
-    id: 5,
-    name: 'Tailwind CSS',
-    category: 'Frontend',
-    proficiency: 'Expert',
-    icon: 'mdi:tailwind',
-    color: 'cyan',
-    yearsOfExperience: 3
-  }
-])
-
+const breadCrumbStore = useBreadCrumbStore()
+const {hasMore, cursor, skills, fetchSkills, isLoading,} = useSkill()
 const searchQuery = ref('')
-const selectedCategory = ref('All')
+const canLoadMore = ref(false)
 const showModal = ref(false)
 const isEditMode = ref(false)
+
 const formData = ref<Skill>({
   id: 0,
   name: '',
-  category: 'Frontend',
-  proficiency: 'Intermediate',
   icon: 'mdi:code',
   color: 'blue',
-  yearsOfExperience: 1
 })
+
+// Fetch initial skills on SSR/CSR
+const {pending, data} = await useAsyncData('skills', async () => {
+  return await fetchSkills(false, '')
+})
+
+// Watch for search/filter changes and reset
+watch([searchQuery], () => {
+  cursor.value = null
+  hasMore.value = true
+  fetchSkills(false, searchQuery.value)
+}, {immediate: false})
+
+// Load more on client side only (infinite scroll)
+const scrollTriggerRef = ref<HTMLElement>()
 
 const filteredSkills = computed(() => {
-  return skills.value.filter(skill => {
-    const matchesSearch = skill.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-    const matchesCategory = selectedCategory.value === 'All' || skill.category === selectedCategory.value
-    return matchesSearch && matchesCategory
-  })
+  return skills.value
 })
 
-const categoryColors: Record<string, string> = {
-  'Frontend': 'bg-blue-500/10 text-blue-400 border-blue-500/30',
-  'Backend': 'bg-purple-500/10 text-purple-400 border-purple-500/30',
-  'DevOps': 'bg-orange-500/10 text-orange-400 border-orange-500/30',
-  'Tools': 'bg-pink-500/10 text-pink-400 border-pink-500/30',
-  'Other': 'bg-gray-500/10 text-gray-400 border-gray-500/30'
+// Intersection Observer setup (client-side only)
+const setupIntersectionObserver = () => {
+  // Guard untuk SSR
+  if (import.meta.server || !scrollTriggerRef.value) return
+
+  const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && hasMore.value && !isLoading.value && canLoadMore.value) {
+            fetchSkills(true, searchQuery.value) // Load more
+          }
+        })
+      },
+      {
+        root: null,
+        rootMargin: '100px', // Trigger 100px before reaching bottom
+        threshold: 0.1,
+      }
+  )
+
+  observer.observe(scrollTriggerRef.value)
+
+  // Cleanup
+  onUnmounted(() => {
+    observer.disconnect()
+  })
 }
 
-const proficiencyColors: Record<string, string> = {
-  'Beginner': 'bg-gray-500/20 text-gray-400 border-gray-500/40',
-  'Intermediate': 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40',
-  'Advanced': 'bg-blue-500/20 text-blue-400 border-blue-500/40',
-  'Expert': 'bg-green-500/20 text-green-400 border-green-500/40'
-}
+// Setup observer on client-side only
+if (import.meta.client) {
+  onMounted(() => {
+    if (data.value) {
+      skills.value = data.value.data
+      hasMore.value = data.value.has_next
 
-const categories = ['All', 'Frontend', 'Backend', 'DevOps', 'Tools', 'Other']
+      if (data.value.data.length > 0) {
+        cursor.value = data.value.data.at(-1)!.id.toString()
+      }
+    }
+    canLoadMore.value = true
+    setupIntersectionObserver()
+  })
+}
 
 const openCreateModal = () => {
   isEditMode.value = false
   formData.value = {
     id: 0,
     name: '',
-    category: 'Frontend',
-    proficiency: 'Intermediate',
     icon: 'mdi:code',
     color: 'blue',
-    yearsOfExperience: 1
   }
   showModal.value = true
 }
@@ -150,6 +128,9 @@ const deleteSkill = (id: number) => {
 const closeModal = () => {
   showModal.value = false
 }
+breadCrumbStore.setBreadCrumb([
+  {title: 'Skills'}
+])
 </script>
 
 <template>
@@ -172,7 +153,7 @@ const closeModal = () => {
 
     <!-- Filters Section -->
     <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 mb-8">
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 gap-4">
         <!-- Search -->
         <div class="relative">
           <Icon name="carbon:search" size="20"
@@ -184,20 +165,6 @@ const closeModal = () => {
               class="w-full pl-10 pr-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-primary/50 focus:bg-white/15 transition-all"
           />
         </div>
-
-        <!-- Category Filter -->
-        <div class="relative">
-          <select
-              v-model="selectedCategory"
-              class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white appearance-none cursor-pointer focus:outline-none focus:border-primary/50 focus:bg-white/15 transition-all"
-          >
-            <option v-for="cat in categories" :key="cat" :value="cat">
-              {{ cat === 'All' ? 'Category: All' : cat }}
-            </option>
-          </select>
-          <Icon name="carbon:chevron-down" size="16"
-                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 pointer-events-none"/>
-        </div>
       </div>
 
       <!-- Count -->
@@ -207,7 +174,7 @@ const closeModal = () => {
     </div>
 
     <!-- Skills Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
       <div
           v-for="skill in filteredSkills"
           :key="skill.id"
@@ -217,24 +184,13 @@ const closeModal = () => {
         <div class="flex items-start justify-between mb-4">
           <div class="flex items-start gap-4 flex-1">
             <div
-                class="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                class="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
               <Icon :name="skill.icon" size="24" class="text-white/80 group-hover:text-primary transition-colors"/>
             </div>
             <div class="flex-1 min-w-0">
               <h3 class="text-lg font-bold text-white group-hover:text-primary transition-colors">{{ skill.name }}</h3>
-              <p class="text-sm text-white/50 mt-1">{{ skill.yearsOfExperience }} years experience</p>
             </div>
           </div>
-        </div>
-
-        <!-- Badges -->
-        <div class="flex flex-wrap gap-2 mb-4">
-          <span :class="['px-3 py-1 rounded-full text-xs font-semibold border', categoryColors[skill.category]]">
-            {{ skill.category }}
-          </span>
-          <span :class="['px-3 py-1 rounded-full text-xs font-semibold border', proficiencyColors[skill.proficiency]]">
-            {{ skill.proficiency }}
-          </span>
         </div>
 
         <!-- Actions -->
@@ -257,17 +213,36 @@ const closeModal = () => {
       </div>
     </div>
 
-    <!-- Empty State -->
-    <div v-if="filteredSkills.length === 0" class="flex flex-col items-center justify-center py-20">
-      <Icon name="carbon:skill-level" size="64" class="text-white/20 mb-6"/>
-      <h3 class="text-xl font-bold text-white mb-2">No skills found</h3>
-      <p class="text-white/60 text-center mb-6">Try adjusting your search or filter criteria</p>
-      <button
-          @click="openCreateModal"
-          class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-white font-semibold hover:brightness-110 transition-all">
-        <Icon name="carbon:add" size="20"/>
-        Add Your First Skill
-      </button>
+    <!-- Infinite Scroll Trigger & Loading -->
+    <div class="flex flex-col items-center justify-center py-8">
+      <!-- Loading Spinner -->
+      <div v-if="isLoading" class="flex flex-col items-center gap-4">
+        <div class="w-8 h-8 border-4 border-white/20 border-t-primary rounded-full animate-spin"></div>
+        <p class="text-white/60 text-sm">Loading more skills...</p>
+      </div>
+
+      <!-- No More Data -->
+      <div v-else-if="filteredSkills.length > 0 && !hasMore" class="text-center">
+        <Icon name="carbon:checkmark-filled" size="32" class="text-green-400 mb-2 mx-auto"/>
+        <p class="text-white/60 text-sm">No more skills to load</p>
+      </div>
+
+      <!-- Empty State -->
+      <div v-else-if="filteredSkills.length === 0" class="text-center py-12">
+        <Icon name="carbon:skill-level" size="64" class="text-white/20 mb-6 mx-auto"/>
+        <h3 class="text-xl font-bold text-white mb-2">No skills found</h3>
+        <p class="text-white/60 text-center mb-6">Try adjusting your search or filter criteria</p>
+        <button
+            @click="openCreateModal"
+            class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-white font-semibold hover:brightness-110 transition-all"
+        >
+          <Icon name="carbon:add" size="20"/>
+          Add Your First Skill
+        </button>
+      </div>
+
+      <!-- Scroll Trigger Element (for intersection observer) -->
+      <div ref="scrollTriggerRef" class="h-1 w-full"></div>
     </div>
 
     <!-- Add/Edit Modal -->
@@ -300,50 +275,9 @@ const closeModal = () => {
             />
           </div>
 
-          <!-- Category -->
-          <div>
-            <label class="block text-sm font-semibold text-white mb-2">Category *</label>
-            <select
-                v-model="formData.category"
-                class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white appearance-none cursor-pointer focus:outline-none focus:border-primary/50 focus:bg-white/15 transition-all"
-            >
-              <option value="Frontend">Frontend</option>
-              <option value="Backend">Backend</option>
-              <option value="DevOps">DevOps</option>
-              <option value="Tools">Tools</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-
-          <!-- Proficiency -->
-          <div>
-            <label class="block text-sm font-semibold text-white mb-2">Proficiency Level *</label>
-            <select
-                v-model="formData.proficiency"
-                class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white appearance-none cursor-pointer focus:outline-none focus:border-primary/50 focus:bg-white/15 transition-all"
-            >
-              <option value="Beginner">Beginner</option>
-              <option value="Intermediate">Intermediate</option>
-              <option value="Advanced">Advanced</option>
-              <option value="Expert">Expert</option>
-            </select>
-          </div>
-
-          <!-- Years of Experience -->
-          <div>
-            <label class="block text-sm font-semibold text-white mb-2">Years of Experience *</label>
-            <input
-                v-model.number="formData.yearsOfExperience"
-                type="number"
-                min="0"
-                max="50"
-                class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-primary/50 focus:bg-white/15 transition-all"
-            />
-          </div>
-
           <!-- Icon -->
           <div>
-            <label class="block text-sm font-semibold text-white mb-2">Icon Name (MDI)</label>
+            <label class="block text-sm font-semibold text-white mb-2">Icon Name</label>
             <input
                 v-model="formData.icon"
                 type="text"
@@ -354,18 +288,24 @@ const closeModal = () => {
 
           <!-- Color -->
           <div>
-            <label class="block text-sm font-semibold text-white mb-2">Color Theme</label>
-            <select
-                v-model="formData.color"
-                class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white appearance-none cursor-pointer focus:outline-none focus:border-primary/50 focus:bg-white/15 transition-all"
-            >
-              <option value="blue">Blue</option>
-              <option value="green">Green</option>
-              <option value="cyan">Cyan</option>
-              <option value="purple">Purple</option>
-              <option value="orange">Orange</option>
-              <option value="pink">Pink</option>
-            </select>
+            <label class="block text-sm font-semibold text-white mb-2">
+              Color Theme
+            </label>
+
+            <div class="flex items-center gap-3">
+              <input
+                  v-model="formData.color"
+                  type="color"
+                  class="w-12 h-10 rounded-lg cursor-pointer border border-white/20 bg-transparent"
+              />
+
+              <input
+                  v-model="formData.color"
+                  type="text"
+                  placeholder="#3B82F6"
+                  class="flex-1 px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-primary/50"
+              />
+            </div>
           </div>
         </div>
       </template>

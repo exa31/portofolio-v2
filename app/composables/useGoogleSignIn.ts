@@ -13,8 +13,6 @@ export const useGoogleSignIn = () => {
     // Initialize Google Sign-In with pop-up
     const initGoogleSignIn = async () => {
         try {
-            await $loadGoogleOAuth()
-
             if (!(window as any).google) {
                 signInError.value = 'Google OAuth library failed to load'
                 console.error(signInError.value)
