@@ -5,17 +5,11 @@ import {loginWithGoogle} from "~~/server/services/user.service";
 import {handleError} from "~~/server/utils/handleError";
 
 export default handleError(async (event) => {
-    const body = await readBody(event);
-    if (!body || typeof body !== 'object') {
-        throw new HttpError(400, 'INVALID_REQUEST', 'Request body is required');
-    }
-
-    const parsed = loginRequestModel.safeParse(body);
+    const parsed = await readValidatedBody(event, body => loginRequestModel.safeParse(body));
 
     if (!parsed.success) {
-        throw new HttpError(400, 'INVALID_REQUEST', 'Invalid request body', z.treeifyError(parsed.error).properties
-        );
+        throw new HttpError(400, 'INVALID_REQUEST', 'Invalid request body', z.treeifyError(parsed.error).properties);
     }
 
-    return await loginWithGoogle(event, parsed.data.token_id)
+    return await loginWithGoogle(event, parsed.data.code)
 });

@@ -9,5 +9,5 @@ export const userModel = z.object({
 export type UserModel = z.infer<typeof userModel>;
 
 export const loginRequestModel = z.object({
-    token_id: z.string().min(1),
+    code: z.string().min(1),
 })

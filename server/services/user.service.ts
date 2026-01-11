@@ -15,17 +15,27 @@ const Config = useAppConfig();
 const googleClient = new OAuth2Client({
     client_id: Config.googleClientId,
     client_secret: Config.googleClientSecret,
+    redirectUri: 'http://localhost:3000',
 });
 
-export const loginWithGoogle = async (event: H3Event, idToken: string) => {
+export const loginWithGoogle = async (event: H3Event, code: string) => {
+    const {tokens, res} = await googleClient.getToken(
+        code)
+    ;
+
+    if (!tokens.id_token) {
+        throw new HttpError(400, 'INVALID_GOOGLE_TOKEN', 'Failed to obtain ID token from Google');
+    }
+
     const ticket = await googleClient.verifyIdToken({
-        idToken,
+        idToken: tokens.id_token,
         audience: Config.googleClientId,
     });
+
     const payload = ticket.getPayload();
 
-    if (!payload) {
-        throw new HttpError(401, 'INVALID_GOOGLE_TOKEN', 'Failed to verify Google ID token');
+    if (!payload || !payload.email) {
+        throw new HttpError(400, 'INVALID_GOOGLE_PAYLOAD', 'Google ID token payload is invalid');
     }
 
     return withTransaction(
@@ -55,7 +65,20 @@ export const loginWithGoogle = async (event: H3Event, idToken: string) => {
                 refreshToken,
                 {
                     httpOnly: true,
-                    secure: process.env.NODE_ENV === 'production',
+                    secure: Config.mode === 'production',
+                    sameSite: 'lax',
+                    path: '/api',
+                    expires: expiresAt,
+                }
+            )
+
+            setCookie(
+                event,
+                'access_token',
+                accessToken,
+                {
+                    httpOnly: true,
+                    secure: Config.mode === 'production',
                     sameSite: 'lax',
                     path: '/api',
                     expires: expiresAt,
@@ -99,7 +122,20 @@ export const loginByEmail = async (event: H3Event, email: string,) => {
                 refreshToken,
                 {
                     httpOnly: true,
-                    secure: process.env.NODE_ENV === 'production',
+                    secure: Config.mode === 'production',
+                    sameSite: 'lax',
+                    path: '/api',
+                    expires: expiresAt,
+                }
+            )
+
+            setCookie(
+                event,
+                'access_token',
+                accessToken,
+                {
+                    httpOnly: true,
+                    secure: Config.mode === 'production',
                     sameSite: 'lax',
                     path: '/api',
                     expires: expiresAt,
@@ -132,6 +168,20 @@ export const refreshToken = async (event: H3Event, oldRefreshToken: string) => {
             const accessToken = signAccessToken(name, email, userId!);
 
             if (!refreshTokenNeedRotation) {
+
+                setCookie(
+                    event,
+                    'access_token',
+                    accessToken,
+                    {
+                        httpOnly: true,
+                        secure: Config.mode === 'production',
+                        sameSite: 'lax',
+                        path: '/api',
+                        expires: isActiveRefreshToken.expires_at,
+                    }
+                )
+
                 return sendSuccess(event, {
                     access_token: accessToken,
                     refresh_token: oldRefreshToken,
@@ -154,7 +204,20 @@ export const refreshToken = async (event: H3Event, oldRefreshToken: string) => {
                 newRefreshToken,
                 {
                     httpOnly: true,
-                    secure: process.env.NODE_ENV === 'production',
+                    secure: Config.mode === 'production',
+                    sameSite: 'lax',
+                    path: '/api',
+                    expires: expiresAt,
+                }
+            )
+
+            setCookie(
+                event,
+                'access_token',
+                accessToken,
+                {
+                    httpOnly: true,
+                    secure: Config.mode === 'production',
                     sameSite: 'lax',
                     path: '/api',
                     expires: expiresAt,

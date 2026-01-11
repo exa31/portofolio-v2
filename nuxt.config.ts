@@ -33,6 +33,8 @@ export default defineNuxtConfig({
         databaseUrl: process.env.DATABASE_URL,
 
         // Client-side public variables
-        public: {},
+        public: {
+            googleClientId: process.env.NUXT_PUBLIC_GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID || '',
+        },
     },
 })

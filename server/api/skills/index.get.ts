@@ -1,11 +1,10 @@
 import {getSkillByCursor, getSkillsNoPagination} from "~~/server/services/skill.service";
 import {paginationSchemaQuery} from "~~/server/utils/common";
 import {HttpError} from "~~/server/errors/HttpError";
-import {withAuth} from "~~/server/utils/withAuth";
 
 import z from "zod";
 
-export default withAuth(async (event) => {
+export default defineEventHandler(async (event) => {
     const parsed = await getValidatedQuery(event, query => paginationSchemaQuery.extend({
         search: z.string().optional()
     }).safeParse(query));
