@@ -1,19 +1,13 @@
-import {ref} from 'vue'
 import type {Skill, SkillsResponse} from "~/types/skill";
 import {useToastCustom} from "~/composables/useToastCustom";
-import {isFetchErrorWithBody} from "~/utils/handleError";
-
-interface ValidationError {
-    field: string
-    message: string
-}
+import {getErrorMessageAxios} from "~/utils/handleError";
 
 export const useSkill = () => {
     const skills = ref<Array<Skill>>([])
     const isLoading = ref<boolean>(false)
     const isSaving = ref<boolean>(false)
     const cursor = ref<string | null>(null)
-    const {$apiFetch} = useNuxtApp()
+    const {$axios} = useNuxtApp()
     const toast = useToastCustom()
     const hasMore = ref<boolean>(true)
 
@@ -30,29 +24,39 @@ export const useSkill = () => {
                 query.cursor = cursor.value
             }
 
-            const response = await $fetch<BaseResponse<SkillsResponse>>('/api/skills', {
-                query: Object.fromEntries(
-                    Object.entries(query).filter(([, v]) => v !== undefined)
-                ),
-            })
+            const params = Object.fromEntries(
+                Object.entries(query).filter(([, v]) => v !== undefined)
+            )
+
+            const response = await $axios.get <BaseResponse<SkillsResponse>>('/api/skills', {params})
+            const body = response.data
+
+            // Ensure body.data exists - return default instead of throwing so we handle it gracefully
+            if (!body || !body.data) {
+                console.error('Invalid response from server', body)
+                return {
+                    data: [],
+                    has_next: false,
+                }
+            }
 
             if (loadMore) {
-                skills.value.push(...response.data!.data)
+                skills.value.push(...body.data.data)
             } else {
-                skills.value = response.data!.data
+                skills.value = body.data.data
             }
 
-            hasMore.value = response.data!.has_next
+            hasMore.value = body.data.has_next
 
-            if (response.data!.data.length > 0) {
-                cursor.value = response.data!.data.at(-1)!.id.toString()
+            if (body.data.data.length > 0) {
+                cursor.value = body.data.data.at(-1)!.id.toString()
             }
 
-            return response.data!
+            return body.data
         } catch (error) {
             console.error('Failed to fetch skills:', error)
 
-            // ✅ RETURN DEFAULT (INI KUNCI)
+            // RETURN DEFAULT
             return {
                 data: [],
                 has_next: false,
@@ -67,28 +71,21 @@ export const useSkill = () => {
         isSaving.value = true
         const loadingToast = toast.showLoadingToast('Creating Skills', 'Please wait while the skills are being created.')
         try {
-            const response = await $apiFetch<BaseResponse<null>>('/api/skills', {
-                method: 'POST',
-                body: {data: skillsList},
-            })
+            const response = await $axios.post<BaseResponse<null>>('/api/skills', {data: skillsList})
+            const body = response.data
 
-            if (response.success) {
+            if (body && body.success) {
                 toast.updateToast(loadingToast.id, 'Success', 'Skills created successfully.', 'success', 4000)
-                // Optionally, you can refresh the skills list or append the new skills
+                // Refresh the list
                 await fetchSkills(false, '')
                 return true
             } else {
-                toast.updateToast(loadingToast.id, 'Error', response.message || 'Failed to create skills.', 'error', 6000)
+                toast.updateToast(loadingToast.id, 'Error', body?.message || 'Failed to create skills.', 'error', 6000)
                 return false
             }
         } catch (error) {
             console.error('Failed to create skills:', error)
-            let errorMessage = 'An unexpected error occurred.'
-
-            if (isFetchErrorWithBody<BaseResponse>(error)) {
-                console.error('API Error:', error._data)
-                errorMessage = error._data.message
-            }
+            const errorMessage = getErrorMessageAxios(error)
 
             toast.updateToast(
                 loadingToast.id,
@@ -107,28 +104,20 @@ export const useSkill = () => {
         isSaving.value = true
         const loadingToast = toast.showLoadingToast('Updating Skill', 'Please wait while the skill is being updated.')
         try {
-            const response = await $apiFetch<BaseResponse<null>>(`/api/skills`, {
-                method: 'PUT',
-                body: skill,
-            })
+            const response = await $axios.put<BaseResponse<null>>('/api/skills', skill)
+            const body = response.data
 
-            if (response.success) {
+            if (body && body.success) {
                 toast.updateToast(loadingToast.id, 'Success', 'Skill updated successfully.', 'success', 4000)
-                // Optionally, you can refresh the skills list or update the specific skill
                 await fetchSkills(false, '')
                 return true
             } else {
-                toast.updateToast(loadingToast.id, 'Error', response.message || 'Failed to update skill.', 'error', 6000)
+                toast.updateToast(loadingToast.id, 'Error', body?.message || 'Failed to update skill.', 'error', 6000)
                 return false
             }
         } catch (error) {
             console.error('Failed to update skill:', error)
-            let errorMessage = 'An unexpected error occurred.'
-
-            if (isFetchErrorWithBody<BaseResponse>(error)) {
-                console.error('API Error:', error._data)
-                errorMessage = error._data.message
-            }
+            const errorMessage = getErrorMessageAxios(error)
 
             toast.updateToast(
                 loadingToast.id,
@@ -147,27 +136,21 @@ export const useSkill = () => {
         isSaving.value = true
         const loadingToast = toast.showLoadingToast('Deleting Skill', 'Please wait while the skill is being deleted.')
         try {
-            const response = await $apiFetch<BaseResponse<null>>(`/api/skills/${skillId}`, {
-                method: 'DELETE',
-            })
+            const response = await $axios.delete(`/api/skills/${skillId}`)
+            const body = response.data as BaseResponse<null>
 
-            if (response.success) {
+            if (body && body.success) {
                 toast.updateToast(loadingToast.id, 'Success', 'Skill deleted successfully.', 'success', 4000)
-                // Optionally, you can refresh the skills list
+                // Refresh the list
                 await fetchSkills(false, '')
                 return true
             } else {
-                toast.updateToast(loadingToast.id, 'Error', response.message || 'Failed to delete skill.', 'error', 6000)
+                toast.updateToast(loadingToast.id, 'Error', body?.message || 'Failed to delete skill.', 'error', 6000)
                 return false
             }
         } catch (error) {
             console.error('Failed to delete skill:', error)
-            let errorMessage = 'An unexpected error occurred.'
-
-            if (isFetchErrorWithBody<BaseResponse>(error)) {
-                console.error('API Error:', error._data)
-                errorMessage = error._data.message
-            }
+            const errorMessage = getErrorMessageAxios(error)
 
             toast.updateToast(
                 loadingToast.id,
@@ -188,9 +171,10 @@ export const useSkill = () => {
         isLoading,
         isSaving,
         cursor,
-        updateSkill,
         hasMore,
         fetchSkills,
-        createMultipleSkills, deleteSkill
+        createMultipleSkills,
+        updateSkill,
+        deleteSkill,
     }
 }

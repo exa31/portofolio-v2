@@ -1,12 +1,9 @@
-import type {FetchError} from 'ofetch'
+import {type AxiosError, isAxiosError} from "axios";
 
-export function isFetchErrorWithBody<T>(
-    error: unknown
-): error is FetchError<T> & { _data: T } {
-    return (
-        typeof error === 'object' &&
-        error !== null &&
-        '_data' in error
-    )
+export function getErrorMessageAxios(error: unknown): string {
+    if (isAxiosError(error)) {
+        return (error as AxiosError<BaseResponse<null>>).response?.data?.message || error.message;
+    } else {
+        return 'An unexpected error occurred.';
+    }
 }
-

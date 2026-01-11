@@ -309,17 +309,35 @@ breadCrumbStore.setBreadCrumb([
       <div
           v-for="skill in filteredSkills"
           :key="skill.id"
-          class="group bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:border-primary/50 hover:bg-white/10 transition-all duration-300 flex flex-col"
+          class="group bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 transition-all duration-300 flex flex-col
+         hover:border-(--skill-color)"
+          :style="{ '--skill-color': skill.color }"
       >
         <!-- Icon & Name -->
         <div class="flex items-start justify-between mb-4">
           <div class="flex items-start gap-4 flex-1">
+            <!-- Icon wrapper -->
             <div
-                class="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
-              <Icon :name="skill.icon" size="24" class="text-white/80 group-hover:text-primary transition-colors"/>
+                class="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center shrink-0
+             transition-colors
+             group-hover:bg-[color-mix(in_srgb,var(--skill-color)_20%,transparent)]"
+            >
+              <Icon
+                  :name="skill.icon"
+                  size="24"
+                  class="text-white/80 transition-colors
+               group-hover:text-(--skill-color)"
+              />
             </div>
+
+            <!-- Skill name -->
             <div class="flex-1 min-w-0">
-              <h3 class="text-lg font-bold text-white group-hover:text-primary transition-colors">{{ skill.name }}</h3>
+              <h3
+                  class="text-lg font-bold text-white transition-colors
+               group-hover:text-(--skill-color)"
+              >
+                {{ skill.name }}
+              </h3>
             </div>
           </div>
         </div>
