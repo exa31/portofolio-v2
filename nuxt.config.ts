@@ -32,6 +32,12 @@ export default defineNuxtConfig({
         pgSsl: process.env.PG_SSL === 'true',
         databaseUrl: process.env.DATABASE_URL,
 
+        minioEndpoint: process.env.MINIO_ENDPOINT,
+        minioAccessKey: process.env.MINIO_ACCESS_KEY,
+        minioSecretKey: process.env.MINIO_SECRET_KEY,
+        minioUseSsl: process.env.MINIO_USE_SSL === 'true',
+        minioPort: process.env.MINIO_PORT ? Number(process.env.MINIO_PORT) : 9000,
+
         // Client-side public variables
         public: {
             googleClientId: process.env.NUXT_PUBLIC_GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID || '',

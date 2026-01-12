@@ -71,7 +71,7 @@ export const up = (pgm) => {
             type: 'integer',
             notNull: true,
             references: 'skills(id)',
-            onDelete: 'CASCADE'
+            onDelete: 'RESTRICT'
         },
     })
 

@@ -21,7 +21,6 @@ import * as Minio from 'minio'
 // Configuration interface
 interface MinioConfig {
     endPoint: string
-    port: number
     useSSL: boolean
     accessKey: string
     secretKey: string
@@ -34,8 +33,7 @@ const getMinioConfig = (): MinioConfig => {
 
     return {
         endPoint: config.minioEndpoint || 'localhost',
-        port: parseInt(config.minioPort || '9000'),
-        useSSL: config.minioUseSSL === 'true' || false,
+        useSSL: config.minioUseSsl || false,
         accessKey: config.minioAccessKey || '',
         secretKey: config.minioSecretKey || '',
         region: config.minioRegion || 'us-east-1',
@@ -69,15 +67,14 @@ export const getMinioClientInstance = (): Minio.Client => {
  * Provides high-level methods for common MinIO operations
  */
 class MinioClientWrapper {
-    private client: Minio.Client
-    private publicUrl: string
+    private readonly client: Minio.Client
+    private readonly publicUrl: string
 
     constructor() {
         this.client = getMinioClientInstance()
         const config = getMinioConfig()
         const protocol = config.useSSL ? 'https' : 'http'
-        const port = config.port === 80 || config.port === 443 ? '' : `:${config.port}`
-        this.publicUrl = `${protocol}://${config.endPoint}${port}`
+        this.publicUrl = `${protocol}://${config.endPoint}`
     }
 
     /**

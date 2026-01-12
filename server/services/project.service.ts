@@ -5,10 +5,15 @@ import {CreateProjectInput, UpdateProjectInput} from "~~/server/model/project.mo
 import {withTransaction} from "~~/server/db/postgres";
 import {HttpError} from "~~/server/errors/HttpError";
 import {del, get, set} from "~~/server/db/redis";
+import {getMinioClient} from "~~/server/lib/minio";
 
 export const createProject = async (event: H3Event, body: CreateProjectInput) => {
     return withTransaction(
         async (client) => {
+            const minioClient = getMinioClient();
+            const namaFile = `portofolio/${Date.now()}-${crypto.randomUUID()}`;
+            body.url = minioClient.getPublicUrl("project", namaFile);
+
             const projectId = await repository.createProject(client, body);
             if (!projectId) {
                 throw new HttpError(500, 'PROJECT_CREATION_FAILED', 'Failed to create project');
@@ -21,6 +26,8 @@ export const createProject = async (event: H3Event, body: CreateProjectInput) =>
             const projects = await repository.getAllProjects(client);
             await del('projects:all'); // Invalidate cached projects list
             await set('projects:all', JSON.stringify(projects)); // Update cache with new projects list
+
+            await minioClient.uploadFile("project", namaFile, body.image.data, body.image.contentType || "application/octet-stream");
 
             return sendSuccess(
                 event,
@@ -67,9 +74,19 @@ export const getProjectsByCursor = async (event: H3Event, limit: number, cursor?
 export const updateProject = async (event: H3Event, data: UpdateProjectInput) => {
     return withTransaction(
         async (client) => {
+
+            const minioClient = getMinioClient();
+
             const project = await repository.getProjectById(client, data.id);
             if (!project) {
                 throw new HttpError(404, 'PROJECT_NOT_FOUND', 'Project not found');
+            }
+
+            const namaFile = `portofolio/${Date.now()}-${crypto.randomUUID()}`;
+            if (data.image) {
+                data.url = minioClient.getPublicUrl("project", namaFile);
+            } else {
+                data.url = project.image;
             }
 
             const ok = await repository.updateProject(client, data);
@@ -90,6 +107,8 @@ export const updateProject = async (event: H3Event, data: UpdateProjectInput) =>
             const projects = await repository.getAllProjects(client);
             await del('projects:all'); // Invalidate cached projects list
             await set('projects:all', JSON.stringify(projects)); // Update cache with new projects list
+
+            if (data.image) await minioClient.uploadFile("project", namaFile, data.image.data, data.image.contentType || "application/octet-stream");
 
             return sendSuccess(
                 event,
@@ -112,11 +131,6 @@ export const deleteProject = async (event: H3Event, id: number) => {
             const ok = await repository.deleteProject(client, id);
             if (!ok) {
                 throw new HttpError(500, 'PROJECT_DELETION_FAILED', 'Failed to delete project');
-            }
-
-            const okRelation = await repositorySkill.deleteProjectSkillRelation(client, id);
-            if (!okRelation) {
-                throw new HttpError(500, 'PROJECT_SKILL_RELATION_DELETION_FAILED', 'Failed to delete project-skill relation');
             }
 
             const projects = await repository.getAllProjects(client);

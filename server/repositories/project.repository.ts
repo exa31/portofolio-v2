@@ -12,7 +12,7 @@ export const createProject = async (
     `
     const values = [
         data.name,
-        data.image,
+        data.url,
         data.description,
         data.start_date,
         data.end_date,
@@ -45,7 +45,7 @@ export const updateProject = async (
     `
     const values = [
         data.name,
-        data.image,
+        data.url,
         data.description,
         data.start_date,
         data.end_date,
@@ -89,11 +89,13 @@ export const getProjectById = async (
                p.features,
                p.live_url,
                p.repo_url,
-               p.created_at
+               p.created_at,
+               ARRAY_AGG(s.name) AS skills
         FROM projects p
                  JOIN project_skills ps ON p.id = ps.project_id
                  JOIN skills s ON ps.skill_id = s.id
-        WHERE id = $1
+        WHERE p.id = $1
+        GROUP BY p.id
     `
     const values = [id]
 
@@ -137,7 +139,8 @@ export const getProjectCursorPagination = async (
     }
 
 
-    sql += `       
+    sql += `
+    GROUP BY p.id       
      ORDER BY id ASC LIMIT $${values.length + 1}
      `
     values.push(limit)
@@ -165,7 +168,8 @@ export const getAllProjects = async (
         FROM projects p
                  JOIN project_skills ps on p.id = ps.project_id
                  JOIN skills s on ps.skill_id = s.id
-        ORDER BY p.name ASC GROUP BY p.id
+        GROUP BY p.id
+        ORDER BY p.name ASC
     `
     const result = await client.query(sql)
     return result.rows

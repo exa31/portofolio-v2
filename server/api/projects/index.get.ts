@@ -17,7 +17,6 @@ export default defineEventHandler(async (event) => {
 
 
     if (!query.pagination) {
-        console.log('Fetching skills without pagination')
         return await getProjectsNoPagination(event)
     }
 
