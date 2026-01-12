@@ -11,7 +11,9 @@ export default withAuth(async (event) => {
         throw new HttpError(400, 'NO_FORM_DATA', 'No form data provided');
     }
 
-    const body = formatNuxtFormData(formData, ["id_skills"]);
+
+    const body = formatNuxtFormData(formData, ["id_skills", "features"]);
+    console.log("Form Data:", body);
 
     const parsed = createProjectSchema.safeParse(body);
 

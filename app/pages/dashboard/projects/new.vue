@@ -1,24 +1,17 @@
 <script setup lang="ts">
 import {ref} from 'vue'
 import {useToastCustom} from "~/composables/useToastCustom";
+import type {Project} from "~/types/project";
+import {useProject} from "~/composables/useProject";
 
 definePageMeta({
-  layout: 'dashboard'
+  layout: 'dashboard',
+  breadCrumb: [
+    {title: 'Projects', url: '/dashboard/projects'},
+    {title: 'Create New Project'}
+  ],
 })
 
-interface Project {
-  id?: number
-  name: string
-  description?: string
-  image: string
-  status: boolean
-  features: string[]
-  technologies?: number[]
-  repo_url?: string
-  live_url?: string
-  start_date?: string
-  end_date?: string
-}
 
 // Skill interface is inferred from API response
 
@@ -27,24 +20,25 @@ interface FormErrors {
   description?: string
   image?: string
   features?: string
+  technologies?: string
+  repo_url?: string
+  live_url?: string
 
   [key: string]: string | undefined
 }
 
-const router = useRouter()
-const breadCrumbStore = useBreadCrumbStore()
-const isSaving = ref(false)
 const toast = useToastCustom()
 const {
   fetchSkills,
 } = useSkill()
+const {isSaving, createProject} = useProject()
 
 // Form state
 const formData = ref<Project>({
   name: '',
   description: '',
   status: true,
-  image: '',
+  image: null,
   features: [''],
   technologies: [],
   repo_url: '',
@@ -69,6 +63,17 @@ const allSkills = computed(
     ) || []
 )
 
+// Validation function for URLs
+const isValidUrl = (url: string): boolean => {
+  if (!url) return true // Empty URL is allowed (optional field)
+  try {
+    new URL(url)
+    return true
+  } catch {
+    return false
+  }
+}
+
 // Validation function
 const validateForm = (): boolean => {
   const newErrors: FormErrors = {}
@@ -88,6 +93,19 @@ const validateForm = (): boolean => {
   const emptyFeatures = formData.value.features.filter(f => !f.trim())
   if (emptyFeatures.length > 0) {
     newErrors.features = `Please fill in all features or remove empty ones`
+  }
+
+  if (!formData.value.technologies || formData.value.technologies.length === 0) {
+    newErrors.technologies = 'Please select at least one technology'
+  }
+
+  // Validate URLs if provided
+  if (formData.value.repo_url && !isValidUrl(formData.value.repo_url)) {
+    newErrors.repo_url = 'Please enter a valid GitHub URL'
+  }
+
+  if (formData.value.live_url && !isValidUrl(formData.value.live_url)) {
+    newErrors.live_url = 'Please enter a valid live URL'
   }
 
   errors.value = newErrors
@@ -117,8 +135,6 @@ const removeSkill = (skillId: number) => {
 }
 
 const getSkillName = (skillId: number): string => {
-  console.log('allSkills: id', allSkills.value, skillId)
-
   const skill = data.value?.find(s => s.id === skillId)
   return skill?.name || 'Unknown'
 }
@@ -156,6 +172,7 @@ const handleImageUpload = async (event: Event) => {
 
   const reader = new FileReader()
   reader.onload = (e) => {
+    formData.value.image = file
     imagePreview.value = e.target?.result as string
     clearError('image')
   }
@@ -175,31 +192,13 @@ const saveProject = async () => {
     return
   }
 
-  if (imagePreview.value && !formData.value.image) {
-    formData.value.image = imagePreview.value
-  }
-
-  isSaving.value = true
-  try {
-    console.log('Project created:', formData.value)
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    navigateTo('/dashboard/projects')
-  } catch (error) {
-    console.error('Failed to create project:', error)
-    toast.showErrorToast('Error', 'Failed to create project')
-  } finally {
-    isSaving.value = false
-  }
+  const success = await createProject(formData.value)
+  if (success) navigateTo('/dashboard/projects')
 }
 
 const goBack = () => {
   navigateTo('/dashboard/projects')
 }
-
-breadCrumbStore.setBreadCrumb([
-  {title: 'Projects'},
-  {title: 'Create New Project'}
-])
 </script>
 
 <template>
@@ -226,7 +225,8 @@ breadCrumbStore.setBreadCrumb([
             :disabled="isSaving"
             class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-white font-semibold hover:brightness-110 transition-all disabled:opacity-50"
         >
-          <Icon name="carbon:save" size="20"/>
+          <Icon v-if="isSaving" name="carbon:loading" size="20" class="animate-spin"/>
+          <Icon v-else name="carbon:save" size="20"/>
           {{ isSaving ? 'Creating...' : 'Create Project' }}
         </button>
       </div>
@@ -394,8 +394,13 @@ breadCrumbStore.setBreadCrumb([
             </div>
           </div>
 
+
           <div v-else class="text-center py-6">
             <p class="text-sm text-white/50">No skills selected yet</p>
+          </div>
+          <div v-if="errors.technologies" class="mt-3 flex items-center gap-2 text-red-400 text-sm">
+            <Icon name="carbon:warning-alt" size="16"/>
+            {{ errors.technologies }}
           </div>
         </div>
 
@@ -451,19 +456,31 @@ breadCrumbStore.setBreadCrumb([
             <label class="block text-xs font-semibold text-white/80 mb-1.5">GitHub Link</label>
             <input
                 v-model="formData.repo_url"
+                @input="clearError('repo_url')"
                 type="url"
                 placeholder="https://github.com/..."
-                class="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-primary/50 transition-all text-sm"
+                class="w-full px-3 py-2 rounded-lg bg-white/10 border transition-all text-white placeholder:text-white/40 focus:outline-none text-sm"
+                :class="errors.repo_url ? 'border-red-500 focus:border-red-500' : 'border-white/20 focus:border-primary/50'"
             />
+            <div v-if="errors.repo_url" class="mt-2 flex items-center gap-2 text-red-400 text-sm">
+              <Icon name="carbon:warning-alt" size="16"/>
+              {{ errors.repo_url }}
+            </div>
           </div>
           <div>
             <label class="block text-xs font-semibold text-white/80 mb-1.5">Live Link</label>
             <input
                 v-model="formData.live_url"
+                @input="clearError('live_url')"
                 type="url"
                 placeholder="https://example.com"
-                class="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-primary/50 transition-all text-sm"
+                class="w-full px-3 py-2 rounded-lg bg-white/10 border transition-all text-white placeholder:text-white/40 focus:outline-none text-sm"
+                :class="errors.live_url ? 'border-red-500 focus:border-red-500' : 'border-white/20 focus:border-primary/50'"
             />
+            <div v-if="errors.live_url" class="mt-2 flex items-center gap-2 text-red-400 text-sm">
+              <Icon name="carbon:warning-alt" size="16"/>
+              {{ errors.live_url }}
+            </div>
           </div>
         </div>
 

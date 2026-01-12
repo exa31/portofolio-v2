@@ -61,7 +61,12 @@ export const formatNuxtFormData = (
     const body: ParsedFormData = {}
 
     for (const item of data) {
-        const name = item.name!
+        let name = item.name!
+
+        // 🔥 NORMALIZE ARRAY KEY
+        if (name.endsWith('[]')) {
+            name = name.slice(0, -2)
+        }
 
         // ===== FILE =====
         if (item.type) {
@@ -88,7 +93,7 @@ export const formatNuxtFormData = (
             value = raw
         }
 
-        // force array keys
+        // 🔑 FORCE ARRAY
         if (forceArrayKeys.includes(name)) {
             value = Array.isArray(value) ? value : [value]
         }
@@ -102,6 +107,7 @@ export const formatNuxtFormData = (
 
     return body
 }
+
 
 // 🔑 helper
 const mergeArray = (prev: any, next: any) => {
