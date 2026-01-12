@@ -113,6 +113,7 @@ export const useProject = () => {
     return {
         projects,
         isLoading,
+        cursor,
         isSaving,
         hasMore,
         fetchProjects,

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import {ref} from 'vue'
+import type {Project} from "~/types/project";
+import {useToastCustom} from "~/composables/useToastCustom";
 
 definePageMeta({
   layout: 'dashboard',
@@ -8,119 +10,123 @@ definePageMeta({
   ]
 })
 
-interface Project {
-  id: number
-  title: string
-  description: string
-  status: 'Draft' | 'Published' | 'Archived'
-  image: string
-  technologies: string[]
-  updatedAt: string
-  link?: string
-}
-
-const breadCrumbStore = useBreadCrumbStore()
-const projects = ref<Project[]>([
-  {
-    id: 1,
-    title: 'SaaS Analytics Dashboard',
-    description: 'A comprehensive analytics platform for SaaS businesses featuring real-time...',
-    status: 'Published',
-    image: '/images/hero.png',
-    technologies: ['React', 'Tailwind', 'D3.js'],
-    updatedAt: '2 days ago',
-    link: 'https://github.com'
-  },
-  {
-    id: 2,
-    title: 'FinTech Mobile App',
-    description: 'Secure mobile banking application allowing users to transfer funds, pay...',
-    status: 'Draft',
-    image: '/images/hero.png',
-    technologies: ['React Native', 'Firebase'],
-    updatedAt: '1 week ago',
-    link: 'https://github.com'
-  },
-  {
-    id: 3,
-    title: 'Node.js API Gateway',
-    description: 'High-performance microservices gateway handling authentication, rat...',
-    status: 'Published',
-    image: '/images/hero.png',
-    technologies: ['Node.js', 'Express', 'Redis'],
-    updatedAt: '3 weeks ago',
-    link: 'https://github.com'
-  },
-  {
-    id: 4,
-    title: 'Legacy CRM System',
-    description: 'Internal customer relationship management tool built for a logistics...',
-    status: 'Archived',
-    image: '/images/hero.png',
-    technologies: ['Vue.js', 'PostgreSQL'],
-    updatedAt: '2 months ago',
-    link: 'https://github.com'
-  },
-  {
-    id: 5,
-    title: 'E-Commerce Storefront',
-    description: 'Modern e-commerce frontend with cart functionality, stripe integration...',
-    status: 'Draft',
-    image: '/images/hero.png',
-    technologies: ['Next.js', 'Stripe'],
-    updatedAt: '1 week ago',
-    link: 'https://github.com'
-  },
-  {
-    id: 6,
-    title: 'Auth System v2',
-    description: 'A reusable authentication library with support for OAuth2, JWT and session...',
-    status: 'Published',
-    image: '/images/hero.png',
-    technologies: ['TypeScript', 'OAuth2'],
-    updatedAt: '3 days ago',
-    link: 'https://github.com'
-  }
-])
+const {
+  hasMore,
+  cursor,
+  projects,
+  fetchProjects,
+  isLoading,
+} = useProject()
 
 const searchQuery = ref('')
-const selectedStatus = ref('All')
-const selectedTech = ref('All')
+const canLoadMore = ref(false)
+const toast = useToastCustom()
 const viewMode = ref<'grid' | 'list'>('grid')
+const {debounce} = useDebounce()
+const isSearching = ref(false)
 
-const filteredProjects = computed(() => {
-  return projects.value.filter(project => {
-    const matchesSearch = project.title.toLowerCase().includes(searchQuery.value.toLowerCase())
-    const matchesStatus = selectedStatus.value === 'All' || project.status === selectedStatus.value
-    const matchesTech = selectedTech.value === 'All' || project.technologies.includes(selectedTech.value)
-    return matchesSearch && matchesStatus && matchesTech
-  })
+// Fetch initial projects on SSR/CSR
+const {data} = await useAsyncData('projects', async () => {
+  return await fetchProjects(false, '')
 })
 
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'Published':
-      return 'bg-green-500/20 text-green-400 border-green-500/40'
-    case 'Draft':
-      return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40'
-    case 'Archived':
-      return 'bg-gray-500/20 text-gray-400 border-gray-500/40'
-    default:
-      return 'bg-white/10 text-white/70'
+// Watch for search changes and reset
+watch([searchQuery], () => {
+  debounce(
+      "search-projects",
+      async (query: string) => {
+        isSearching.value = true
+        cursor.value = null
+        canLoadMore.value = false
+        try {
+          await fetchProjects(false, query)
+          canLoadMore.value = true
+        } finally {
+          isSearching.value = false
+        }
+      }, 500,
+      searchQuery.value
+  )
+}, {immediate: false})
+
+// Load more on client side only (infinite scroll)
+const scrollTriggerRef = ref<HTMLElement>()
+
+// Intersection Observer setup (client-side only)
+const setupIntersectionObserver = () => {
+  if (import.meta.server || !scrollTriggerRef.value) return
+
+  const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && hasMore.value && !isLoading.value && canLoadMore.value && !isSearching.value) {
+            fetchProjects(true, searchQuery.value)
+          }
+        })
+      },
+      {
+        root: null,
+        rootMargin: '100px',
+        threshold: 0.1,
+      }
+  )
+
+  observer.observe(scrollTriggerRef.value)
+
+  onUnmounted(() => {
+    observer.disconnect()
+  })
+}
+
+// Setup observer on client-side only
+if (import.meta.client) {
+  onMounted(() => {
+    if (data.value) {
+      projects.value = data.value.data
+      hasMore.value = data.value.has_next
+
+      if (data.value.data.length > 0) {
+        cursor.value = data.value.data.at(-1)!.id as any
+      }
+    }
+    canLoadMore.value = true
+    setupIntersectionObserver()
+  })
+}
+
+const getStatusColor = (status: boolean) => {
+  if (status) {
+    return 'bg-green-500/20 text-green-400 border-green-500/40'
   }
+  return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40'
+}
+
+const getStatusText = (status: boolean) => {
+  return status ? 'Published' : 'Draft'
 }
 
 const openProject = (project: Project) => {
-  // Navigate to edit page
   navigateTo(`/dashboard/projects/${project.id}`)
 }
 
 const deleteProjectHandler = async (id: number) => {
   if (confirm('Are you sure you want to delete this project?')) {
-    // Simulate API call
-    const index = projects.value.findIndex(p => p.id === id)
-    if (index > -1) {
-      projects.value.splice(index, 1)
+    const loadingToast = toast.showLoadingToast("Deleting", "Please wait...")
+    try {
+      const res = await $fetch(`/api/projects/${id}`, {
+        method: 'DELETE'
+      })
+
+      toast.updateToast(loadingToast.id, "Success", "Project deleted successfully!", "success", 4000)
+      // Remove from list
+      const index = projects.value.findIndex(p => p.id === id)
+      if (index > -1) {
+        projects.value.splice(index, 1)
+      }
+    } catch (error) {
+      console.error('Failed to delete project', error)
+      const errorMessage = getErrorMessageAxios(error)
+      toast.updateToast(loadingToast.id, "Error", `Failed to delete: ${errorMessage}`, "error", 6000)
     }
   }
 }
@@ -147,54 +153,20 @@ const deleteProjectHandler = async (id: number) => {
 
     <!-- Filters Section -->
     <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 mb-8">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="flex items-center gap-4">
         <!-- Search -->
-        <div class="relative lg:col-span-2">
+        <div class="relative flex-1">
           <Icon name="carbon:search" size="20"
                 class="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50"/>
           <input
               v-model="searchQuery"
               type="text"
-              placeholder="Search projects by name, client, or stack..."
+              placeholder="Search projects by name..."
               class="w-full pl-10 pr-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-primary/50 focus:bg-white/15 transition-all"
           />
         </div>
 
-        <!-- Status Filter -->
-        <div class="relative">
-          <select
-              v-model="selectedStatus"
-              class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white appearance-none cursor-pointer focus:outline-none focus:border-primary/50 focus:bg-white/15 transition-all"
-          >
-            <option value="All">Status: All</option>
-            <option value="Draft">Draft</option>
-            <option value="Published">Published</option>
-            <option value="Archived">Archived</option>
-          </select>
-          <Icon name="carbon:chevron-down" size="16"
-                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 pointer-events-none"/>
-        </div>
-
-        <!-- Tech Stack Filter -->
-        <div class="relative">
-          <select
-              v-model="selectedTech"
-              class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white appearance-none cursor-pointer focus:outline-none focus:border-primary/50 focus:bg-white/15 transition-all"
-          >
-            <option value="All">Tech Stack: All</option>
-            <option value="React">React</option>
-            <option value="Vue.js">Vue.js</option>
-            <option value="Node.js">Node.js</option>
-            <option value="TypeScript">TypeScript</option>
-          </select>
-          <Icon name="carbon:chevron-down" size="16"
-                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 pointer-events-none"/>
-        </div>
-      </div>
-
-      <!-- View Mode Toggle -->
-      <div class="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
-        <p class="text-sm text-white/60">{{ filteredProjects.length }} projects found</p>
+        <!-- View Mode Toggle -->
         <div class="flex gap-2">
           <button
               @click="viewMode = 'grid'"
@@ -220,27 +192,53 @@ const deleteProjectHandler = async (id: number) => {
           </button>
         </div>
       </div>
+
+      
     </div>
 
     <!-- Grid View -->
     <div v-if="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Skeleton Loading -->
+      <div v-if="isSearching" v-for="i in 6" :key="`skeleton-${i}`"
+           class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl overflow-hidden animate-pulse">
+        <div class="h-48 bg-white/10"></div>
+        <div class="p-6 space-y-3">
+          <div class="h-6 bg-white/10 rounded w-3/4"></div>
+          <div class="h-4 bg-white/10 rounded w-full"></div>
+          <div class="h-4 bg-white/10 rounded w-2/3"></div>
+          <div class="flex gap-2 mt-4">
+            <div class="h-6 bg-white/10 rounded px-2 w-16"></div>
+            <div class="h-6 bg-white/10 rounded px-2 w-16"></div>
+          </div>
+          <div class="pt-4 border-t border-white/10 flex justify-between">
+            <div class="h-4 bg-white/10 rounded w-1/3"></div>
+            <div class="flex gap-2">
+              <div class="w-8 h-8 bg-white/10 rounded"></div>
+              <div class="w-8 h-8 bg-white/10 rounded"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Projects -->
       <div
-          v-for="project in filteredProjects"
+          v-for="project in projects"
           :key="project.id"
           @click="openProject(project)"
+          v-else
           class="group bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl overflow-hidden hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 cursor-pointer"
       >
         <!-- Image -->
         <div class="relative h-48 bg-white/5 overflow-hidden">
           <NuxtImg
               :src="project.image"
-              :alt="project.title"
+              :alt="project.name"
               class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
           />
           <!-- Status Badge -->
           <div class="absolute top-4 right-4">
             <span :class="['px-3 py-1 rounded-full text-xs font-semibold border', getStatusColor(project.status)]">
-              {{ project.status }}
+              {{ getStatusText(project.status) }}
             </span>
           </div>
         </div>
@@ -249,7 +247,7 @@ const deleteProjectHandler = async (id: number) => {
         <div class="p-6">
           <!-- Title -->
           <h3 class="text-lg font-bold text-white mb-2 group-hover:text-primary transition-colors">
-            {{ project.title }}
+            {{ project.name }}
           </h3>
 
           <!-- Description -->
@@ -268,7 +266,9 @@ const deleteProjectHandler = async (id: number) => {
 
           <!-- Footer -->
           <div class="flex items-center justify-between pt-4 border-t border-white/10">
-            <span class="text-xs text-white/50">Updated {{ project.updatedAt }}</span>
+            <span class="text-xs text-white/50">{{
+                project.created_at ? new Date(project.created_at).toLocaleDateString() : ''
+              }}</span>
             <div class="flex gap-2">
               <button
                   @click.stop="openProject(project)"
@@ -276,7 +276,7 @@ const deleteProjectHandler = async (id: number) => {
                 <Icon name="carbon:pen" size="16"/>
               </button>
               <button
-                  @click.stop="deleteProjectHandler(project.id)"
+                  @click.stop="deleteProjectHandler(project.id || 0)"
                   class="p-2 rounded-lg bg-white/5 hover:bg-red-500/20 text-white/50 hover:text-red-400 transition-all">
                 <Icon name="carbon:trash-can" size="16"/>
               </button>
@@ -288,9 +288,32 @@ const deleteProjectHandler = async (id: number) => {
 
     <!-- List View -->
     <div v-else class="space-y-3">
+      <!-- Skeleton Loading -->
+      <div v-if="isSearching" v-for="i in 6" :key="`skeleton-${i}`"
+           class="flex items-center gap-4 p-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg animate-pulse">
+        <div class="relative w-20 h-20 shrink-0 rounded-lg bg-white/10"></div>
+        <div class="flex-1 min-w-0 space-y-2">
+          <div class="h-5 bg-white/10 rounded w-1/3"></div>
+          <div class="h-4 bg-white/10 rounded w-full"></div>
+          <div class="flex gap-1">
+            <div class="h-6 bg-white/10 rounded px-2 w-16"></div>
+            <div class="h-6 bg-white/10 rounded px-2 w-16"></div>
+          </div>
+        </div>
+        <div class="text-right shrink-0 space-y-2">
+          <div class="h-4 bg-white/10 rounded w-20"></div>
+          <div class="flex gap-2">
+            <div class="w-8 h-8 bg-white/10 rounded"></div>
+            <div class="w-8 h-8 bg-white/10 rounded"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Projects -->
       <div
-          v-for="project in filteredProjects"
+          v-for="project in projects"
           :key="project.id"
+          v-else
           @click="openProject(project)"
           class="group flex items-center gap-4 p-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg hover:border-primary/50 hover:bg-white/10 transition-all duration-300 cursor-pointer"
       >
@@ -298,7 +321,7 @@ const deleteProjectHandler = async (id: number) => {
         <div class="relative w-20 h-20 shrink-0 rounded-lg overflow-hidden bg-white/5">
           <NuxtImg
               :src="project.image"
-              :alt="project.title"
+              :alt="project.name"
               class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
           />
         </div>
@@ -307,11 +330,11 @@ const deleteProjectHandler = async (id: number) => {
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-3 mb-1">
             <h3 class="text-base font-bold text-white group-hover:text-primary transition-colors">
-              {{ project.title }}
+              {{ project.name }}
             </h3>
             <span
                 :class="['px-3 py-1 rounded-full text-xs font-semibold border shrink-0', getStatusColor(project.status)]">
-              {{ project.status }}
+              {{ getStatusText(project.status) }}
             </span>
           </div>
           <p class="text-sm text-white/60 mb-2 line-clamp-1">{{ project.description }}</p>
@@ -323,7 +346,7 @@ const deleteProjectHandler = async (id: number) => {
             >
               {{ tech }}
             </span>
-            <span v-if="project.technologies.length > 3" class="text-xs text-white/40">
+            <span v-if="project.technologies && project.technologies.length > 3" class="text-xs text-white/40">
               +{{ project.technologies.length - 3 }} more
             </span>
           </div>
@@ -331,7 +354,8 @@ const deleteProjectHandler = async (id: number) => {
 
         <!-- Meta -->
         <div class="text-right shrink-0">
-          <p class="text-xs text-white/50 mb-3">Updated {{ project.updatedAt }}</p>
+          <p class="text-xs text-white/50 mb-3">
+            {{ project.created_at ? new Date(project.created_at).toLocaleDateString() : '' }}</p>
           <div class="flex gap-2">
             <button
                 @click.stop="openProject(project)"
@@ -339,7 +363,7 @@ const deleteProjectHandler = async (id: number) => {
               <Icon name="carbon:pen" size="16"/>
             </button>
             <button
-                @click.stop="deleteProjectHandler(project.id)"
+                @click.stop="deleteProjectHandler(project.id || 0)"
                 class="p-2 rounded-lg bg-white/5 hover:bg-red-500/20 text-white/50 hover:text-red-400 transition-all">
               <Icon name="carbon:trash-can" size="16"/>
             </button>
@@ -349,16 +373,32 @@ const deleteProjectHandler = async (id: number) => {
     </div>
 
     <!-- Empty State -->
-    <div v-if="filteredProjects.length === 0" class="flex flex-col items-center justify-center py-20">
+    <div v-if="projects.length === 0" class="flex flex-col items-center justify-center py-20">
       <Icon name="carbon:inbox-empty" size="64" class="text-white/20 mb-6"/>
       <h3 class="text-xl font-bold text-white mb-2">No projects found</h3>
-      <p class="text-white/60 text-center mb-6">Try adjusting your search or filter criteria</p>
+      <p class="text-white/60 text-center mb-6">Try adjusting your search or create a new project</p>
       <button
           @click="navigateTo('/dashboard/projects/new')"
           class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-white font-semibold hover:brightness-110 transition-all">
         <Icon name="carbon:add" size="20"/>
         Create Your First Project
       </button>
+    </div>
+
+    <!-- Loading Indicator (Initial Load) -->
+    <div v-if="isLoading && projects.length === 0 && !isSearching"
+         class="flex flex-col items-center justify-center py-20">
+      <div class="w-12 h-12 border-4 border-white/20 border-t-primary rounded-full animate-spin mb-4"></div>
+      <p class="text-white/60 text-sm">Loading projects...</p>
+    </div>
+
+    <!-- Scroll Trigger for Infinite Scroll (Load More) -->
+    <div ref="scrollTriggerRef" class="h-10 flex items-center justify-center">
+      <div v-if="isLoading && projects.length > 0 && !isSearching"
+           class="flex items-center gap-2 text-white/60 text-sm">
+        <Icon name="carbon:loading" size="16" class="animate-spin"/>
+        <p>Loading more projects...</p>
+      </div>
     </div>
   </div>
 </template>

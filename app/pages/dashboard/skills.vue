@@ -28,6 +28,7 @@ const toast = useToastCustom()
 const showModal = ref(false)
 const {debounce} = useDebounce()
 const isEditMode = ref(false)
+const isSearching = ref(false)
 const errorsMessages = ref<{
   name: string
   icon: string
@@ -60,14 +61,16 @@ const {data} = await useAsyncData('skills', async () => {
 watch([searchQuery], () => {
   debounce(
       "search-skills",
-      (query: string) => {
+      async (query: string) => {
+        isSearching.value = true
         cursor.value = null
         canLoadMore.value = false
-        fetchSkills(false, query).then(
-            () => {
-              canLoadMore.value = true
-            }
-        )
+        try {
+          await fetchSkills(false, query)
+          canLoadMore.value = true
+        } finally {
+          isSearching.value = false
+        }
       }, 500,
       searchQuery.value
   )
@@ -88,7 +91,7 @@ const setupIntersectionObserver = () => {
   const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting && hasMore.value && !isLoading.value && canLoadMore.value) {
+          if (entry.isIntersecting && hasMore.value && !isLoading.value && canLoadMore.value && !isSearching.value) {
             fetchSkills(true, searchQuery.value) // Load more
           }
         })
@@ -307,9 +310,29 @@ const closeModal = () => {
 
     <!-- Skills Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      <!-- Skeleton Loading -->
+      <div v-if="isSearching" v-for="i in 6" :key="`skeleton-${i}`"
+           class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 animate-pulse">
+        <div class="flex items-start justify-between mb-4">
+          <div class="flex items-start gap-4 flex-1">
+            <div class="w-12 h-12 rounded-lg bg-white/10 shrink-0"></div>
+            <div class="flex-1 min-w-0 space-y-2">
+              <div class="h-6 bg-white/10 rounded w-2/3"></div>
+              <div class="h-4 bg-white/10 rounded w-1/2"></div>
+            </div>
+          </div>
+        </div>
+        <div class="flex gap-2 pt-4 border-t border-white/10">
+          <div class="w-8 h-8 bg-white/10 rounded"></div>
+          <div class="w-8 h-8 bg-white/10 rounded"></div>
+        </div>
+      </div>
+
+      <!-- Skills -->
       <div
           v-for="skill in filteredSkills"
           :key="skill.id"
+          v-if="!isSearching"
           class="group bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 transition-all duration-300 flex flex-col
          hover:border-(--skill-color)"
           :style="{ '--skill-color': skill.color }"
@@ -364,11 +387,18 @@ const closeModal = () => {
     </div>
 
     <!-- Infinite Scroll Trigger & Loading -->
-    <div class="flex flex-col items-center justify-center py-8">
-      <!-- Loading Spinner -->
-      <div v-if="isLoading" class="flex flex-col items-center gap-4">
+    <div ref="scrollTriggerRef" class="flex flex-col items-center justify-center py-8">
+      <!-- Loading More -->
+      <div v-if="isLoading && filteredSkills.length > 0 && !isSearching" class="flex flex-col items-center gap-4">
         <div class="w-8 h-8 border-4 border-white/20 border-t-primary rounded-full animate-spin"></div>
         <p class="text-white/60 text-sm">Loading more skills...</p>
+      </div>
+
+      <!-- Initial Loading (no skills yet) -->
+      <div v-else-if="isLoading && filteredSkills.length === 0 && !isSearching"
+           class="flex flex-col items-center gap-4">
+        <div class="w-12 h-12 border-4 border-white/20 border-t-primary rounded-full animate-spin"></div>
+        <p class="text-white/60 text-sm">Loading skills...</p>
       </div>
 
       <!-- No More Data -->
@@ -378,7 +408,7 @@ const closeModal = () => {
       </div>
 
       <!-- Empty State -->
-      <div v-else-if="filteredSkills.length === 0" class="text-center py-12">
+      <div v-else-if="filteredSkills.length === 0 && !isSearching" class="text-center py-12">
         <Icon name="carbon:skill-level" size="64" class="text-white/20 mb-6 mx-auto"/>
         <h3 class="text-xl font-bold text-white mb-2">No skills found</h3>
         <p class="text-white/60 text-center mb-6">Try adjusting your search or filter criteria</p>

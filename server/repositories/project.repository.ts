@@ -90,7 +90,8 @@ export const getProjectById = async (
                p.live_url,
                p.repo_url,
                p.created_at,
-               ARRAY_AGG(s.name) AS skills
+               ARRAY_AGG(s.name) AS technologies,
+               ARRAY_AGG(s.id)   AS id_skills
         FROM projects p
                  JOIN project_skills ps ON p.id = ps.project_id
                  JOIN skills s ON ps.skill_id = s.id
@@ -121,7 +122,7 @@ export const getProjectCursorPagination = async (
                p.live_url,
                p.repo_url,
                p.created_at,
-               ARRAY_AGG(s.name)
+               ARRAY_AGG(s.name) AS technologies
         FROM projects p
                  JOIN project_skills ps ON ps.project_id = p.id
                  JOIN skills s ON s.id = ps.skill_id
@@ -129,19 +130,19 @@ export const getProjectCursorPagination = async (
     const values: any[] = []
 
     if (cursor) {
-        sql += ` WHERE id > $1`
+        sql += ` WHERE p.id > $1`
         values.push(cursor)
     }
     if (search) {
         sql += cursor ? ` AND` : ` WHERE`
-        sql += ` name ILIKE $${values.length + 1}`
+        sql += ` p.name ILIKE $${values.length + 1}`
         values.push(`%${search}%`)
     }
 
 
     sql += `
     GROUP BY p.id       
-     ORDER BY id ASC LIMIT $${values.length + 1}
+     ORDER BY p.id ASC LIMIT $${values.length + 1}
      `
     values.push(limit)
 
@@ -164,7 +165,7 @@ export const getAllProjects = async (
                p.live_url,
                p.repo_url,
                p.created_at,
-               ARRAY_AGG(s.name) AS skills
+               ARRAY_AGG(s.name) AS technologies
         FROM projects p
                  JOIN project_skills ps on p.id = ps.project_id
                  JOIN skills s on ps.skill_id = s.id

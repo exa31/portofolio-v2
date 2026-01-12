@@ -15,6 +15,7 @@ export const projectModel = z.object({
     live_url: z.url().optional(),
     repo_url: z.url().optional(),
     skills: z.array(z.string()),
+    id_skills: z.array(z.number()).optional(),
     created_at: z.string(),
 })
 

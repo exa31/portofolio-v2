@@ -10,6 +10,7 @@ export type Project = {
     live_url?: string
     start_date: string
     end_date?: string
+    created_at?: string
 }
 
 export type ProjectsResponse = {
