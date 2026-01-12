@@ -4,10 +4,14 @@ import type {Skill} from "~/types/skill";
 import {useToastCustom} from "~/composables/useToastCustom";
 
 definePageMeta({
-  layout: 'dashboard'
+  layout: 'dashboard',
+  breadCrumb: [
+    {
+      title: 'Skills'
+    }
+  ]
 })
 
-const breadCrumbStore = useBreadCrumbStore()
 const {
   hasMore,
   cursor,
@@ -264,9 +268,6 @@ const closeModal = () => {
   errorsMessages.value = []
 }
 
-breadCrumbStore.setBreadCrumb([
-  {title: 'Skills'}
-])
 </script>
 
 <template>

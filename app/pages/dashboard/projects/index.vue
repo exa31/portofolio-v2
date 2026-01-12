@@ -2,7 +2,10 @@
 import {ref} from 'vue'
 
 definePageMeta({
-  layout: 'dashboard'
+  layout: 'dashboard',
+  breadCrumb: [
+    {title: 'Projects'}
+  ]
 })
 
 interface Project {
@@ -121,10 +124,6 @@ const deleteProjectHandler = async (id: number) => {
     }
   }
 }
-
-breadCrumbStore.setBreadCrumb([
-  {title: 'Projects'}
-])
 </script>
 
 <template>

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 definePageMeta({
-  layout: 'dashboard'
+  layout: 'dashboard',
+  breadCrumb: []
 })
 
-const breadCrumbStore = useBreadCrumbStore()
 
 const stats = [
   {
@@ -55,8 +55,6 @@ const recentProjects = [
     updatedAt: '3 weeks ago'
   }
 ]
-
-breadCrumbStore.setBreadCrumb([])
 </script>
 
 <template>

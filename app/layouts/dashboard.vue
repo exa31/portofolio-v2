@@ -4,6 +4,7 @@ import {useBreadCrumbStore} from "~/stores/bread-crumb";
 
 const isSidebarOpen = ref(false)
 const breadCrumbStore = useBreadCrumbStore()
+const route = useRoute()
 
 const user = {
   name: 'Alex Morgan',
@@ -66,6 +67,15 @@ const getAvatarStyle = (name: string) => {
     background: `linear-gradient(135deg, ${color!.from} 0%, ${color!.to} 100%)`
   }
 }
+
+watchEffect(
+    () => {
+      if (route.meta.breadCrumb) {
+        breadCrumbStore.setBreadCrumb(route.meta.breadCrumb as Array<{ title: string; link?: string }>)
+      }
+    }
+)
+
 </script>
 
 <template>

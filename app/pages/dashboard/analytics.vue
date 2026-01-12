@@ -2,7 +2,10 @@
 import {ref} from 'vue'
 
 definePageMeta({
-  layout: 'dashboard'
+  layout: 'dashboard',
+  breadCrumb: [
+    {title: 'Analytics'}
+  ]
 })
 
 const stats = [
