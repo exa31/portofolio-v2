@@ -5,10 +5,9 @@ import {refreshToken} from "~~/server/services/user.service";
 export default handleError(async (event) => {
     let oldRefreshToken: string | undefined
     oldRefreshToken = getCookie(event, 'refresh_token')
-
     if (!oldRefreshToken) {
         const body = await readBody(event)
-        oldRefreshToken = body.refresh_token
+        oldRefreshToken = body?.refresh_token
     }
 
     if (!oldRefreshToken) {
