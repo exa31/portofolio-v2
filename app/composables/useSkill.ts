@@ -11,12 +11,12 @@ export const useSkill = () => {
     const toast = useToastCustom()
     const hasMore = ref<boolean>(true)
 
-    const fetchSkills = async (loadMore = false, searchQuery: string): Promise<SkillsResponse> => {
+    const fetchSkills = async (loadMore = false, searchQuery: string, pagination: boolean = true): Promise<SkillsResponse> => {
         isLoading.value = true
         try {
             const query: Record<string, any> = {
                 search: searchQuery || undefined,
-                pagination: true,
+                pagination: pagination,
                 limit: 12,
             }
 
