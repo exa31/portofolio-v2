@@ -81,7 +81,7 @@ export const getProjectById = async (
     const sql = `
         SELECT p.id,
                p.name,
-               p.image,
+               p.image           AS preview_image,
                p.description,
                p.start_date,
                p.end_date,

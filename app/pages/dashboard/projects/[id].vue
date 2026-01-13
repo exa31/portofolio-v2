@@ -1,235 +1,119 @@
 <script setup lang="ts">
 import {computed, ref} from 'vue'
+import type {Project} from "~/types/project";
+import {useToastCustom} from "~/composables/useToastCustom";
+import {useProject} from "~/composables/useProject";
+import {useSkill} from "~/composables/useSkill";
+import {formatDate, parseDateForInput} from "~/utils";
 
-definePageMeta({
-  layout: 'dashboard'
-})
 
-interface Project {
-  id: number
-  name: string
+interface FormErrors {
+  name?: string
   description?: string
-  image: string
-  status: boolean // true = Published, false = Draft
-  features: string[] // Key features
-  technologies?: number[] // Skill IDs, bukan names
-  repo_url?: string // GitHub link
-  live_url?: string // Live demo link
-  start_date?: string
-  end_date?: string
-  created_at?: string
-  updated_at?: string
-}
+  image?: string
+  features?: string
+  technologies?: string
+  repo_url?: string
+  live_url?: string
 
-interface Skill {
-  id: number
-  name: string
-  icon: string
-  color: string
+  [key: string]: string | undefined
 }
 
 const route = useRoute()
 const router = useRouter()
 const breadCrumbStore = useBreadCrumbStore()
+const toast = useToastCustom()
+const {fetchSkills} = useSkill()
+const {isSaving, fetchProjectById, updateProject, deleteProject} = useProject()
 
 const projectId = computed(() => parseInt(route.params.id as string))
 const isEditMode = ref(false)
-const isSaving = ref(false)
 
-// Skills state
-const allSkills = ref<Skill[]>([])
-const isLoadingSkills = ref(true)
-
-// Image upload state
+// Form state
+const formData = ref<Project | null>(null)
+const currentProject = ref<Project | null>(null)
+const errors = ref<FormErrors>({})
 const imagePreview = ref<string>('')
 const fileInputRef = ref<HTMLInputElement | null>(null)
 
-const allProjects: Project[] = [
-  {
-    id: 1,
-    name: 'SaaS Analytics Dashboard',
-    description: 'A comprehensive analytics platform for SaaS businesses featuring real-time data visualization, custom reports, and predictive analytics. Built with modern tech stack to handle large datasets efficiently.',
-    status: true,
-    image: '/images/hero.png',
-    features: ['Real-time Data Visualization', 'Custom Reports', 'Predictive Analytics', 'Multi-tenant Support'],
-    technologies: [1, 2, 3, 4, 5],
-    repo_url: 'https://github.com/example/saas-analytics',
-    live_url: 'https://saas-analytics-demo.com',
-    start_date: '2023-06-01',
-    end_date: '2023-12-15',
-    created_at: '2023-06-01T00:00:00Z',
-    updated_at: '2024-01-08T00:00:00Z'
-  },
-  {
-    id: 2,
-    name: 'FinTech Mobile App',
-    description: 'Secure mobile banking application allowing users to transfer funds, pay bills, and manage investments with military-grade encryption. Features real-time notifications and multi-factor authentication.',
-    status: false,
-    image: '/images/hero.png',
-    features: ['Fund Transfers', 'Bill Payments', 'Investment Management', 'Real-time Notifications', '2FA Security'],
-    technologies: [6, 7, 8],
-    repo_url: 'https://github.com/example/fintech-app',
-    start_date: '2023-11-01',
-    created_at: '2023-11-01T00:00:00Z',
-    updated_at: '2024-01-05T00:00:00Z'
-  },
-  {
-    id: 3,
-    name: 'Node.js API Gateway',
-    description: 'High-performance microservices gateway handling authentication, rate limiting, and request routing. Supports WebSocket connections and real-time data streaming.',
-    status: true,
-    image: '/images/hero.png',
-    features: ['JWT Authentication', 'Rate Limiting', 'Request Routing', 'WebSocket Support', 'Real-time Streaming'],
-    technologies: [4, 9, 10, 5],
-    repo_url: 'https://github.com/example/api-gateway',
-    live_url: 'https://api-gateway-demo.com',
-    start_date: '2023-03-01',
-    end_date: '2023-09-30',
-    created_at: '2023-03-01T00:00:00Z',
-    updated_at: '2023-09-30T00:00:00Z'
-  },
-  {
-    id: 4,
-    name: 'Legacy CRM System',
-    description: 'Internal customer relationship management tool built for a logistics company. Manages customer interactions, sales pipelines, and provides analytics on customer behavior.',
-    status: false,
-    image: '/images/hero.png',
-    features: ['Customer Management', 'Sales Pipeline', 'Analytics Dashboard', 'Email Integration'],
-    technologies: [2, 5, 9],
-    repo_url: 'https://github.com/example/crm-system',
-    start_date: '2022-01-01',
-    end_date: '2023-06-30',
-    created_at: '2022-01-01T00:00:00Z',
-    updated_at: '2023-06-30T00:00:00Z'
-  },
-  {
-    id: 5,
-    name: 'E-Commerce Storefront',
-    description: 'Modern e-commerce frontend with cart functionality, Stripe integration, and inventory management. Fully responsive design with excellent performance.',
-    status: false,
-    image: '/images/hero.png',
-    features: ['Shopping Cart', 'Payment Integration', 'Inventory Management', 'Responsive Design', 'Product Search'],
-    technologies: [1, 8, 2, 7],
-    repo_url: 'https://github.com/example/ecommerce',
-    start_date: '2023-10-01',
-    created_at: '2023-10-01T00:00:00Z',
-    updated_at: '2024-01-05T00:00:00Z'
-  },
-  {
-    id: 6,
-    name: 'Auth System v2',
-    description: 'A reusable authentication library with support for OAuth2, JWT, and session-based authentication. Includes password reset, email verification, and 2FA support.',
-    status: true,
-    image: '/images/hero.png',
-    features: ['OAuth2 Support', 'JWT Authentication', 'Password Reset', 'Email Verification', '2FA Support'],
-    technologies: [1, 4, 5, 9],
-    repo_url: 'https://github.com/example/auth-system',
-    live_url: 'https://auth-system-docs.com',
-    start_date: '2023-07-01',
-    end_date: '2024-01-10',
-    created_at: '2023-07-01T00:00:00Z',
-    updated_at: '2024-01-10T00:00:00Z'
-  }
-]
-
-const currentProject = ref<Project | null>(null)
-const formData = ref<Project | null>(null)
-
-// Fetch project on mount
-onMounted(() => {
-  const project = allProjects.find(p => p.id === projectId.value)
-  if (project) {
-    currentProject.value = project
-    formData.value = {...project}
-    breadCrumbStore.setBreadCrumb([
-      {title: 'Projects'},
-      {title: project.name}
-    ])
-  } else {
-    navigateTo('/dashboard/projects')
-  }
-
-  // Fetch skills
-  fetchSkills()
+// Fetch initial skills on SSR/CSR
+const {data: skillsData} = await useAsyncData('edit-skills', async () => {
+  const res = await fetchSkills(false, '', false)
+  return res.data
 })
 
-const fetchSkills = async () => {
+// Fetch project data on SSR/CSR
+definePageMeta({
+  layout: 'dashboard',
+  breadCrumb: [
+    {title: 'Projects', link: '/dashboard/projects'},
+    {title: 'loading...'}
+  ]
+})
+const {data: projectData} = await useAsyncData(`project-${route.params.id}`, async () => {
+  return await fetchProjectById(projectId.value)
+})
+
+const allSkills = computed(
+    () => skillsData.value?.filter(
+        (skill) => !formData.value?.technologies?.includes(skill.id)
+    ) || []
+)
+
+// Validation functions
+const isValidUrl = (url: string): boolean => {
+  if (!url) return true
   try {
-    const response = await $fetch('/api/skills', {
-      method: 'GET'
-    }) as any
-
-    if (response?.data) {
-      allSkills.value = response.data.data || []
-    }
-  } catch (error) {
-    console.error('Error fetching skills:', error)
-    allSkills.value = []
-  } finally {
-    isLoadingSkills.value = false
+    new URL(url)
+    return true
+  } catch {
+    return false
   }
 }
 
-const toggleEditMode = () => {
-  if (isEditMode.value) {
-    // Cancel edit
-    formData.value = {...currentProject.value!}
-    isEditMode.value = false
-  } else {
-    // Enter edit mode
-    isEditMode.value = true
+const validateForm = (): boolean => {
+  const newErrors: FormErrors = {}
+
+  if (!formData.value?.name?.trim()) {
+    newErrors.name = 'Project name is required'
   }
+
+  if (!formData.value?.description?.trim()) {
+    newErrors.description = 'Description is required'
+  }
+
+  if (!formData.value?.image && !imagePreview.value) {
+    newErrors.image = 'Please upload a project image'
+  }
+
+  const emptyFeatures = formData.value?.features.filter(f => !f.trim()) || []
+  if (emptyFeatures.length > 0) {
+    newErrors.features = 'Please fill in all features or remove empty ones'
+  }
+
+  if (!formData.value?.technologies || formData.value.technologies.length === 0) {
+    newErrors.technologies = 'Please select at least one technology'
+  }
+
+  if (formData.value?.repo_url && !isValidUrl(formData.value.repo_url)) {
+    newErrors.repo_url = 'Please enter a valid GitHub URL'
+  }
+
+  if (formData.value?.live_url && !isValidUrl(formData.value.live_url)) {
+    newErrors.live_url = 'Please enter a valid live URL'
+  }
+
+  errors.value = newErrors
+  return Object.keys(newErrors).length === 0
 }
 
-const saveProject = async () => {
-  if (!formData.value) return
-
-  isSaving.value = true
-  try {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
-
-    // Update current project
-    currentProject.value = {...formData.value}
-    isEditMode.value = false
-
-    // Show success toast (if available)
-    console.log('Project updated successfully')
-  } catch (error) {
-    console.error('Failed to save project:', error)
-  } finally {
-    isSaving.value = false
-  }
+const clearError = (field: string) => {
+  delete errors.value[field]
 }
 
-const deleteProject = async () => {
-  if (!confirm('Are you sure you want to delete this project?')) return
-
-  try {
-    // Simulate API call
-    await new Promise<void>(resolve => setTimeout(() => resolve(), 1000))
-
-    // Redirect to projects list
-    navigateTo('/dashboard/projects')
-  } catch (error) {
-    console.error('Failed to delete project:', error)
-  }
-}
-
-const addFeature = () => {
-  if (formData.value && !formData.value.features.includes('')) {
-    formData.value.features.push('')
-  }
-}
-
-const removeFeature = (index: number) => {
-  if (formData.value) {
-    formData.value.features.splice(index, 1)
-  }
-}
-
-const addSkill = (skillId: number) => {
-  if (skillId && formData.value && !formData.value?.technologies?.includes(skillId)) {
+const addSkill = (skillId: number | null) => {
+  if (skillId && !formData.value?.technologies?.includes(skillId)) {
+    if (!formData.value) return
     if (!formData.value.technologies) {
       formData.value.technologies = []
     }
@@ -247,56 +131,57 @@ const removeSkill = (skillId: number) => {
 }
 
 const getSkillName = (skillId: number): string => {
-  const skill = allSkills.value.find(s => s.id === skillId)
+  const skill = skillsData.value?.find(s => s.id === skillId)
   return skill?.name || 'Unknown'
 }
 
-const handleImageUpload = async (event: Event) => {
+const getSkillIcon = (skillId: number): string => {
+  console.log('Getting icon for skill ID:', skillId, skillsData.value)
+  const skill = skillsData.value?.find(s => s.id === skillId)
+  return skill?.icon || 'carbon:code'
+}
+
+const addFeature = () => {
+  if (formData.value) {
+    formData.value.features.push('')
+    clearError('features')
+  }
+}
+
+const removeFeature = (index: number) => {
+  if (formData.value) {
+    formData.value.features.splice(index, 1)
+  }
+}
+
+const handleImageUpload = (event: Event) => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
 
   if (!file) return
 
-  // Validate file type
   if (!file.type.startsWith('image/')) {
-    alert('Please select an image file')
+    toast.showErrorToast('Error', 'Please select an image file',)
     return
   }
 
-  // Validate file size (max 5MB)
   const maxSize = 5 * 1024 * 1024
   if (file.size > maxSize) {
-    alert('File size must be less than 5MB')
+    toast.showErrorToast('Error', 'File size must be less than 5MB',)
     return
   }
 
-  try {
-    // Create preview
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      imagePreview.value = e.target?.result as string
-    }
-    reader.readAsDataURL(file)
-
-    // Upload to server
-    const formDataToUpload = new FormData()
-    formDataToUpload.append('file', file)
-
-    // Upload and get URL from API
-    const response = await $fetch('/api/upload', {
-      method: 'POST',
-      body: formDataToUpload
-    }) as any
-
-    if (response?.url) {
-      formData.value!.image = response.url
-    }
-
-    console.log('File uploaded:', file.name)
-  } catch (error) {
-    console.error('Error uploading image:', error)
-    alert('Failed to upload image')
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    imagePreview.value = e.target?.result as string
   }
+  reader.readAsDataURL(file)
+
+  if (formData.value) {
+    formData.value.image = file as any
+  }
+
+  clearError('image')
 }
 
 const triggerFileInput = () => {
@@ -307,6 +192,60 @@ const clearImage = () => {
   imagePreview.value = ''
   if (fileInputRef.value) {
     fileInputRef.value.value = ''
+  }
+  if (formData.value) {
+    formData.value.image = null
+  }
+}
+
+const toggleEditMode = () => {
+  if (isEditMode.value) {
+    // Cancel edit
+    formData.value = {...currentProject.value!}
+    imagePreview.value = currentProject.value?.preview_image as string || ''
+    errors.value = {}
+    isEditMode.value = false
+  } else {
+    // Enter edit mode
+    isEditMode.value = true
+  }
+}
+
+const saveProject = async () => {
+  if (!validateForm() || !formData.value) return
+
+  const loadingToast = toast.showLoadingToast("Updating Project", "Please wait...")
+  try {
+    const success = await updateProject(formData.value)
+
+    if (success) {
+      currentProject.value = formData.value
+      isEditMode.value = false
+      imagePreview.value = ''
+      toast.updateToast(loadingToast.id, "Success", "Project updated successfully!", "success", 4000)
+    }
+  } catch (error) {
+    console.error('Failed to save project', error)
+    const errorMessage = getErrorMessageAxios(error)
+    toast.updateToast(loadingToast.id, "Error", `Failed to update: ${errorMessage}`, "error", 6000)
+  }
+}
+
+const deleteProjectHandler = async () => {
+  if (!confirm('Are you sure you want to delete this project?')) return
+
+  const loadingToast = toast.showLoadingToast("Deleting", "Please wait...")
+  try {
+    const success = await deleteProject(projectId.value)
+
+    if (success) {
+      toast.updateToast(loadingToast.id, "Success", "Project deleted successfully!", "success", 4000)
+      await router.push('/dashboard/projects')
+    }
+  } catch (error) {
+    console.error('Failed to delete project', error)
+    const errorMessage = getErrorMessageAxios(error)
+    toast.updateToast(loadingToast.id, "Error", `Failed to delete: ${errorMessage}`, "error", 6000)
   }
 }
 
@@ -319,244 +258,284 @@ const getStatusColor = (status: boolean) => {
 const getStatusText = (status: boolean) => {
   return status ? 'Published' : 'Draft'
 }
+
+// Initialize on mount (client-side only)
+if (import.meta.client) {
+  onMounted(() => {
+    if (projectData.value) {
+      currentProject.value = projectData.value
+      formData.value = {
+        ...projectData.value,
+        start_date: parseDateForInput(projectData.value.start_date),
+        end_date: parseDateForInput(projectData.value.end_date)
+      }
+      imagePreview.value = projectData.value.preview_image as string || ''
+    } else {
+      navigateTo('/dashboard/projects')
+    }
+  })
+}
+
+// Handle SSR - set initial data
+watch(() => projectData.value, (newVal) => {
+  if (newVal && !currentProject.value) {
+    currentProject.value = newVal
+    formData.value = {
+      ...newVal,
+      start_date: parseDateForInput(newVal.start_date),
+      end_date: parseDateForInput(newVal.end_date)
+    }
+    breadCrumbStore.setBreadCrumb([
+      {title: 'Projects', link: '/dashboard/projects'},
+      {title: newVal.name}
+    ])
+  }
+}, {immediate: true})
 </script>
 
 <template>
   <div class="p-8">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-8">
-      <div>
-        <h1 v-if="!isEditMode" class="text-4xl font-black text-white mb-2">{{ currentProject?.name }}</h1>
-        <p v-if="!isEditMode" class="text-white/60">View and manage project details</p>
-      </div>
-
-      <!-- Action Buttons -->
-      <div class="flex gap-3">
-        <button
-            v-if="!isEditMode"
-            @click="toggleEditMode"
-            class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-white font-semibold hover:brightness-110 transition-all"
-        >
-          <Icon name="carbon:pen" size="20"/>
-          Edit Project
-        </button>
-
-        <button
-            v-if="isEditMode"
-            @click="toggleEditMode"
-            class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-white/10 text-white font-semibold hover:bg-white/20 transition-all border border-white/20"
-        >
-          <Icon name="carbon:close" size="20"/>
-          Cancel
-        </button>
-
-        <button
-            v-if="isEditMode"
-            @click="saveProject"
-            :disabled="isSaving"
-            class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 transition-all disabled:opacity-50"
-        >
-          <Icon name="carbon:save" size="20"/>
-          {{ isSaving ? 'Saving...' : 'Save' }}
-        </button>
-
-        <button
-            v-if="!isEditMode"
-            @click="deleteProject"
-            class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-red-600/20 text-red-400 font-semibold hover:bg-red-600/30 transition-all border border-red-600/40"
-        >
-          <Icon name="carbon:trash-can" size="20"/>
-          Delete
-        </button>
-      </div>
+    <!-- Loading State -->
+    <div v-if="!currentProject" class="flex flex-col items-center justify-center py-20">
+      <div class="w-12 h-12 border-4 border-white/20 border-t-primary rounded-full animate-spin mb-4"></div>
+      <p class="text-white/60 text-sm">Loading project...</p>
     </div>
 
     <!-- Content -->
-    <div v-if="currentProject && formData" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <!-- Main Content -->
-      <div class="lg:col-span-2 space-y-6">
-        <!-- Image Section -->
-        <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl overflow-hidden">
-          <div v-if="!isEditMode" class="relative h-96 bg-white/5 overflow-hidden">
-            <NuxtImg
-                :src="currentProject.image"
-                :alt="currentProject.name"
-                class="w-full h-full object-cover"
-            />
-            <!-- Status Badge -->
-            <div class="absolute top-6 right-6">
-              <span
-                  :class="['px-4 py-2 rounded-full text-sm font-semibold border', getStatusColor(currentProject.status)]">
-                {{ getStatusText(currentProject.status) }}
-              </span>
-            </div>
-          </div>
-
-          <div v-else class="p-6 space-y-4">
-            <div>
-              <label class="block text-sm font-semibold text-white mb-2">Project Image *</label>
-              <div class="flex gap-3">
-                <button
-                    @click="triggerFileInput"
-                    type="button"
-                    class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white font-semibold hover:brightness-110 transition-all"
-                >
-                  <Icon name="carbon:cloud-upload" size="20"/>
-                  Choose Image
-                </button>
-                <input
-                    ref="fileInputRef"
-                    type="file"
-                    accept="image/*"
-                    @change="handleImageUpload"
-                    class="hidden"
-                />
-                <span v-if="imagePreview" class="inline-flex items-center text-sm text-green-400">
-                  <Icon name="carbon:checkmark" size="16" class="mr-1"/>
-                  Image selected
-                </span>
-                <button
-                    v-if="imagePreview"
-                    @click="clearImage"
-                    type="button"
-                    class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600/20 text-red-400 font-semibold hover:bg-red-600/30 transition-all border border-red-600/40"
-                >
-                  <Icon name="carbon:trash-can" size="16"/>
-                  Clear
-                </button>
-              </div>
-            </div>
-
-            <!-- Image Preview -->
-            <div v-if="imagePreview"
-                 class="relative h-48 bg-white/10 rounded-lg overflow-hidden border border-white/20">
-              <img
-                  :src="imagePreview"
-                  alt="Project preview"
-                  class="w-full h-full object-cover"
-              />
-            </div>
-
-            <!-- Current Image Display -->
-            <div v-else-if="formData.image"
-                 class="relative h-48 bg-white/10 rounded-lg overflow-hidden border border-white/20">
-              <NuxtImg
-                  :src="formData.image"
-                  :alt="formData.name"
-                  class="w-full h-full object-cover"
-              />
-              <p class="text-xs text-white/60 mt-2">Current image (upload new to replace)</p>
-            </div>
-          </div>
+    <div v-else class="w-full">
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h1 v-if="!isEditMode" class="text-4xl font-black text-white mb-2">{{ currentProject?.name }}</h1>
+          <p v-if="!isEditMode" class="text-white/60">View and manage project details</p>
         </div>
 
-        <!-- Description Section -->
-        <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-          <div v-if="!isEditMode">
-            <h3 class="text-lg font-bold text-white mb-4">About This Project</h3>
-            <p class="text-white/70 leading-relaxed">{{ currentProject.description }}</p>
-          </div>
-          <div v-else class="space-y-4">
-            <div>
-              <label class="block text-sm font-semibold text-white mb-2">Project Name *</label>
-              <input
-                  v-model="formData.name"
-                  type="text"
-                  class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-primary/50 transition-all"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-semibold text-white mb-2">Description *</label>
-              <textarea
-                  v-model="formData.description"
-                  rows="6"
-                  class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-primary/50 transition-all resize-none"
-                  placeholder="Write a detailed description of your project..."
-              ></textarea>
-            </div>
-          </div>
-        </div>
+        <!-- Action Buttons -->
+        <div class="flex gap-3">
+          <button
+              v-if="!isEditMode"
+              @click="toggleEditMode"
+              class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-white font-semibold hover:brightness-110 transition-all"
+          >
+            <Icon name="carbon:pen" size="20"/>
+            Edit Project
+          </button>
 
-        <!-- Status Section -->
-        <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-          <div v-if="!isEditMode">
-            <h3 class="text-lg font-bold text-white mb-4">Status</h3>
-            <span
-                :class="['px-4 py-2 rounded-full text-sm font-semibold border inline-block', getStatusColor(currentProject.status)]">
-              {{ getStatusText(currentProject.status) }}
-            </span>
-          </div>
-          <div v-else>
-            <label class="block text-sm font-semibold text-white mb-2">Status</label>
-            <select
-                v-model="formData.status"
-                class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:border-primary/50 transition-all"
-            >
-              <option :value="false">Draft</option>
-              <option :value="true">Published</option>
-            </select>
-          </div>
+          <button
+              v-if="isEditMode"
+              @click="toggleEditMode"
+              class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-white/10 text-white font-semibold hover:bg-white/20 transition-all border border-white/20"
+          >
+            <Icon name="carbon:close" size="20"/>
+            Cancel
+          </button>
+
+          <button
+              v-if="isEditMode"
+              @click="saveProject"
+              :disabled="isSaving"
+              class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 transition-all disabled:opacity-50"
+          >
+            <Icon name="carbon:save" size="20"/>
+            {{ isSaving ? 'Saving...' : 'Save' }}
+          </button>
+
+          <button
+              v-if="!isEditMode"
+              @click="deleteProjectHandler"
+              class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-red-600/20 text-red-400 font-semibold hover:bg-red-600/30 transition-all border border-red-600/40"
+          >
+            <Icon name="carbon:trash-can" size="20"/>
+            Delete
+          </button>
         </div>
       </div>
 
-      <!-- Sidebar -->
-      <div class="lg:col-span-1 space-y-6">
-        <!-- Technologies/Skills Section -->
-        <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-bold text-white">Technologies Used</h3>
-          </div>
-
-          <div v-if="!isEditMode" class="space-y-2">
-            <div
-                v-for="skillId in currentProject.technologies"
-                :key="skillId"
-                class="flex items-center gap-2 p-2 rounded-lg bg-primary/10 border border-primary/20"
-            >
-              <Icon
-                  :name="allSkills.find(s => s.id === skillId)?.icon || 'carbon:code'"
-                  size="16"
-                  class="text-primary"
+      <!-- Content Grid -->
+      <div v-if="currentProject && formData" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Content -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Image Section -->
+          <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl overflow-hidden">
+            <div v-if="!isEditMode" class="relative h-96 bg-white/5 overflow-hidden">
+              <NuxtImg
+                  :src="imagePreview"
+                  :alt="currentProject?.name"
+                  class="w-full h-full object-cover"
               />
-              <span class="text-sm font-medium text-white">{{ getSkillName(skillId) }}</span>
+              <!-- Status Badge -->
+              <div class="absolute top-6 right-6">
+                <span
+                    :class="['px-4 py-2 rounded-full text-sm font-semibold border', getStatusColor(currentProject?.status)]">
+                  {{ getStatusText(currentProject?.status) }}
+                </span>
+              </div>
             </div>
-            <div v-if="!currentProject.technologies || currentProject.technologies.length === 0"
-                 class="text-center py-4">
-              <p class="text-sm text-white/50">No technologies selected</p>
+
+            <div v-else class="p-6 space-y-4">
+              <div>
+                <label class="block text-sm font-semibold text-white mb-2">
+                  Project Image
+                  <span class="text-red-400">*</span>
+                </label>
+                <div class="flex gap-3">
+                  <button
+                      @click="triggerFileInput"
+                      type="button"
+                      class="inline-flex cursor-pointer items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white font-semibold hover:brightness-110 transition-all"
+                  >
+                    <Icon name="carbon:cloud-upload" size="20"/>
+                    Choose Image
+                  </button>
+                  <input
+                      ref="fileInputRef"
+                      type="file"
+                      accept="image/*"
+                      @change="handleImageUpload"
+                      class="hidden"
+                  />
+                  <span v-if="imagePreview" class="inline-flex items-center text-sm text-green-400">
+                    <Icon name="carbon:checkmark-filled" size="16" class="mr-1"/>
+                    Image selected
+                  </span>
+                  <span v-else class="inline-flex items-center text-sm text-white/60">
+                    <Icon name="carbon:close" size="16" class="mr-1"/>
+                    No new image selected
+                  </span>
+                </div>
+                <!-- Error Message -->
+                <div v-if="errors.image" class="mt-2 flex items-center gap-2 text-red-400 text-sm">
+                  <Icon name="carbon:warning-alt" size="16"/>
+                  {{ errors.image }}
+                </div>
+              </div>
+
+              <!-- Image Preview -->
+              <div v-if="imagePreview"
+                   class="relative h-96 bg-white/10 rounded-lg overflow-hidden border border-white/20">
+                <img
+                    :src="imagePreview"
+                    alt="Project preview"
+                    class="w-full h-full object-cover"
+                />
+              </div>
             </div>
           </div>
 
-          <!-- Skills Dropdown for Edit Mode -->
-          <div v-else class="space-y-4">
-            <div>
-              <label class="block text-xs font-semibold text-white/80 mb-2">Select Skills</label>
+          <!-- Description Section -->
+          <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+            <div v-if="!isEditMode">
+              <h3 class="text-lg font-bold text-white mb-4">About This Project</h3>
+              <p class="text-white/70 leading-relaxed">{{ currentProject?.description }}</p>
+            </div>
+            <div v-else class="space-y-4">
+              <div>
+                <label class="block text-sm font-semibold text-white mb-2">Project Name *</label>
+                <input
+                    v-model="formData.name"
+                    @input="clearError('name')"
+                    type="text"
+                    class="w-full px-4 py-2 rounded-lg bg-white/10 border transition-all text-white placeholder:text-white/40 focus:outline-none text-sm"
+                    :class="errors.name ? 'border-red-500 focus:border-red-500' : 'border-white/20 focus:border-primary/50'"
+                />
+                <div v-if="errors.name" class="mt-2 flex items-center gap-2 text-red-400 text-sm">
+                  <Icon name="carbon:warning-alt" size="16"/>
+                  {{ errors.name }}
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-white mb-2">Description *</label>
+                <textarea
+                    v-model="formData.description"
+                    @input="clearError('description')"
+                    rows="6"
+                    class="w-full px-4 py-2 rounded-lg bg-white/10 border transition-all text-white placeholder:text-white/40 focus:outline-none resize-none text-sm"
+                    :class="errors.description ? 'border-red-500 focus:border-red-500' : 'border-white/20 focus:border-primary/50'"
+                    placeholder="Write a detailed description of your project..."
+                ></textarea>
+                <div v-if="errors.description" class="mt-2 flex items-center gap-2 text-red-400 text-sm">
+                  <Icon name="carbon:warning-alt" size="16"/>
+                  {{ errors.description }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Status Section -->
+          <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+            <div v-if="!isEditMode">
+              <h3 class="text-lg font-bold text-white mb-4">Status</h3>
+              <span
+                  :class="['px-4 py-2 rounded-full text-sm font-semibold border inline-block', getStatusColor(currentProject.status)]">
+              {{ getStatusText(currentProject.status) }}
+            </span>
+            </div>
+            <div v-else>
+              <label class="block text-sm font-semibold text-white mb-2">Status</label>
               <select
-                  @change="(e) => addSkill(parseInt((e.target as HTMLSelectElement).value))"
-                  :value="''"
-                  class="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:border-primary/50 transition-all text-sm"
+                  v-model="formData.status"
+                  class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:border-primary/50 transition-all"
               >
-                <option value="">Choose a skill...</option>
-                <option
-                    v-for="skill in allSkills.filter(s => !formData.technologies?.includes(s.id))"
-                    :key="skill.id"
-                    :value="skill.id"
-                >
-                  {{ skill.name }}
-                </option>
+                <option :value="false">Draft</option>
+                <option :value="true">Published</option>
               </select>
             </div>
+          </div>
+        </div>
 
-            <!-- Selected Skills -->
-            <div v-if="formData.technologies && formData.technologies.length > 0" class="space-y-2">
-              <p class="text-xs text-white/60 mb-2">Selected Technologies:</p>
+        <!-- Sidebar -->
+        <div class="lg:col-span-1 space-y-6">
+          <!-- Technologies/Skills Section -->
+          <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-bold text-white">Technologies Used</h3>
+            </div>
+
+            <!-- Skills Dropdown for Edit Mode -->
+            <div v-if="isEditMode" class="mb-4">
+              <label class="block text-xs font-semibold text-white/80 mb-2">Select Skills</label>
+              <USelectMenu
+                  :model-value="null"
+                  :items="allSkills"
+                  value-key="id"
+                  label-key="name"
+                  placeholder="Choose a skill..."
+                  @update:model-value="addSkill"
+                  class="w-full"
+              />
+            </div>
+
+            <!-- Display Mode -->
+            <div v-if="!isEditMode" class="space-y-2">
               <div
-                  v-for="skillId in formData.technologies"
+                  v-for="skillId in currentProject?.id_skills"
+                  :key="skillId"
+                  class="flex items-center gap-2 p-2 rounded-lg bg-primary/10 border border-primary/20"
+              >
+                <Icon
+                    :name="getSkillIcon(skillId)"
+                    size="16"
+                    class="text-primary"
+                />
+                <span class="text-sm font-medium text-white">{{ getSkillName(skillId) }}</span>
+              </div>
+              <div v-if="!currentProject?.technologies || currentProject.technologies.length === 0"
+                   class="text-center py-4">
+                <p class="text-sm text-white/50">No technologies selected</p>
+              </div>
+            </div>
+
+            <!-- Selected Skills for Edit Mode -->
+            <div v-if="isEditMode && formData?.id_skills && formData.id_skills.length > 0" class="space-y-2">
+              <p class="text-xs text-white/60 mb-3">Selected Technologies:</p>
+              <div
+                  v-for="skillId in formData.id_skills"
                   :key="skillId"
                   class="flex items-center justify-between p-3 rounded-lg bg-primary/20 border border-primary/30"
               >
                 <div class="flex items-center gap-2 flex-1">
                   <Icon
-                      :name="allSkills.find(s => s.id === skillId)?.icon || 'carbon:code'"
+                      :name="getSkillIcon(skillId)"
                       size="18"
                       class="text-primary"
                   />
@@ -571,152 +550,198 @@ const getStatusText = (status: boolean) => {
                 </button>
               </div>
             </div>
-          </div>
-        </div>
 
-        <!-- Features Section -->
-        <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-bold text-white">Key Features</h3>
-            <button
-                v-if="isEditMode"
-                @click="addFeature"
-                class="p-1.5 rounded-lg hover:bg-primary/20 text-primary transition-all"
-                type="button"
-            >
-              <Icon name="carbon:add" size="16"/>
-            </button>
-          </div>
-
-          <div v-if="!isEditMode" class="space-y-2">
-            <div
-                v-for="(feature, idx) in currentProject.features"
-                :key="idx"
-                class="flex items-start gap-3 p-2.5 rounded-lg bg-white/5 border border-white/10"
-            >
-              <Icon name="carbon:checkmark" size="16" class="text-green-400 mt-1 shrink-0"/>
-              <p class="text-sm text-white/80">{{ feature }}</p>
+            <div v-if="isEditMode && (!formData?.technologies || formData.technologies.length === 0)"
+                 class="text-center py-6">
+              <p class="text-sm text-white/50">No skills selected yet</p>
+            </div>
+            <div v-if="errors.technologies" class="mt-3 flex items-center gap-2 text-red-400 text-sm">
+              <Icon name="carbon:warning-alt" size="16"/>
+              {{ errors.technologies }}
             </div>
           </div>
 
-          <div v-else class="space-y-2">
-            <div
-                v-for="index in formData.features.length"
-                :key="index - 1"
-                class="flex gap-2"
-            >
-              <input
-                  v-model="formData.features[index - 1]"
-                  type="text"
-                  placeholder="e.g., Real-time updates"
-                  class="flex-1 px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-primary/50 transition-all text-sm"
-              />
+          <!-- Features Section -->
+          <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-bold text-white">Key Features</h3>
               <button
-                  @click="removeFeature(index - 1)"
-                  class="p-2 rounded-lg hover:bg-red-500/20 text-white/50 hover:text-red-400 transition-all"
+                  v-if="isEditMode"
+                  @click="addFeature"
+                  class="p-1.5 rounded-lg hover:bg-primary/20 text-primary transition-all"
                   type="button"
               >
-                <Icon name="carbon:trash-can" size="16"/>
+                <Icon name="carbon:add" size="16"/>
               </button>
             </div>
-          </div>
-        </div>
-        <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-          <h3 class="text-lg font-bold text-white mb-4">Links</h3>
 
-          <div v-if="!isEditMode" class="space-y-3">
-            <a
-                v-if="currentProject.repo_url"
-                :href="currentProject.repo_url"
-                target="_blank"
-                class="flex items-center gap-3 p-3 rounded-lg bg-white/5 hover:bg-primary/15 border border-white/10 hover:border-primary/30 transition-all"
-            >
-              <Icon name="mdi:github" size="20" class="text-white/70"/>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-white">GitHub Repository</p>
-                <p class="text-xs text-white/50 truncate">{{ currentProject.repo_url }}</p>
+            <!-- Display Mode -->
+            <div v-if="!isEditMode" class="space-y-2">
+              <div
+                  v-for="(feature, idx) in currentProject?.features"
+                  :key="idx"
+                  class="flex items-start gap-3 p-2.5 rounded-lg bg-white/5 border border-white/10"
+              >
+                <Icon name="carbon:checkmark" size="16" class="text-green-400 mt-1 shrink-0"/>
+                <p class="text-sm text-white/80">{{ feature }}</p>
               </div>
-              <Icon name="carbon:arrow-up-right" size="16" class="text-white/50"/>
-            </a>
+            </div>
 
-            <a
-                v-if="currentProject.live_url"
-                :href="currentProject.live_url"
-                target="_blank"
-                class="flex items-center gap-3 p-3 rounded-lg bg-white/5 hover:bg-primary/15 border border-white/10 hover:border-primary/30 transition-all"
-            >
-              <Icon name="carbon:launch" size="20" class="text-white/70"/>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-white">Live Demo</p>
-                <p class="text-xs text-white/50 truncate">{{ currentProject.live_url }}</p>
+            <!-- Edit Mode -->
+            <div v-else class="space-y-2">
+              <div
+                  v-for="index in formData?.features.length"
+                  :key="index - 1"
+                  class="flex gap-2"
+              >
+                <input
+                    v-model="formData.features[index - 1]"
+                    @input="clearError('features')"
+                    type="text"
+                    placeholder="e.g., Real-time updates"
+                    class="flex-1 px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-primary/50 transition-all text-sm"
+                />
+                <button
+                    v-if="formData && formData.features.length > 1"
+                    @click="removeFeature(index - 1)"
+                    class="p-2 rounded-lg hover:bg-red-500/20 text-white/50 hover:text-red-400 transition-all"
+                    type="button"
+                >
+                  <Icon name="carbon:trash-can" size="16"/>
+                </button>
               </div>
-              <Icon name="carbon:arrow-up-right" size="16" class="text-white/50"/>
-            </a>
-          </div>
-
-          <div v-else class="space-y-3">
-            <div>
-              <label class="block text-xs font-semibold text-white/80 mb-1.5">GitHub Link</label>
-              <input
-                  v-model="formData.repo_url"
-                  type="url"
-                  placeholder="https://github.com/..."
-                  class="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-primary/50 transition-all text-sm"
-              />
             </div>
-            <div>
-              <label class="block text-xs font-semibold text-white/80 mb-1.5">Live Link</label>
-              <input
-                  v-model="formData.live_url"
-                  type="url"
-                  placeholder="https://example.com"
-                  class="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-primary/50 transition-all text-sm"
-              />
+
+            <!-- Error Message -->
+            <div v-if="errors.features" class="mt-3 flex items-center gap-2 text-red-400 text-sm">
+              <Icon name="carbon:warning-alt" size="16"/>
+              {{ errors.features }}
             </div>
           </div>
-        </div>
+          <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 space-y-3">
+            <h3 class="text-lg font-bold text-white mb-4">Links</h3>
 
-        <!-- Timeline Section -->
-        <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-          <h3 class="text-lg font-bold text-white mb-4">Timeline</h3>
+            <!-- Display Mode -->
+            <div v-if="!isEditMode" class="space-y-3">
+              <a
+                  v-if="currentProject?.repo_url"
+                  :href="currentProject.repo_url"
+                  target="_blank"
+                  class="flex items-center gap-3 p-3 rounded-lg bg-white/5 hover:bg-primary/15 border border-white/10 hover:border-primary/30 transition-all"
+              >
+                <Icon name="mdi:github" size="20" class="text-white/70"/>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-semibold text-white">GitHub Repository</p>
+                  <p class="text-xs text-white/50 truncate">{{ currentProject.repo_url }}</p>
+                </div>
+                <Icon name="carbon:arrow-up-right" size="16" class="text-white/50"/>
+              </a>
 
-          <div v-if="!isEditMode" class="space-y-3">
-            <div>
-              <p class="text-xs text-white/50 mb-1">Start Date</p>
-              <p class="text-sm font-semibold text-white">
-                {{ currentProject.start_date ? new Date(currentProject.start_date).toLocaleDateString() : 'N/A' }}
-              </p>
+              <a
+                  v-if="currentProject?.live_url"
+                  :href="currentProject.live_url"
+                  target="_blank"
+                  class="flex items-center gap-3 p-3 rounded-lg bg-white/5 hover:bg-primary/15 border border-white/10 hover:border-primary/30 transition-all"
+              >
+                <Icon name="carbon:launch" size="20" class="text-white/70"/>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-semibold text-white">Live Demo</p>
+                  <p class="text-xs text-white/50 truncate">{{ currentProject.live_url }}</p>
+                </div>
+                <Icon name="carbon:arrow-up-right" size="16" class="text-white/50"/>
+              </a>
             </div>
-            <div>
-              <p class="text-xs text-white/50 mb-1">End Date</p>
-              <p class="text-sm font-semibold text-white">
-                {{ currentProject.end_date ? new Date(currentProject.end_date).toLocaleDateString() : 'Ongoing' }}
-              </p>
+
+            <!-- Edit Mode -->
+            <div v-else class="space-y-3">
+              <div>
+                <label class="block text-xs font-semibold text-white/80 mb-1.5">GitHub Link</label>
+                <input
+                    v-model="formData.repo_url"
+                    @input="clearError('repo_url')"
+                    type="url"
+                    placeholder="https://github.com/..."
+                    class="w-full px-3 py-2 rounded-lg bg-white/10 border transition-all text-white placeholder:text-white/40 focus:outline-none text-sm"
+                    :class="errors.repo_url ? 'border-red-500 focus:border-red-500' : 'border-white/20 focus:border-primary/50'"
+                />
+                <div v-if="errors.repo_url" class="mt-2 flex items-center gap-2 text-red-400 text-sm">
+                  <Icon name="carbon:warning-alt" size="16"/>
+                  {{ errors.repo_url }}
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-white/80 mb-1.5">Live Link</label>
+                <input
+                    v-model="formData.live_url"
+                    @input="clearError('live_url')"
+                    type="url"
+                    placeholder="https://example.com"
+                    class="w-full px-3 py-2 rounded-lg bg-white/10 border transition-all text-white placeholder:text-white/40 focus:outline-none text-sm"
+                    :class="errors.live_url ? 'border-red-500 focus:border-red-500' : 'border-white/20 focus:border-primary/50'"
+                />
+                <div v-if="errors.live_url" class="mt-2 flex items-center gap-2 text-red-400 text-sm">
+                  <Icon name="carbon:warning-alt" size="16"/>
+                  {{ errors.live_url }}
+                </div>
+              </div>
             </div>
           </div>
 
-          <div v-else class="space-y-3">
-            <div>
-              <label class="block text-xs font-semibold text-white/80 mb-1.5">Start Date</label>
-              <input
-                  v-model="formData.start_date"
-                  type="date"
-                  class="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:border-primary/50 transition-all text-sm"
-              />
+          <!-- Timeline Section -->
+          <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+            <h3 class="text-lg font-bold text-white mb-4">Timeline</h3>
+
+            <div v-if="!isEditMode" class="space-y-4">
+              <div class="flex items-center gap-4">
+                <div class="shrink-0">
+                  <Icon name="carbon:calendar" size="24" class="text-primary"/>
+                </div>
+                <div class="flex-1">
+                  <p class="text-xs text-white/50 mb-1">Start Date</p>
+                  <p class="text-base font-semibold text-white">
+                    {{ currentProject?.start_date ? formatDate(currentProject.start_date) : 'Not set' }}
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-center gap-4">
+                <div class="shrink-0">
+                  <Icon name="carbon:calendar" size="24" class="text-primary"/>
+                </div>
+                <div class="flex-1">
+                  <p class="text-xs text-white/50 mb-1">End Date</p>
+                  <p class="text-base font-semibold text-white">
+                    {{ currentProject?.end_date ? formatDate(currentProject.end_date) : 'Ongoing' }}
+                  </p>
+                </div>
+              </div>
             </div>
-            <div>
-              <label class="block text-xs font-semibold text-white/80 mb-1.5">End Date</label>
-              <input
-                  v-model="formData.end_date"
-                  type="date"
-                  class="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:border-primary/50 transition-all text-sm"
-              />
+
+            <div v-else class="space-y-3">
+              <div>
+                <label class="block text-xs font-semibold text-white/80 mb-1.5">Start Date</label>
+                <UInput
+                    v-model="formData.start_date"
+                    type="date"
+                    class="w-full"
+                    placeholder="Select start date"
+                />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-white/80 mb-1.5">End Date</label>
+                <UInput
+                    v-model="formData.end_date"
+                    type="date"
+                    class="w-full"
+                    placeholder="Select end date"
+                />
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
+
 </template>
 
 <style scoped>

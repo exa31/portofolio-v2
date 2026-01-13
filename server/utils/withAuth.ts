@@ -12,6 +12,11 @@ export const withAuth = <T extends EventHandlerRequest, D>(
             const authHeader = getHeader(event, 'authorization') ?? ''
             let token: string | null = null
 
+            if (!authHeader) {
+                token = getCookie(event, 'token') || ''
+                console.log('No Authorization header, trying cookie:', token)
+            }
+
             if (authHeader.startsWith('Bearer ')) {
                 token = authHeader.slice(7).trim()
             }

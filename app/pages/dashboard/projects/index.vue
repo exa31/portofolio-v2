@@ -193,7 +193,7 @@ const deleteProjectHandler = async (id: number) => {
         </div>
       </div>
 
-      
+
     </div>
 
     <!-- Grid View -->
@@ -272,12 +272,12 @@ const deleteProjectHandler = async (id: number) => {
             <div class="flex gap-2">
               <button
                   @click.stop="openProject(project)"
-                  class="p-2 rounded-lg bg-white/5 hover:bg-primary/20 text-white/50 hover:text-primary transition-all">
+                  class="p-2 rounded-lg cursor-pointer bg-white/5 hover:bg-primary/20 text-white/50 hover:text-primary transition-all">
                 <Icon name="carbon:pen" size="16"/>
               </button>
               <button
                   @click.stop="deleteProjectHandler(project.id || 0)"
-                  class="p-2 rounded-lg bg-white/5 hover:bg-red-500/20 text-white/50 hover:text-red-400 transition-all">
+                  class="p-2 rounded-lg cursor-pointer bg-white/5 hover:bg-red-500/20 text-white/50 hover:text-red-400 transition-all">
                 <Icon name="carbon:trash-can" size="16"/>
               </button>
             </div>
@@ -359,12 +359,12 @@ const deleteProjectHandler = async (id: number) => {
           <div class="flex gap-2">
             <button
                 @click.stop="openProject(project)"
-                class="p-2 rounded-lg bg-white/5 hover:bg-primary/20 text-white/50 hover:text-primary transition-all">
+                class="p-2 rounded-lg cursor-pointer bg-white/5 hover:bg-primary/20 text-white/50 hover:text-primary transition-all">
               <Icon name="carbon:pen" size="16"/>
             </button>
             <button
                 @click.stop="deleteProjectHandler(project.id || 0)"
-                class="p-2 rounded-lg bg-white/5 hover:bg-red-500/20 text-white/50 hover:text-red-400 transition-all">
+                class="p-2 rounded-lg cursor-pointer bg-white/5 hover:bg-red-500/20 text-white/50 hover:text-red-400 transition-all">
               <Icon name="carbon:trash-can" size="16"/>
             </button>
           </div>

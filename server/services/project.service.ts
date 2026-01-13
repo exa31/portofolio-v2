@@ -155,7 +155,7 @@ export const getProjectById = async (event: H3Event, id: number) => {
                 throw new HttpError(404, 'PROJECT_NOT_FOUND', 'Project not found');
             }
 
-            return sendSuccess(event, {data: project}, "Project retrieved successfully", "project_retrieved");
+            return sendSuccess(event, project, "Project retrieved successfully", "project_retrieved");
         }
     )
 }

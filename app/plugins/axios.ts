@@ -25,7 +25,11 @@ export default defineNuxtPlugin((nuxtApp) => {
     api.interceptors.request.use((config) => {
         // SSR: forward cookie
         if (import.meta.server) {
-            config.headers.set('Cookie', headers.cookie || '')
+            config.withCredentials = true
+            if (headers.cookie) {
+                config.headers = config.headers || {}
+                config.headers.Cookie = headers.cookie
+            }
         } else {
             // Client: Authorization
             const token = Cookie.get('token')
