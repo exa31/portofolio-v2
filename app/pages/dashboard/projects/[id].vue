@@ -47,7 +47,7 @@ definePageMeta({
   layout: 'dashboard',
   breadCrumb: [
     {title: 'Projects', link: '/dashboard/projects'},
-    {title: 'loading...'}
+    {title: 'Detail'}
   ]
 })
 const {data: projectData} = await useAsyncData(`project-${route.params.id}`, async () => {
@@ -56,7 +56,7 @@ const {data: projectData} = await useAsyncData(`project-${route.params.id}`, asy
 
 const allSkills = computed(
     () => skillsData.value?.filter(
-        (skill) => !formData.value?.technologies?.includes(skill.id)
+        (skill) => !formData.value?.id_skills?.includes(skill.id)
     ) || []
 )
 
@@ -91,7 +91,7 @@ const validateForm = (): boolean => {
     newErrors.features = 'Please fill in all features or remove empty ones'
   }
 
-  if (!formData.value?.technologies || formData.value.technologies.length === 0) {
+  if (!formData.value?.id_skills || formData.value.id_skills.length === 0) {
     newErrors.technologies = 'Please select at least one technology'
   }
 
@@ -112,20 +112,20 @@ const clearError = (field: string) => {
 }
 
 const addSkill = (skillId: number | null) => {
-  if (skillId && !formData.value?.technologies?.includes(skillId)) {
+  if (skillId && !formData.value?.id_skills?.includes(skillId)) {
     if (!formData.value) return
-    if (!formData.value.technologies) {
-      formData.value.technologies = []
+    if (!formData.value.id_skills) {
+      formData.value.id_skills = []
     }
-    formData.value.technologies.push(skillId)
+    formData.value.id_skills.push(skillId)
   }
 }
 
 const removeSkill = (skillId: number) => {
-  if (formData.value?.technologies) {
-    const index = formData.value.technologies.indexOf(skillId)
+  if (formData.value?.id_skills) {
+    const index = formData.value.id_skills.indexOf(skillId)
     if (index > -1) {
-      formData.value.technologies.splice(index, 1)
+      formData.value.id_skills.splice(index, 1)
     }
   }
 }
@@ -136,7 +136,6 @@ const getSkillName = (skillId: number): string => {
 }
 
 const getSkillIcon = (skillId: number): string => {
-  console.log('Getting icon for skill ID:', skillId, skillsData.value)
   const skill = skillsData.value?.find(s => s.id === skillId)
   return skill?.icon || 'carbon:code'
 }
@@ -188,16 +187,6 @@ const triggerFileInput = () => {
   fileInputRef.value?.click()
 }
 
-const clearImage = () => {
-  imagePreview.value = ''
-  if (fileInputRef.value) {
-    fileInputRef.value.value = ''
-  }
-  if (formData.value) {
-    formData.value.image = null
-  }
-}
-
 const toggleEditMode = () => {
   if (isEditMode.value) {
     // Cancel edit
@@ -212,41 +201,27 @@ const toggleEditMode = () => {
 }
 
 const saveProject = async () => {
-  if (!validateForm() || !formData.value) return
+  if (!validateForm() || !formData.value) return toast.showErrorToast('Error', 'Please fix the errors in the form before saving.')
 
-  const loadingToast = toast.showLoadingToast("Updating Project", "Please wait...")
-  try {
-    const success = await updateProject(formData.value)
-
-    if (success) {
-      currentProject.value = formData.value
-      isEditMode.value = false
-      imagePreview.value = ''
-      toast.updateToast(loadingToast.id, "Success", "Project updated successfully!", "success", 4000)
-    }
-  } catch (error) {
-    console.error('Failed to save project', error)
-    const errorMessage = getErrorMessageAxios(error)
-    toast.updateToast(loadingToast.id, "Error", `Failed to update: ${errorMessage}`, "error", 6000)
+  formData.value.id = projectId.value
+  const success = await updateProject(formData.value)
+  if (success) {
+    currentProject.value = {...formData.value}
+    isEditMode.value = false
   }
 }
 
 const deleteProjectHandler = async () => {
-  if (!confirm('Are you sure you want to delete this project?')) return
-
-  const loadingToast = toast.showLoadingToast("Deleting", "Please wait...")
-  try {
-    const success = await deleteProject(projectId.value)
-
-    if (success) {
-      toast.updateToast(loadingToast.id, "Success", "Project deleted successfully!", "success", 4000)
-      await router.push('/dashboard/projects')
-    }
-  } catch (error) {
-    console.error('Failed to delete project', error)
-    const errorMessage = getErrorMessageAxios(error)
-    toast.updateToast(loadingToast.id, "Error", `Failed to delete: ${errorMessage}`, "error", 6000)
-  }
+  toast.showConfirmationToast(
+      'Delete Skill',
+      'Are you sure you want to delete this skill? This action cannot be undone.',
+      async () => {
+        const success = await deleteProject(projectId.value)
+        if (success) {
+          router.push('/dashboard/projects')
+        }
+      },
+  )
 }
 
 const getStatusColor = (status: boolean) => {
@@ -263,7 +238,11 @@ const getStatusText = (status: boolean) => {
 if (import.meta.client) {
   onMounted(() => {
     if (projectData.value) {
-      currentProject.value = projectData.value
+      currentProject.value = {
+        ...projectData.value,
+        start_date: parseDateForInput(projectData.value.start_date),
+        end_date: parseDateForInput(projectData.value.end_date)
+      }
       formData.value = {
         ...projectData.value,
         start_date: parseDateForInput(projectData.value.start_date),
@@ -275,22 +254,6 @@ if (import.meta.client) {
     }
   })
 }
-
-// Handle SSR - set initial data
-watch(() => projectData.value, (newVal) => {
-  if (newVal && !currentProject.value) {
-    currentProject.value = newVal
-    formData.value = {
-      ...newVal,
-      start_date: parseDateForInput(newVal.start_date),
-      end_date: parseDateForInput(newVal.end_date)
-    }
-    breadCrumbStore.setBreadCrumb([
-      {title: 'Projects', link: '/dashboard/projects'},
-      {title: newVal.name}
-    ])
-  }
-}, {immediate: true})
 </script>
 
 <template>

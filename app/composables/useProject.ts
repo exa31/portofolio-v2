@@ -139,11 +139,12 @@ export const useProject = () => {
 
             // Always include required fields
             filteredData.name = projectData.name
+            filteredData.id = projectData.id
             filteredData.description = projectData.description
             filteredData.image = projectData.image
             filteredData.status = projectData.status
             filteredData.features = projectData.features.filter((f: string) => f.trim()) // Filter empty features
-            filteredData.id_skills = projectData.technologies // Map technologies to id_skills for backend
+            filteredData.id_skills = projectData.id_skills // Map technologies to id_skills for backend
 
             // Conditionally include optional fields only if they have values
             if (projectData.start_date?.trim()) {

@@ -7,23 +7,35 @@ export const hexToRgba = (hex: string, alpha = 1) => {
 
 // ISO string to readable date format (e.g., "January 10, 2026")
 // Properly handles UTC timezone without shifting date
-export const formatDate = (isoString: string): string => {
+export function formatDate(
+    isoString?: string | null,
+    locale: string = 'en-US'
+): string {
     if (!isoString) return 'N/A'
-    try {
-        // Extract just the date part to avoid timezone conversion
-        const dateOnly = isoString.split('T')[0]
-        const [year, month, day] = dateOnly.split('-').map(Number)
 
-        const date = new Date(year, month - 1, day)
-        const options: Intl.DateTimeFormatOptions = {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        }
-        return date.toLocaleDateString('en-US', options)
-    } catch {
-        return isoString
-    }
+    // Expect format: YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss...
+    const datePart = isoString.split('T')[0]
+
+    if (!datePart) return isoString
+
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(datePart)
+    if (!match) return isoString
+
+    const [, year, month, day] = match
+
+    const date = new Date(
+        Number(year),
+        Number(month) - 1,
+        Number(day)
+    )
+
+    if (Number.isNaN(date.getTime())) return isoString
+
+    return new Intl.DateTimeFormat(locale, {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    }).format(date)
 }
 
 // ISO string to YYYY-MM-DD format for input[type="date"]
@@ -32,8 +44,7 @@ export const parseDateForInput = (isoString: string | undefined): string => {
     if (!isoString) return ''
     try {
         // Parse ISO string and extract just the date part to avoid timezone issues
-        const dateOnly = isoString.split('T')[0]
-        return dateOnly
+        return isoString.split('T')[0] || ''
     } catch {
         return ''
     }

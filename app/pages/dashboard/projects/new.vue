@@ -7,7 +7,7 @@ import {useProject} from "~/composables/useProject";
 definePageMeta({
   layout: 'dashboard',
   breadCrumb: [
-    {title: 'Projects', url: '/dashboard/projects'},
+    {title: 'Projects', link: '/dashboard/projects'},
     {title: 'Create New Project'}
   ],
 })

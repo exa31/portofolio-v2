@@ -16,6 +16,7 @@ const {
   projects,
   fetchProjects,
   isLoading,
+  deleteProject
 } = useProject()
 
 const searchQuery = ref('')
@@ -40,9 +41,9 @@ watch([searchQuery], () => {
         canLoadMore.value = false
         try {
           await fetchProjects(false, query)
-          canLoadMore.value = true
         } finally {
           isSearching.value = false
+          canLoadMore.value = true
         }
       }, 500,
       searchQuery.value
@@ -110,25 +111,23 @@ const openProject = (project: Project) => {
 }
 
 const deleteProjectHandler = async (id: number) => {
-  if (confirm('Are you sure you want to delete this project?')) {
-    const loadingToast = toast.showLoadingToast("Deleting", "Please wait...")
-    try {
-      const res = await $fetch(`/api/projects/${id}`, {
-        method: 'DELETE'
-      })
-
-      toast.updateToast(loadingToast.id, "Success", "Project deleted successfully!", "success", 4000)
-      // Remove from list
-      const index = projects.value.findIndex(p => p.id === id)
-      if (index > -1) {
-        projects.value.splice(index, 1)
+  toast.showConfirmationToast(
+      'Delete Skill',
+      'Are you sure you want to delete this skill? This action cannot be undone.',
+      async () => {
+        const success = await deleteProject(id)
+        if (success) {
+          cursor.value = null
+          canLoadMore.value = false
+          try {
+            await fetchProjects(false, '')
+          } finally {
+            canLoadMore.value = true
+            isSearching.value = false
+          }
+        }
       }
-    } catch (error) {
-      console.error('Failed to delete project', error)
-      const errorMessage = getErrorMessageAxios(error)
-      toast.updateToast(loadingToast.id, "Error", `Failed to delete: ${errorMessage}`, "error", 6000)
-    }
-  }
+  )
 }
 </script>
 
@@ -199,7 +198,7 @@ const deleteProjectHandler = async (id: number) => {
     <!-- Grid View -->
     <div v-if="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <!-- Skeleton Loading -->
-      <div v-if="isSearching" v-for="i in 6" :key="`skeleton-${i}`"
+      <div v-if="isSearching || isLoading" v-for="i in 6" :key="`skeleton-${i}`"
            class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl overflow-hidden animate-pulse">
         <div class="h-48 bg-white/10"></div>
         <div class="p-6 space-y-3">
@@ -394,7 +393,7 @@ const deleteProjectHandler = async (id: number) => {
 
     <!-- Scroll Trigger for Infinite Scroll (Load More) -->
     <div ref="scrollTriggerRef" class="h-10 flex items-center justify-center">
-      <div v-if="isLoading && projects.length > 0 && !isSearching"
+      <div v-if="isLoading && projects.length > 0 && !isSearching && canLoadMore"
            class="flex items-center gap-2 text-white/60 text-sm">
         <Icon name="carbon:loading" size="16" class="animate-spin"/>
         <p>Loading more projects...</p>

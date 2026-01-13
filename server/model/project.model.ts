@@ -4,13 +4,13 @@ import {fileSchema} from "~~/server/utils/common";
 export const projectModel = z.object({
     id: z.number(),
     name: z.string().min(1).max(255),
-    image: z.string(), // Max 5MB
     description: z.string().min(1).max(5000).optional(),
     start_date: z.string().refine((date) => !isNaN(Date.parse(date)), {message: "Invalid date format"}).optional(),
     end_date: z.string().refine((date) => !isNaN(Date.parse(date)), {
         message: "Invalid date format",
     }).optional(),
     status: z.enum(["Draft", "Published"]),
+    preview_image: z.string(),
     features: z.array(z.string()),
     live_url: z.url().optional(),
     repo_url: z.url().optional(),

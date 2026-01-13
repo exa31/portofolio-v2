@@ -86,8 +86,10 @@ export const updateProject = async (event: H3Event, data: UpdateProjectInput) =>
             if (data.image) {
                 data.url = minioClient.getPublicUrl("project", namaFile);
             } else {
-                data.url = project.image;
+                data.url = project.preview_image;
             }
+
+            console.log("Updated project data:", data);
 
             const ok = await repository.updateProject(client, data);
             if (!ok) {
@@ -123,6 +125,8 @@ export const updateProject = async (event: H3Event, data: UpdateProjectInput) =>
 export const deleteProject = async (event: H3Event, id: number) => {
     return withTransaction(
         async (client) => {
+            const minioClient = getMinioClient();
+
             const project = await repository.getProjectById(client, id);
             if (!project) {
                 throw new HttpError(404, 'PROJECT_NOT_FOUND', 'Project not found');
@@ -137,6 +141,13 @@ export const deleteProject = async (event: H3Event, id: number) => {
             await del('projects:all'); // Invalidate cached projects list
             await set('projects:all', JSON.stringify(projects)); // Update cache with new projects list
 
+            if (project.preview_image) {
+                const objectName = extractObjectName(project.preview_image);
+                if (objectName) {
+                    await minioClient.deleteFile("project", objectName);
+                }
+            }
+
             return sendSuccess(
                 event,
                 null,
@@ -146,6 +157,23 @@ export const deleteProject = async (event: H3Event, id: number) => {
         }
     )
 }
+
+function extractObjectName(url: string): string | null {
+    try {
+        const parsed = new URL(url)
+
+        // /project/portofolio/xxx.png
+        const pathname = parsed.pathname
+
+        const prefix = '/project/'
+        if (!pathname.startsWith(prefix)) return null
+
+        return pathname.replace(prefix, '')
+    } catch {
+        return null
+    }
+}
+
 
 export const getProjectById = async (event: H3Event, id: number) => {
     return withTransaction(
