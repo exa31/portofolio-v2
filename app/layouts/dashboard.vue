@@ -15,6 +15,7 @@ const user = {
 const menuItems = [
   {name: 'Dashboard', icon: 'carbon:dashboard', href: '/dashboard'},
   {name: 'Projects', icon: 'carbon:folder-open', href: '/dashboard/projects'},
+  {name: 'Work', icon: 'mdi:briefcase', href: '/dashboard/journeys'},
   {name: 'Skills', icon: 'carbon:skill-level', href: '/dashboard/skills'},
   {name: 'Messages', icon: 'carbon:email', href: '/dashboard/messages'},
   {name: 'Analytics', icon: 'carbon:chart-bar', href: '/dashboard/analytics'},

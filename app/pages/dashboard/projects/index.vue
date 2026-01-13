@@ -395,7 +395,7 @@ const deleteProjectHandler = async (id: number) => {
     <div ref="scrollTriggerRef" class="h-10 flex items-center justify-center">
       <div v-if="isLoading && projects.length > 0 && !isSearching && canLoadMore"
            class="flex items-center gap-2 text-white/60 text-sm">
-        <Icon name="carbon:loading" size="16" class="animate-spin"/>
+        <Icon name="icon-park-outline:loading-four" size="16" class="animate-spin"/>
         <p>Loading more projects...</p>
       </div>
     </div>

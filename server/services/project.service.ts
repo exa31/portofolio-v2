@@ -1,5 +1,4 @@
 import * as repository from "~~/server/repositories/project.repository";
-import * as repositorySkill from "~~/server/repositories/skill.repository";
 import {H3Event} from "h3";
 import {CreateProjectInput, UpdateProjectInput} from "~~/server/model/project.model";
 import {withTransaction} from "~~/server/db/postgres";
@@ -18,7 +17,7 @@ export const createProject = async (event: H3Event, body: CreateProjectInput) =>
             if (!projectId) {
                 throw new HttpError(500, 'PROJECT_CREATION_FAILED', 'Failed to create project');
             }
-            const ok = await repositorySkill.createProjectSkillRelation(client, projectId, body.id_skills)
+            const ok = await repository.createProjectSkillRelation(client, projectId, body.id_skills)
             if (!ok) {
                 throw new HttpError(500, 'PROJECT_SKILL_RELATION_CREATION_FAILED', 'Failed to create project-skill relation');
             }
@@ -96,12 +95,12 @@ export const updateProject = async (event: H3Event, data: UpdateProjectInput) =>
                 throw new HttpError(500, 'PROJECT_UPDATE_FAILED', 'Failed to update project');
             }
 
-            const okRelation = await repositorySkill.deleteProjectSkillRelation(client, data.id);
+            const okRelation = await repository.deleteProjectSkillRelation(client, data.id);
             if (!okRelation) {
                 throw new HttpError(500, 'PROJECT_SKILL_RELATION_DELETION_FAILED', 'Failed to delete project-skill relation');
             }
 
-            const okNewRelation = await repositorySkill.createProjectSkillRelation(client, data.id, data.id_skills || []);
+            const okNewRelation = await repository.createProjectSkillRelation(client, data.id, data.id_skills || []);
             if (!okNewRelation) {
                 throw new HttpError(500, 'PROJECT_SKILL_RELATION_CREATION_FAILED', 'Failed to create project-skill relation');
             }

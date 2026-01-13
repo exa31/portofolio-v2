@@ -175,3 +175,42 @@ export const getAllProjects = async (
     const result = await client.query(sql)
     return result.rows
 }
+
+
+export const createProjectSkillRelation = async (
+    client: PoolClient,
+    projectId: number,
+    skillId: number[]
+): Promise<boolean> => {
+    const values: any[] = []
+    const placeholders: string[] = []
+    skillId.forEach((id, index) => {
+        const baseIndex = index * 2
+        placeholders.push(`($${baseIndex + 1}, $${baseIndex + 2})`)
+        values.push(projectId, id)
+    })
+
+    const sql = `
+        INSERT INTO project_skills (project_id, skill_id)
+        VALUES ${placeholders.join(', ')}
+    `
+
+    const result = await client.query(sql, values)
+    return (result.rowCount ?? 0) > 0
+
+}
+
+export const deleteProjectSkillRelation = async (
+    client: PoolClient,
+    projectId: number,
+): Promise<boolean> => {
+    const sql = `
+        DELETE
+        FROM project_skills
+        WHERE project_id = $1
+    `
+    const values = [projectId,]
+
+    const result = await client.query(sql, values)
+    return (result.rowCount ?? 0) > 0
+}

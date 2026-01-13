@@ -225,7 +225,7 @@ const goBack = () => {
             :disabled="isSaving"
             class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-white font-semibold hover:brightness-110 transition-all disabled:opacity-50"
         >
-          <Icon v-if="isSaving" name="carbon:loading" size="20" class="animate-spin"/>
+          <Icon v-if="isSaving" name="icon-park-outline:loading-four" size="20" class="animate-spin"/>
           <Icon v-else name="carbon:save" size="20"/>
           {{ isSaving ? 'Creating...' : 'Create Project' }}
         </button>
