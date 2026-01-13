@@ -345,7 +345,7 @@ const deleteJourneyHandler = async (id: number) => {
 
     <!-- Empty State -->
     <div v-if="journeys.length === 0" class="flex flex-col items-center justify-center py-20">
-      <Icon name="carbon:inbox-empty" size="64" class="text-white/20 mb-6"/>
+      <Icon name="mdi:briefcase" size="64" class="text-white/20 mb-6"/>
       <h3 class="text-xl font-bold text-white mb-2">No work experience found</h3>
       <p class="text-white/60 text-center mb-6">Start by adding your first work experience</p>
       <button
