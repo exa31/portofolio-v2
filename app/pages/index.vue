@@ -137,11 +137,11 @@ const experiences = [
     <!-- About Section -->
     <AboutSection/>
 
-    <!-- Journey Section -->
-    <JourneySection :experiences="experiences"/>
-
     <!-- Skills Section -->
     <SkillsSection/>
+
+    <!-- Journey Section -->
+    <JourneySection :experiences="experiences"/>
 
     <!-- Projects Section -->
     <ProjectsSection :projects="projects"/>

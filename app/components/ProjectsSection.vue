@@ -24,7 +24,7 @@ const copyToClipboard = (text: string | undefined) => {
 </script>
 
 <template>
-  <section id="work" class="py-20">
+  <section id="project" class="py-20">
     <div class="container mx-auto px-6">
       <!-- Header -->
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-12 gap-6">

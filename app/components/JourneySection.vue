@@ -27,7 +27,7 @@ const openModal = (experience: Experience) => {
 </script>
 
 <template>
-  <section id="work" class="py-20 bg-linear-to-b from-[#071026] to-[#071023]">
+  <section id="work" class="py-24 bg-linear-to-b from-[#071026] to-[#071023]">
     <div class="container mx-auto px-6">
       <!-- Header -->
       <div class="text-center mb-16">

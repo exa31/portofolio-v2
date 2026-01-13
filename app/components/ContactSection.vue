@@ -20,7 +20,7 @@ const submitForm = async () => {
 </script>
 
 <template>
-  <section id="contact" class="py-20 bg-linear-to-b from-[#071026] to-[#071023]">
+  <section id="contact" class=" bg-linear-to-b min-h-196.25 py-24 from-[#071026] to-[#071023]">
     <div class="container mx-auto px-6">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
         <!-- Left Column -->

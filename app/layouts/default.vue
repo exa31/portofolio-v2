@@ -6,8 +6,9 @@ const activeSection = ref('#')
 
 const navItems = [
   {name: 'About', href: '#about'},
-  {name: 'Projects', href: '#work'},
   {name: 'Skills', href: '#stack'},
+  {name: 'Work', href: '#work'},
+  {name: 'Projects', href: '#project'},
   {name: 'Contact', href: '#contact'}
 ]
 
@@ -21,7 +22,7 @@ const closeMobileMenu = () => {
 
 // Update active section based on scroll position
 const updateActiveSection = () => {
-  const sections = ['#about', '#work', '#stack', '#contact']
+  const sections = ['#about', '#work', '#project', '#stack', '#contact']
 
   for (const sectionId of sections) {
     const element = document.querySelector(sectionId)
@@ -32,6 +33,8 @@ const updateActiveSection = () => {
         activeSection.value = sectionId
         break
       }
+    } else {
+      activeSection.value = ''
     }
   }
 }
