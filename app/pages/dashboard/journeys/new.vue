@@ -168,34 +168,46 @@ const goBack = () => {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <!-- Job Title -->
           <div>
-            <label class="block text-sm font-medium text-white mb-2">Job Title *</label>
+            <label class="block text-sm font-semibold text-white mb-2">
+              Job Title
+              <span class="text-red-400">*</span>
+            </label>
             <input
                 v-model="formData.title"
-                @blur="() => clearError('title')"
+                @input="clearError('title')"
                 type="text"
                 placeholder="e.g., Senior Frontend Developer"
                 :class="[
-                  'w-full px-4 py-3 rounded-lg bg-white/10 border text-white placeholder:text-white/40 focus:outline-none transition-all',
-                  errors.title ? 'border-red-500/50 focus:border-red-500/80' : 'border-white/20 focus:border-primary/50 focus:bg-white/15'
+                  'w-full px-4 py-2 rounded-lg bg-white/10 border text-white placeholder:text-white/40 focus:outline-none transition-all',
+                  errors.title ? 'border-red-500 focus:border-red-500' : 'border-white/20 focus:border-primary/50'
                 ]"
             />
-            <p v-if="errors.title" class="text-red-400 text-sm mt-1">{{ errors.title }}</p>
+            <div v-if="errors.title" class="mt-2 flex items-center gap-2 text-red-400 text-sm">
+              <Icon name="carbon:warning-alt" size="16"/>
+              {{ errors.title }}
+            </div>
           </div>
 
           <!-- Company -->
           <div>
-            <label class="block text-sm font-medium text-white mb-2">Company Name *</label>
+            <label class="block text-sm font-semibold text-white mb-2">
+              Company Name
+              <span class="text-red-400">*</span>
+            </label>
             <input
                 v-model="formData.company"
-                @blur="() => clearError('company')"
+                @input="clearError('company')"
                 type="text"
                 placeholder="e.g., Acme Corporation"
                 :class="[
-                  'w-full px-4 py-3 rounded-lg bg-white/10 border text-white placeholder:text-white/40 focus:outline-none transition-all',
-                  errors.company ? 'border-red-500/50 focus:border-red-500/80' : 'border-white/20 focus:border-primary/50 focus:bg-white/15'
+                  'w-full px-4 py-2 rounded-lg bg-white/10 border text-white placeholder:text-white/40 focus:outline-none transition-all',
+                  errors.company ? 'border-red-500 focus:border-red-500' : 'border-white/20 focus:border-primary/50'
                 ]"
             />
-            <p v-if="errors.company" class="text-red-400 text-sm mt-1">{{ errors.company }}</p>
+            <div v-if="errors.company" class="mt-2 flex items-center gap-2 text-red-400 text-sm">
+              <Icon name="carbon:warning-alt" size="16"/>
+              {{ errors.company }}
+            </div>
           </div>
         </div>
 
@@ -230,32 +242,44 @@ const goBack = () => {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- Start Date -->
           <div>
-            <label class="block text-sm font-medium text-white mb-2">Start Date *</label>
+            <label class="block text-sm font-semibold text-white mb-2">
+              Start Date
+              <span class="text-red-400">*</span>
+            </label>
             <input
                 v-model="formData.start_date"
-                @blur="() => clearError('start_date')"
+                @input="clearError('start_date')"
                 type="date"
                 :class="[
-                  'w-full px-4 py-3 rounded-lg bg-white/10 border text-white focus:outline-none transition-all',
-                  errors.start_date ? 'border-red-500/50 focus:border-red-500/80' : 'border-white/20 focus:border-primary/50 focus:bg-white/15'
+                  'w-full px-4 py-2 rounded-lg bg-white/10 border text-white focus:outline-none transition-all',
+                  errors.start_date ? 'border-red-500 focus:border-red-500' : 'border-white/20 focus:border-primary/50'
                 ]"
             />
-            <p v-if="errors.start_date" class="text-red-400 text-sm mt-1">{{ errors.start_date }}</p>
+            <div v-if="errors.start_date" class="mt-2 flex items-center gap-2 text-red-400 text-sm">
+              <Icon name="carbon:warning-alt" size="16"/>
+              {{ errors.start_date }}
+            </div>
           </div>
 
           <!-- End Date -->
           <div v-if="!formData.is_current">
-            <label class="block text-sm font-medium text-white mb-2">End Date *</label>
+            <label class="block text-sm font-semibold text-white mb-2">
+              End Date
+              <span class="text-red-400">*</span>
+            </label>
             <input
                 v-model="formData.end_date"
-                @blur="() => clearError('end_date')"
+                @input="clearError('end_date')"
                 type="date"
                 :class="[
-                  'w-full px-4 py-3 rounded-lg bg-white/10 border text-white focus:outline-none transition-all',
-                  errors.end_date ? 'border-red-500/50 focus:border-red-500/80' : 'border-white/20 focus:border-primary/50 focus:bg-white/15'
+                  'w-full px-4 py-2 rounded-lg bg-white/10 border text-white focus:outline-none transition-all',
+                  errors.end_date ? 'border-red-500 focus:border-red-500' : 'border-white/20 focus:border-primary/50'
                 ]"
             />
-            <p v-if="errors.end_date" class="text-red-400 text-sm mt-1">{{ errors.end_date }}</p>
+            <div v-if="errors.end_date" class="mt-2 flex items-center gap-2 text-red-400 text-sm">
+              <Icon name="carbon:warning-alt" size="16"/>
+              {{ errors.end_date }}
+            </div>
           </div>
         </div>
       </div>
@@ -277,18 +301,22 @@ const goBack = () => {
 
         <!-- Key Responsibilities -->
         <div class="mb-6">
-          <label class="block text-sm font-medium text-white mb-2">Key Responsibilities *</label>
+          <label class="block text-sm font-semibold text-white mb-2">
+            Key Responsibilities
+            <span class="text-red-400">*</span>
+          </label>
           <div class="space-y-3">
             <div v-for="(responsibility, index) in formData.key_responsibilities" :key="index" class="flex gap-3">
               <input
                   v-model="formData.key_responsibilities[index]"
+                  @input="clearError('key_responsibilities')"
                   type="text"
                   placeholder="e.g., Led development of new features"
-                  class="flex-1 px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-primary/50 focus:bg-white/15 transition-all"
+                  class="flex-1 px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-primary/50 transition-all"
               />
               <button
                   @click="removeResponsibility(index)"
-                  class="px-4 py-3 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-all">
+                  class="px-4 py-2 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-all">
                 <Icon name="carbon:trash-can" size="16"/>
               </button>
             </div>
@@ -299,7 +327,10 @@ const goBack = () => {
             <Icon name="carbon:add" size="16"/>
             Add Responsibility
           </button>
-          <p v-if="errors.key_responsibilities" class="text-red-400 text-sm mt-2">{{ errors.key_responsibilities }}</p>
+          <div v-if="errors.key_responsibilities" class="mt-2 flex items-center gap-2 text-red-400 text-sm">
+            <Icon name="carbon:warning-alt" size="16"/>
+            {{ errors.key_responsibilities }}
+          </div>
         </div>
 
         <!-- Attachments (URL) -->
@@ -359,14 +390,16 @@ const goBack = () => {
       <div class="flex gap-4">
         <button
             @click="goBack"
-            class="px-6 py-3 rounded-lg bg-white/10 text-white hover:bg-white/15 transition-all font-semibold">
+            class="px-6 py-3 rounded-lg bg-white/10 text-white hover:bg-white/15 transition-all font-semibold inline-flex items-center gap-2 cursor-pointer">
+          <Icon name="carbon:close" size="20"/>
           Cancel
         </button>
         <button
             @click="saveJourney"
             :disabled="isSaving"
-            class="px-6 py-3 rounded-lg bg-primary text-white hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-semibold inline-flex items-center gap-2">
+            class="px-6 py-3 rounded-lg bg-primary text-white hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer font-semibold inline-flex items-center gap-2">
           <Icon v-if="isSaving" name="icon-park-outline:loading-four" size="16" class="animate-spin"/>
+          <Icon v-else name="carbon:save" size="20"/>
           {{ isSaving ? 'Saving...' : 'Save Experience' }}
         </button>
       </div>
