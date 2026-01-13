@@ -373,7 +373,7 @@ const deleteProjectHandler = async (id: number) => {
 
     <!-- Empty State -->
     <div v-if="projects.length === 0" class="flex flex-col items-center justify-center py-20">
-      <Icon name="carbon:inbox-empty" size="64" class="text-white/20 mb-6"/>
+      <Icon name="carbon:email" size="64" class="text-white/20 mb-6"/>
       <h3 class="text-xl font-bold text-white mb-2">No projects found</h3>
       <p class="text-white/60 text-center mb-6">Try adjusting your search or create a new project</p>
       <button

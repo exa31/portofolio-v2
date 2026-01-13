@@ -1,117 +1,98 @@
 <script setup lang="ts">
 import {ref} from 'vue'
+import type {Message} from "~/types/message";
+import {useToastCustom} from "~/composables/useToastCustom";
 
 definePageMeta({
-  layout: 'dashboard'
+  layout: 'dashboard',
+  breadCrumb: [
+    {title: 'Messages'}
+  ]
 })
 
-interface Message {
-  id: number
-  name: string
-  email: string
-  subject: string
-  message: string
-  status: 'Unread' | 'Read' | 'Replied'
-  receivedAt: string
-  avatar: string
-}
+const {
+  fetchMessages,
+  updateMessageStatus,
+  deleteMessage,
+  messages,
+  isLoading,
+  cursor,
+  hasMore,
+} = useMessage()
 
-const messages = ref<Message[]>([
-  {
-    id: 1,
-    name: 'John Doe',
-    email: 'john@example.com',
-    subject: 'Project Collaboration Inquiry',
-    message: 'Hi Eka, I\'m interested in collaborating on a web development project. Can we discuss the details?',
-    status: 'Unread',
-    receivedAt: '2 hours ago',
-    avatar: 'https://via.placeholder.com/40'
-  },
-  {
-    id: 2,
-    name: 'Sarah Smith',
-    email: 'sarah@example.com',
-    subject: 'Job Opportunity',
-    message: 'We have an exciting full-stack developer position available. Would you be interested in discussing this opportunity?',
-    status: 'Unread',
-    receivedAt: '5 hours ago',
-    avatar: 'https://via.placeholder.com/40'
-  },
-  {
-    id: 3,
-    name: 'Mike Johnson',
-    email: 'mike@example.com',
-    subject: 'Portfolio Feedback',
-    message: 'Great work on your portfolio! I really liked your projects. Keep up the good work!',
-    status: 'Read',
-    receivedAt: '1 day ago',
-    avatar: 'https://via.placeholder.com/40'
-  },
-  {
-    id: 4,
-    name: 'Emma Wilson',
-    email: 'emma@example.com',
-    subject: 'Technical Consultation',
-    message: 'I would like to consult with you about some technical challenges in our current project.',
-    status: 'Read',
-    receivedAt: '2 days ago',
-    avatar: 'https://via.placeholder.com/40'
-  },
-  {
-    id: 5,
-    name: 'Alex Brown',
-    email: 'alex@example.com',
-    subject: 'Follow-up Discussion',
-    message: 'Thanks for your previous response. I have a few more questions I\'d like to discuss.',
-    status: 'Replied',
-    receivedAt: '3 days ago',
-    avatar: 'https://via.placeholder.com/40'
-  }
-])
-
+const toast = useToastCustom()
 const selectedMessage = ref<Message | null>(null)
 const isDetailOpen = ref(false)
-const searchQuery = ref('')
-const selectedStatus = ref('All')
+const selectedStatus = ref<'unread' | 'read'>('unread')
+const canLoadMore = ref(false)
 
-const filteredMessages = computed(() => {
-  return messages.value.filter(msg => {
-    const matchesSearch = msg.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        msg.subject.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        msg.email.toLowerCase().includes(searchQuery.value.toLowerCase())
-    const matchesStatus = selectedStatus.value === 'All' || msg.status === selectedStatus.value
-    return matchesSearch && matchesStatus
-  })
+// Fetch initial messages on SSR/CSR
+const {data} = await useAsyncData(`messages-${selectedStatus.value}`, async () => {
+  return await fetchMessages(false, selectedStatus.value)
 })
 
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'Unread':
-      return 'bg-blue-500/20 text-blue-400 border-blue-500/40'
-    case 'Read':
-      return 'bg-white/10 text-white/70 border-white/20'
-    case 'Replied':
-      return 'bg-green-500/20 text-green-400 border-green-500/40'
-    default:
-      return 'bg-white/10 text-white/70'
+
+// Watch for status changes
+watch([selectedStatus], async () => {
+  cursor.value = null
+  canLoadMore.value = false
+  try {
+    await fetchMessages(false, selectedStatus.value)
+  } finally {
+    canLoadMore.value = true
   }
+}, {immediate: false})
+
+const scrollTriggerRef = ref<HTMLElement>()
+
+// Intersection Observer setup (client-side only)
+const setupIntersectionObserver = () => {
+  if (import.meta.server || !scrollTriggerRef.value) return
+
+  const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && hasMore.value && !isLoading.value && canLoadMore.value) {
+            fetchMessages(true, selectedStatus.value)
+          }
+        })
+      },
+      {
+        root: null,
+        rootMargin: '100px',
+        threshold: 0.1,
+      }
+  )
+
+  observer.observe(scrollTriggerRef.value)
+
+  onUnmounted(() => {
+    observer.disconnect()
+  })
 }
 
-const getStatusIcon = (status: string) => {
-  switch (status) {
-    case 'Unread':
-      return 'material-symbols:mark-email-unread'
-    case 'Read':
-      return 'mdi:email-open'
-    case 'Replied':
-      return 'carbon:send-filled'
-    default:
-      return 'material-symbols:mail-rounded'
-  }
+// Setup observer on client-side only
+if (import.meta.client) {
+  onMounted(() => {
+    if (data.value) {
+      messages.value = data.value.data
+      hasMore.value = data.value.has_next
+
+      if (data.value.data.length > 0) {
+        cursor.value = data.value.data.at(-1)!.id as any
+      }
+    }
+    canLoadMore.value = true
+    setupIntersectionObserver()
+  })
 }
 
 const openMessage = (message: Message) => {
   selectedMessage.value = message
+  // Mark as read if unread
+  if (message.status === 'unread') {
+    updateMessageStatus(message.id!, 'read')
+  }
   isDetailOpen.value = true
 }
 
@@ -142,7 +123,6 @@ const getAvatarColor = (name: string) => {
     {from: '#6366f1', to: '#4f46e5'}   // indigo
   ]
 
-  // Create consistent hash from name
   let hash = 0
   for (let i = 0; i < name.length; i++) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash)
@@ -159,6 +139,64 @@ const getAvatarStyle = (name: string) => {
     background: `linear-gradient(135deg, ${color!.from} 0%, ${color!.to} 100%)`
   }
 }
+
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'unread':
+      return 'bg-blue-500/20 text-blue-400 border-blue-500/40'
+    case 'read':
+      return 'bg-white/10 text-white/70 border-white/20'
+    default:
+      return 'bg-white/10 text-white/70'
+  }
+}
+
+const getStatusIcon = (status: string) => {
+  switch (status) {
+    case 'unread':
+      return 'material-symbols:mark-email-unread'
+    case 'read':
+      return 'mdi:email-open'
+    default:
+      return 'material-symbols:mail-rounded'
+  }
+}
+
+const deleteMessageHandler = async (messageId: string) => {
+  toast.showConfirmationToast(
+      'Delete Message',
+      'Are you sure you want to delete this message? This action cannot be undone.',
+      async () => {
+        const success = await deleteMessage(messageId)
+        if (success) {
+          closeDetail()
+          cursor.value = null
+          canLoadMore.value = false
+          try {
+            await fetchMessages(false, selectedStatus.value)
+          } finally {
+            canLoadMore.value = true
+          }
+        }
+      }
+  )
+}
+
+const formatDate = (dateString: string): string => {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMs / 3600000)
+  const diffDays = Math.floor(diffMs / 86400000)
+
+  if (diffMins < 1) return 'just now'
+  if (diffMins < 60) return `${diffMins}m ago`
+  if (diffHours < 24) return `${diffHours}h ago`
+  if (diffDays < 7) return `${diffDays}d ago`
+
+  return date.toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})
+}
 </script>
 
 <template>
@@ -169,51 +207,60 @@ const getAvatarStyle = (name: string) => {
       <p class="text-white/60">Manage and respond to messages from visitors and potential clients.</p>
     </div>
 
-    <!-- Filters Section -->
-    <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 mb-8">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <!-- Search -->
-        <div class="relative lg:col-span-2">
-          <Icon name="carbon:search" size="20"
-                class="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50"/>
-          <input
-              v-model="searchQuery"
-              type="text"
-              placeholder="Search by name, email, or subject..."
-              class="w-full pl-10 pr-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-primary/50 focus:bg-white/15 transition-all"
-          />
+    <!-- Status Tabs -->
+    <div class="flex gap-2 mb-8 border-b border-white/10">
+      <button
+          @click="selectedStatus = 'unread'"
+          :class="[
+            'px-6 py-3 font-semibold transition-all border-b-2',
+            selectedStatus === 'unread'
+              ? 'text-primary border-primary'
+              : 'text-white/60 border-transparent hover:text-white/80'
+          ]"
+      >
+        <div class="flex items-center gap-2">
+          <Icon name="material-symbols:mark-email-unread" size="18"/>
+          Unread
         </div>
-
-        <!-- Status Filter -->
-        <div class="relative">
-          <select
-              v-model="selectedStatus"
-              class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white appearance-none cursor-pointer focus:outline-none focus:border-primary/50 focus:bg-white/15 transition-all"
-          >
-            <option value="All">Status: All</option>
-            <option value="Unread">Unread</option>
-            <option value="Read">Read</option>
-            <option value="Replied">Replied</option>
-          </select>
-          <Icon name="carbon:chevron-down" size="16"
-                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 pointer-events-none"/>
+      </button>
+      <button
+          @click="selectedStatus = 'read'"
+          :class="[
+            'px-6 py-3 font-semibold transition-all border-b-2',
+            selectedStatus === 'read'
+              ? 'text-primary border-primary'
+              : 'text-white/60 border-transparent hover:text-white/80'
+          ]"
+      >
+        <div class="flex items-center gap-2">
+          <Icon name="mdi:email-open" size="18"/>
+          Read
         </div>
-      </div>
-
-      <!-- Count -->
-      <div class="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
-        <p class="text-sm text-white/60">{{ filteredMessages.length }} messages</p>
-      </div>
+      </button>
     </div>
 
     <!-- Messages List -->
-    <div class="space-y-3">
+    <div class="space-y-3 mb-8">
+      <!-- Skeleton Loading -->
+      <div v-if="isLoading && messages.length === 0" v-for="i in 5" :key="`skeleton-${i}`"
+           class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 animate-pulse">
+        <div class="flex items-start gap-4">
+          <div class="w-12 h-12 rounded-full bg-white/10 shrink-0"></div>
+          <div class="flex-1 space-y-2">
+            <div class="h-5 bg-white/10 rounded w-1/3"></div>
+            <div class="h-4 bg-white/10 rounded w-1/2"></div>
+            <div class="h-4 bg-white/10 rounded w-full"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Messages -->
       <div
-          v-for="message in filteredMessages"
+          v-for="message in messages"
           :key="message.id"
           @click="openMessage(message)"
           class="group bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 hover:border-primary/50 hover:bg-white/10 transition-all duration-300 cursor-pointer"
-          :class="message.status === 'Unread' ? 'border-blue-500/30 bg-blue-500/5' : ''"
+          :class="message.status === 'unread' ? 'border-blue-500/30 bg-blue-500/5' : ''"
       >
         <div class="flex items-start gap-4">
           <!-- Avatar with Initials -->
@@ -230,15 +277,15 @@ const getAvatarStyle = (name: string) => {
                 {{ message.name }}
               </h3>
               <span
-                  :class="['px-3 py-1 rounded-full text-xs font-semibold border shrink-0 flex items-center gap-1', getStatusColor(message.status)]">
-                <Icon :name="getStatusIcon(message.status)" size="14"/>
-                {{ message.status }}
+                  :class="['px-3 py-1 rounded-full text-xs font-semibold border shrink-0 flex items-center gap-1', getStatusColor(message.status || 'read')]">
+                <Icon :name="getStatusIcon(message.status || 'read')" size="14"/>
+                {{ message.status?.charAt(0).toUpperCase() + message.status?.slice(1) }}
               </span>
             </div>
             <p class="text-sm text-white/60 mb-1">{{ message.email }}</p>
             <p class="text-sm font-semibold text-white mb-2">{{ message.subject }}</p>
             <p class="text-sm text-white/70 line-clamp-2 mb-3">{{ message.message }}</p>
-            <p class="text-xs text-white/40">{{ message.receivedAt }}</p>
+            <p class="text-xs text-white/40">{{ formatDate(message.created_at || '') }}</p>
           </div>
 
           <!-- Action -->
@@ -251,10 +298,19 @@ const getAvatarStyle = (name: string) => {
     </div>
 
     <!-- Empty State -->
-    <div v-if="filteredMessages.length === 0" class="flex flex-col items-center justify-center py-20">
-      <Icon name="carbon:inbox-empty" size="64" class="text-white/20 mb-6"/>
-      <h3 class="text-xl font-bold text-white mb-2">No messages found</h3>
-      <p class="text-white/60 text-center">Try adjusting your search or filter criteria</p>
+    <div v-if="messages.length === 0 && !isLoading" class="flex flex-col items-center justify-center py-20">
+      <Icon name="carbon:email" size="48" class="text-white/30 mb-4"/>
+      <h3 class="text-xl font-bold text-white mb-2">No messages</h3>
+      <p class="text-white/60 text-center">You don't have any {{ selectedStatus }} messages yet</p>
+    </div>
+
+    <!-- Scroll Trigger for Infinite Scroll (Load More) -->
+    <div ref="scrollTriggerRef" class="h-10 flex items-center justify-center">
+      <div v-if="isLoading && messages.length > 0 && canLoadMore"
+           class="flex items-center gap-2 text-white/60 text-sm">
+        <Icon name="carbon:loading" size="16" class="animate-spin"/>
+        <p>Loading more messages...</p>
+      </div>
     </div>
 
     <!-- Message Detail Modal -->
@@ -316,12 +372,12 @@ const getAvatarStyle = (name: string) => {
                     <span
                         :class="['px-3 py-1 rounded-full text-xs font-semibold border inline-flex items-center gap-1', getStatusColor(selectedMessage?.status || '')]">
                       <Icon :name="getStatusIcon(selectedMessage?.status || '')" size="14"/>
-                      {{ selectedMessage?.status }}
+                      {{ selectedMessage?.status?.charAt(0).toUpperCase() + selectedMessage?.status?.slice(1) }}
                     </span>
                   </div>
                   <div class="bg-white/5 border border-white/10 rounded-lg p-4">
                     <p class="text-xs text-white/60 mb-2">Received</p>
-                    <p class="text-white font-semibold">{{ selectedMessage?.receivedAt }}</p>
+                    <p class="text-white font-semibold">{{ formatDate(selectedMessage?.created_at || '') }}</p>
                   </div>
                 </div>
               </div>
@@ -333,26 +389,17 @@ const getAvatarStyle = (name: string) => {
       <!-- Footer -->
       <template #footer>
         <div class="px-4 sm:px-8 py-4 sm:py-6 flex w-full justify-end gap-2 sm:gap-3">
-          <UButton
-              :to="`mailto:${selectedMessage?.email}?subject=Re: ${selectedMessage?.subject}`"
-              color="primary"
-              size="lg"
-              class="bg-primary text-white hover:brightness-110 font-bold rounded-lg text-sm sm:text-base"
-          >
-            <template #leading>
-              <Icon name="carbon:send-filled" size="18" class="sm:w-5 sm:h-5"/>
-            </template>
-            Reply
-          </UButton>
-          <UButton
-              color="neutral"
-              variant="outline"
-              size="lg"
+          <button
+              @click="deleteMessageHandler(selectedMessage?.id || '')"
+              class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-red-500/20 text-red-400 font-semibold hover:bg-red-500/30 transition-all border border-red-500/40">
+            <Icon name="carbon:trash-can" size="18"/>
+            Delete
+          </button>
+          <button
               @click="closeDetail"
-              class="shrink-0 hover:bg-white/10 cursor-pointer font-semibold rounded-lg px-4 sm:px-6 text-sm sm:text-base"
-          >
+              class="px-6 py-3 rounded-lg bg-white/10 text-white hover:bg-white/20 font-semibold transition-all">
             Close
-          </UButton>
+          </button>
         </div>
       </template>
     </UModal>
