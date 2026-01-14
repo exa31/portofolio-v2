@@ -197,6 +197,11 @@ const formatDate = (dateString: string): string => {
 
   return date.toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})
 }
+
+const formatStatus = (status?: string): string => {
+  if (!status) return ''
+  return status.charAt(0).toUpperCase() + status.slice(1)
+}
 </script>
 
 <template>
@@ -211,6 +216,7 @@ const formatDate = (dateString: string): string => {
     <div class="flex gap-2 mb-8 border-b border-white/10">
       <button
           @click="selectedStatus = 'unread'"
+          class="cursor-pointer"
           :class="[
             'px-6 py-3 font-semibold transition-all border-b-2',
             selectedStatus === 'unread'
@@ -218,14 +224,14 @@ const formatDate = (dateString: string): string => {
               : 'text-white/60 border-transparent hover:text-white/80'
           ]"
       >
-        <div class="flex items-center gap-2">
-          <Icon name="material-symbols:mark-email-unread" size="18"/>
-          Unread
-        </div>
+        <Icon name="material-symbols:mark-email-unread" size="18"/>
+        Unread
       </button>
       <button
           @click="selectedStatus = 'read'"
+          class="cursor-pointer"
           :class="[
+
             'px-6 py-3 font-semibold transition-all border-b-2',
             selectedStatus === 'read'
               ? 'text-primary border-primary'
@@ -279,7 +285,7 @@ const formatDate = (dateString: string): string => {
               <span
                   :class="['px-3 py-1 rounded-full text-xs font-semibold border shrink-0 flex items-center gap-1', getStatusColor(message.status || 'read')]">
                 <Icon :name="getStatusIcon(message.status || 'read')" size="14"/>
-                {{ message.status?.charAt(0).toUpperCase() + message.status?.slice(1) }}
+                {{ formatStatus(message.status) }}
               </span>
             </div>
             <p class="text-sm text-white/60 mb-1">{{ message.email }}</p>
@@ -372,7 +378,7 @@ const formatDate = (dateString: string): string => {
                     <span
                         :class="['px-3 py-1 rounded-full text-xs font-semibold border inline-flex items-center gap-1', getStatusColor(selectedMessage?.status || '')]">
                       <Icon :name="getStatusIcon(selectedMessage?.status || '')" size="14"/>
-                      {{ selectedMessage?.status?.charAt(0).toUpperCase() + selectedMessage?.status?.slice(1) }}
+                      {{ formatStatus(selectedMessage?.status || '') }}
                     </span>
                   </div>
                   <div class="bg-white/5 border border-white/10 rounded-lg p-4">
