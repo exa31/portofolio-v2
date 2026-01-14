@@ -23,21 +23,26 @@ const closeMobileMenu = () => {
 // Update active section based on scroll position
 const updateActiveSection = () => {
   const sections = ['#about', '#work', '#project', '#stack', '#contact']
+  let found = false
 
   for (const sectionId of sections) {
-    const element = document.querySelector(sectionId)
-    if (element) {
-      const rect = element.getBoundingClientRect()
-      // Check if section is in viewport (with 100px offset from top for sticky header)
-      if (rect.top <= 150 && rect.bottom > 0) {
-        activeSection.value = sectionId
-        break
-      }
-    } else {
-      activeSection.value = ''
+    const element = document.querySelector<HTMLElement>(sectionId)
+    if (!element) continue
+
+    const rect = element.getBoundingClientRect()
+
+    if (rect.top <= 150 && rect.bottom > 0) {
+      activeSection.value = sectionId
+      found = true
+      break
     }
   }
+
+  if (!found) {
+    activeSection.value = ''
+  }
 }
+
 
 onMounted(() => {
   window.addEventListener('scroll', updateActiveSection)

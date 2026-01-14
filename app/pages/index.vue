@@ -1,130 +1,94 @@
 <script setup lang="ts">
-// ========== PROJECTS DATA ==========
-import FooterSection from "~/components/FooterSection.vue";
+// ========== IMPORTS ==========
+import {computed} from 'vue'
+import type {Skill, SkillsResponse} from '~/types/skill'
+import FooterSection from "~/components/FooterSection.vue"
+import type {JourneysResponse} from "~/types/journey";
+import type {ProjectsResponse} from "~/types/project";
 
-const projects = [
-  {
-    id: 1,
-    title: 'E-Commerce Dashboard',
-    description: 'A comprehensive admin panel to utilize modern technologies and manage logistics with intuitive design.',
-    shortDesc: 'A comprehensive admin panel to utilize modern technologies and manage logistics with intuitive design.',
-    image: '/images/hero.png',
-    technologies: ['React', 'Tailwind', 'Recharts'],
-    link: 'https://github.com',
-    liveUrl: 'https://ecommerce-dashboard-demo.vercel.app',
-    details: 'This e-commerce dashboard provides real-time analytics, inventory management, order tracking, and customer insights. Built with React and powered by modern APIs, it delivers a seamless admin experience with interactive charts and responsive design.',
-    features: ['Real-time Analytics', 'Order Management', 'Inventory Tracking', 'Customer Analytics', 'Revenue Reports']
-  },
-  {
-    id: 2,
-    title: 'Social Connect App',
-    description: 'A public-first social platform focused on connecting people with features like posts, chats.',
-    shortDesc: 'A public-first social platform focused on connecting people with features like posts, chats.',
-    image: '/images/hero.png',
-    technologies: ['React Native', 'Firebase', 'Redux'],
-    link: 'https://github.com',
-    liveUrl: null,
-    details: 'Social Connect is a feature-rich mobile application built with React Native, enabling users to create profiles, share posts, engage in real-time messaging, and build communities. With Firebase backend and Redux state management.',
-    features: ['User Profiles', 'Real-time Messaging', 'Post Sharing', 'Community Building', 'Push Notifications']
-  },
-  {
-    id: 3,
-    title: 'Developer Portfolio V1',
-    description: 'My first portfolio site designed to showcase creative coding experiences in creative way.',
-    shortDesc: 'My first portfolio site designed to showcase creative coding experiences in creative way.',
-    image: '/images/hero.png',
-    technologies: ['HTML/CSS', 'JavaScript', 'Figma'],
-    link: 'https://github.com',
-    liveUrl: 'https://portfolio-v1.vercel.app',
-    details: 'An interactive portfolio website showcasing my projects and skills. Built with modern web technologies, featuring smooth animations, responsive design, and engaging UI components.',
-    features: ['Interactive UI', 'Responsive Design', 'Project Showcase', 'Smooth Animations', 'Contact Form']
-  },
-  {
-    id: 4,
-    title: 'TaskFlow Manager',
-    description: 'A productivity tool for managing tasks with real-time collaboration features and seamless sync.',
-    shortDesc: 'A productivity tool for managing tasks with real-time collaboration features and seamless sync.',
-    image: '/images/hero.png',
-    technologies: ['Vue.js', 'Node.js', 'MongoDB'],
-    link: 'https://github.com',
-    liveUrl: 'https://taskflow-manager.vercel.app',
-    details: 'TaskFlow Manager is a collaborative task management platform that helps teams organize workflows efficiently. Features include real-time updates, team collaboration, task prioritization, and detailed progress tracking.',
-    features: ['Task Management', 'Team Collaboration', 'Real-time Sync', 'Progress Tracking', 'Notifications']
-  },
-  {
-    id: 5,
-    title: 'Realtime Chat App',
-    description: 'A socket.io powered messaging application supporting group chats with typing indicators.',
-    shortDesc: 'A socket.io powered messaging application supporting group chats with typing indicators.',
-    image: '/images/hero.png',
-    technologies: ['Socket.io', 'Express'],
-    link: 'https://github.com',
-    liveUrl: 'https://realtime-chat-app.vercel.app',
-    details: 'A modern chat application with real-time messaging capabilities. Built with Socket.io for instant communication, featuring typing indicators, online status, message history, and group chat support.',
-    features: ['Real-time Messaging', 'Typing Indicators', 'Group Chats', 'Message History', 'User Status']
-  },
-  {
-    id: 6,
-    title: 'SkyChat Weather',
-    description: 'A beautiful weather forecast application utilizing geolocation APIs to provide accurate data.',
-    shortDesc: 'A beautiful weather forecast application utilizing geolocation APIs to provide accurate data.',
-    image: '/images/hero.png',
-    technologies: ['Next.js', 'OpenWeatherAPI'],
-    link: 'https://github.com',
-    liveUrl: 'https://skychat-weather.vercel.app',
-    details: 'SkyChat Weather is a sleek weather application that provides real-time weather information based on user location. With beautiful UI design, hourly forecasts, and detailed weather analytics.',
-    features: ['Geolocation', 'Real-time Weather', 'Hourly Forecast', 'Weather Analytics', 'Beautiful UI']
-  }
-]
+// ========== PAGE METADATA ==========
+definePageMeta({
+  layout: 'default'
+})
 
-// ========== EXPERIENCE DATA ==========
-const experiences = [
-  {
-    id: 1,
-    company: "PT Astra International Tbk",
-    position: "Senior Software Engineer",
-    period: "2022 - Present",
-    description: "Leading development of enterprise applications using modern web technologies",
-    logo: "https://via.placeholder.com/80",
-    responsibilities: [
-      "Lead a team of 5 developers",
-      "Architected microservices infrastructure",
-      "Improved system performance by 40%",
-    ],
-    technologies: ["Vue.js", "Node.js", "AWS", "Docker"],
-    attachment: "https://example.com/certificate1.pdf",
+useHead({
+  title: 'Portfolio - Developer Showcase',
+  meta: [
+    {
+      name: 'description',
+      content: 'Explore my portfolio, projects, and skills. Full-stack developer showcasing professional work and experiences.',
+    },
+  ],
+})
+
+// ========== FETCH DATA FROM API (SSR-compatible) ==========
+const {data: projectsData, pending: projectsLoading} = await useFetch<BaseResponse<ProjectsResponse>>('/api/projects', {
+  query: {
+    pagination: false,
+    limit: 6,
   },
-  {
-    id: 2,
-    company: "PT Telkom Indonesia",
-    position: "Full Stack Developer",
-    period: "2020 - 2022",
-    description: "Developed and maintained customer-facing web applications",
-    logo: "https://via.placeholder.com/80",
-    responsibilities: [
-      "Built RESTful APIs",
-      "Implemented responsive UI designs",
-      "Collaborated with cross-functional teams",
-    ],
-    technologies: ["React", "Express.js", "PostgreSQL"],
-    attachment: "https://example.com/certificate2.pdf",
+  watch: false,
+})
+
+const {data: skillsData, pending: skillsLoading} = await useFetch<BaseResponse<SkillsResponse>>('/api/skills', {
+  query: {
+    pagination: false,
   },
-  {
-    id: 3,
-    company: "PT Gojek Indonesia",
-    position: "Frontend Developer",
-    period: "2019 - 2020",
-    description: "Created user interfaces for mobile and web platforms",
-    logo: "https://via.placeholder.com/80",
-    responsibilities: [
-      "Developed reusable components",
-      "Optimized web performance",
-      "Conducted code reviews",
-    ],
-    technologies: ["Vue.js", "Tailwind CSS", "TypeScript"],
-    attachment: null,
+  watch: false,
+})
+
+const {data: journeysData, pending: journeysLoading} = await useFetch<BaseResponse<JourneysResponse>>('/api/journeys', {
+  query: {
+    pagination: false,
   },
-]
+  watch: false,
+})
+
+// ========== COMPUTED DATA ==========
+const projects = computed(() => {
+  const apiProjects = projectsData.value?.data?.data ?? []
+
+  // Map API projects to expected format for components
+  return apiProjects.map(p => ({
+    ...p,
+    id: p.id,
+    title: p.name,
+    shortDesc: p.description || '',
+    description: p.description || '',
+    image: p.preview_image || '/images/hero.png',
+    technologies: p.technologies || [],
+    link: p.repo_url || 'https://github.com',
+    liveUrl: p.live_url || null,
+    details: p.description,
+    features: p.features || [],
+  }))
+})
+
+const skills = computed(() => {
+  return (skillsData.value?.data?.data ?? []) as Skill[]
+})
+
+const isLoading = computed(() => projectsLoading.value || skillsLoading.value || journeysLoading.value)
+
+// ========== EXPERIENCE DATA dari API ==========
+const experiences = computed(() => {
+  const journeys = journeysData.value?.data?.data ?? []
+
+  // Map API journeys to experiences format
+  return journeys.map((journey: any) => ({
+    id: journey.id,
+    company: journey.company,
+    position: journey.title,
+    period: journey.is_current
+        ? `${formatDate(journey.start_date)} - Present`
+        : `${formatDate(journey.start_date)} - ${formatDate(journey.end_date)}`,
+    description: journey.description || '',
+    logo: "https://via.placeholder.com/80",
+    responsibilities: journey.key_responsibilities || [],
+    technologies: journey.id_skills || [],
+    attachment: journey.attachments || null,
+  }))
+})
 </script>
 
 <template>
@@ -138,7 +102,7 @@ const experiences = [
     <AboutSection/>
 
     <!-- Skills Section -->
-    <SkillsSection/>
+    <SkillsSection :skills="skills"/>
 
     <!-- Journey Section -->
     <JourneySection :experiences="experiences"/>

@@ -7,15 +7,10 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
         <!-- Left Column -->
         <div>
-          <span class="inline-block bg-[#0b2348] text-primary text-xs font-medium px-3 py-1 rounded-full mb-6">
-            AVAILABLE FOR WORK
-          </span>
-
           <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight mb-6">
             Hi, I'm
             <span class="bg-linear-to-r from-blue-600 via-sky-400 to-white bg-clip-text text-transparent">
-              Eka
-            </span>.<br/>
+              Eka</span>.<br/>
             Full-Stack<br/>
             Engineer.
           </h1>
