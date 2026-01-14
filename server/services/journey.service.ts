@@ -42,7 +42,7 @@ export const getJourneysNoPagination = async (event: H3Event) => {
                 return sendSuccess(event, {data: journeys}, "Journeys retrieved successfully", "journeys_retrieved");
             }
 
-            const {journeys} = await repository.getJourneysByCursor(client, 100)
+            const journeys = await repository.getAllJourneys(client)
             await set('journeys:all', JSON.stringify(journeys)); // Cache the journeys list
 
             return sendSuccess(event, {data: journeys}, "Journeys retrieved successfully", "journeys_retrieved");

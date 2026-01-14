@@ -10,7 +10,8 @@ export type Project = {
     live_url?: string
     start_date?: string
     end_date?: string
-    created_at?: string
+    created_at: string
+    updated_at: string
     id_skills?: number[] // For backward compatibility
     preview_image?: string // URL of the image for preview purposes
 }

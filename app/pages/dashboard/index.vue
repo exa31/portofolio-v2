@@ -1,67 +1,81 @@
 <script setup lang="ts">
+import {computed, ref} from 'vue'
+import {useDashboardStats} from "~/composables/useDashboardStats";
+import {useProject} from "~/composables/useProject";
+
 definePageMeta({
   layout: 'dashboard',
   breadCrumb: []
 })
 
+const userName = ref('User')
+const {fetchStats} = useDashboardStats()
+const {fetchProjects} = useProject()
 
-const stats = [
+// Fetch data on server-side using useFetch
+const {data: projectsData} = await useAsyncData(
+    'dashboard-projects',
+    async () => await fetchProjects(false, ''),
+)
+
+const {data: statsData,} = await useAsyncData(
+    'dashboard-stats',
+    async () => await fetchStats(),
+)
+
+// Extract data from responses
+const projects = computed(() => {
+  return projectsData.value?.data ?? []
+})
+
+const dashboardStats = computed(() => {
+  return statsData.value ?? null
+})
+
+const stats = computed(() => [
   {
     label: 'Total Projects',
-    value: '12',
+    value: dashboardStats.value?.projects.total.toString() ?? '0',
     icon: 'carbon:folder-open',
     color: 'from-blue-500 to-blue-600'
   },
   {
     label: 'Published',
-    value: '8',
+    value: dashboardStats.value?.projects.published.toString() ?? '0',
     icon: 'pepicons-pop:checkmark-circle-filled',
     color: 'from-green-500 to-green-600'
   },
   {
     label: 'In Draft',
-    value: '3',
+    value: dashboardStats.value?.projects.draft.toString() ?? '0',
     icon: 'carbon:document-add',
     color: 'from-yellow-500 to-yellow-600'
   },
   {
-    label: 'Total Views',
-    value: '2.4K',
+    label: 'Total Skills',
+    value: dashboardStats.value?.skills.total.toString() ?? '0',
     icon: 'carbon:view',
     color: 'from-purple-500 to-purple-600'
   }
-]
+])
 
-const recentProjects = [
-  {
-    id: 1,
-    title: 'SaaS Analytics Dashboard',
-    status: 'Published',
-    views: 324,
-    updatedAt: '2 days ago'
-  },
-  {
-    id: 2,
-    title: 'E-Commerce Storefront',
-    status: 'Draft',
-    views: 0,
-    updatedAt: '1 week ago'
-  },
-  {
-    id: 3,
-    title: 'Node.js API Gateway',
-    status: 'Published',
-    views: 512,
-    updatedAt: '3 weeks ago'
-  }
-]
+const recentProjects = computed(() => {
+  return projects.value
+      .slice(0, 3)
+      .map((p: any) => ({
+        id: p.id,
+        title: p.name,
+        status: p.status ? 'Published' : 'Draft',
+        updatedAt: formatDate(p.updated_at)
+      }))
+})
 </script>
 
 <template>
   <div class="p-8">
     <!-- Welcome Section -->
     <div class="mb-12">
-      <h1 class="text-4xl font-black text-white mb-2">Welcome back, Eka! 👋</h1>
+      <h1 class="text-4xl font-black text-white mb-2">Welcome back, {{ userName }}! 👋</h1>
       <p class="text-white/60">Here's what's happening with your portfolio today.</p>
     </div>
 
@@ -109,14 +123,13 @@ const recentProjects = [
 
       <!-- Table -->
       <div class="overflow-x-auto">
+        <!--        <table v-if="!isLoading" class="w-full">-->
         <table class="w-full">
           <thead>
           <tr class="border-b border-white/10">
             <th class="text-left px-6 py-4 text-xs font-semibold text-white/60 uppercase tracking-wider">Project</th>
             <th class="text-left px-6 py-4 text-xs font-semibold text-white/60 uppercase tracking-wider">Status</th>
-            <th class="text-left px-6 py-4 text-xs font-semibold text-white/60 uppercase tracking-wider">Views</th>
             <th class="text-left px-6 py-4 text-xs font-semibold text-white/60 uppercase tracking-wider">Updated</th>
-            <th class="text-right px-6 py-4 text-xs font-semibold text-white/60 uppercase tracking-wider">Action</th>
           </tr>
           </thead>
           <tbody>
@@ -138,16 +151,18 @@ const recentProjects = [
                   {{ project.status }}
                 </span>
             </td>
-            <td class="px-6 py-4 text-white/80">{{ project.views }}</td>
             <td class="px-6 py-4 text-white/60 text-sm">{{ project.updatedAt }}</td>
-            <td class="px-6 py-4 text-right">
-              <button class="text-primary hover:text-primary/80 transition-colors">
-                <Icon name="carbon:pen" size="18"/>
-              </button>
-            </td>
+
           </tr>
           </tbody>
         </table>
+
+        <!--        &lt;!&ndash; Loading skeleton &ndash;&gt;-->
+        <!--        <div v-else class="space-y-3">-->
+        <!--          <div v-for="i in 3" :key="i" class="animate-pulse">-->
+        <!--            <div class="h-16 bg-white/5 rounded-lg"></div>-->
+        <!--          </div>-->
+        <!--        </div>-->
       </div>
     </div>
   </div>

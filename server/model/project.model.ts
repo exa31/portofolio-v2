@@ -17,6 +17,7 @@ export const projectModel = z.object({
     skills: z.array(z.string()),
     id_skills: z.array(z.number()).optional(),
     created_at: z.string(),
+    updated_at: z.string(),
 })
 
 export type ProjectModel = z.infer<typeof projectModel>;

@@ -178,3 +178,30 @@ export const linkSkillToJourney = async (
     return (result.rowCount ?? 0) > 0
 }
 
+export const getAllJourneys = async (
+    client: PoolClient,
+): Promise<JourneyModel[]> => {
+    const sql = `
+        SELECT j.id,
+               j.title,
+               j.company,
+               j.location,
+               j.start_date,
+               j.end_date,
+               j.key_responsibilities,
+               j.description,
+               j.attachments,
+               j.is_current,
+               j.created_at,
+               j.updated_at,
+               ARRAY_AGG(s.id) FILTER (WHERE s.id IS NOT NULL) AS id_skills
+        FROM journeys j
+                 LEFT JOIN journey_skills js ON j.id = js.journey_id
+                 LEFT JOIN skills s ON js.skill_id = s.id
+        GROUP BY j.id
+        ORDER BY j.id DESC
+    `
+    const result = await client.query<JourneyModel>(sql)
+
+    return result.rows
+}

@@ -122,6 +122,7 @@ export const getProjectCursorPagination = async (
                p.live_url,
                p.repo_url,
                p.created_at,
+               p.updated_at,
                ARRAY_AGG(s.name) AS technologies
         FROM projects p
                  JOIN project_skills ps ON ps.project_id = p.id
@@ -165,6 +166,7 @@ export const getAllProjects = async (
                p.live_url,
                p.repo_url,
                p.created_at,
+               p.updated_at,
                ARRAY_AGG(s.name) AS technologies
         FROM projects p
                  JOIN project_skills ps on p.id = ps.project_id

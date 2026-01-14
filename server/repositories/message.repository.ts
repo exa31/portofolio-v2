@@ -116,3 +116,26 @@ export const getMessagesByCursor = async (
     return {messages, has_next}
 }
 
+
+export const getAllMessages = async (
+    client: PoolClient,
+): Promise<MessageModel[]> => {
+    const sql = `
+        SELECT id,
+               name,
+               email,
+               subject,
+               message,
+               status,
+               created_at,
+               deleted_at
+        FROM messages
+        WHERE deleted_at IS NULL
+        ORDER BY created_at DESC
+    `
+
+
+    const result = await client.query<MessageModel>(sql)
+
+    return result.rows
+}
