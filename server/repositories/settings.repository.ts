@@ -14,6 +14,7 @@ export const getUserSettings = async (
                github_profile,
                linkedin_profile,
                created_at,
+               cv_url,
                updated_at
         FROM users
         WHERE id = $1
@@ -72,3 +73,22 @@ export const updateSocialLinks = async (
     return (result.rowCount ?? 0) > 0
 }
 
+export const updateUserCV = async (
+    client: PoolClient,
+    userId: string,
+    cvUrl: string
+): Promise<boolean> => {
+    const sql = `
+        UPDATE users
+        SET cv_url     = $1,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = $2
+    `
+    const values = [
+        cvUrl,
+        userId,
+    ]
+
+    const result = await client.query(sql, values)
+    return (result.rowCount ?? 0) > 0
+}

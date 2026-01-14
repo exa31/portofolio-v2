@@ -1,5 +1,5 @@
 import {useToastCustom} from "~/composables/useToastCustom";
-import type {UserSettingsModel} from "~~/server/model/settings.model";
+import type {UserSettingsModel} from "~/types/settings";
 
 export const useSettings = () => {
     const {$axios} = useNuxtApp()
@@ -120,12 +120,62 @@ export const useSettings = () => {
         }
     }
 
+    const uploadCV = async (file: File): Promise<string | null> => {
+        isSaving.value = true
+        const loadingToast = toast.showLoadingToast("Uploading CV", "Please wait while your CV is being uploaded.")
+        try {
+            const formData = new FormData()
+            formData.append('file', file)
+
+            const response = await $axios.post<BaseResponse<{ url: string }>>('/api/settings/upload-cv', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
+            const body = response.data
+
+            if (!body || !body.data) {
+                console.error('Invalid response from server', body)
+                toast.updateToast(
+                    loadingToast.id,
+                    "Error",
+                    "Failed to upload CV",
+                    "error",
+                    5000
+                )
+                return null
+            }
+
+            toast.updateToast(
+                loadingToast.id,
+                "Success",
+                "CV uploaded successfully!",
+                "success",
+                3000
+            )
+            return body.data.url
+        } catch (error) {
+            console.error('Failed to upload CV:', error)
+            toast.updateToast(
+                loadingToast.id,
+                "Error",
+                "Failed to upload CV",
+                "error",
+                5000
+            )
+            return null
+        } finally {
+            isSaving.value = false
+        }
+    }
+
     return {
         isLoading,
         isSaving,
         fetchSettings,
         updateProfileSettings,
         updateSocialLinks,
+        uploadCV,
     }
 }
 

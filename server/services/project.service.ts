@@ -1,6 +1,6 @@
 import * as repository from "~~/server/repositories/project.repository";
 import {H3Event} from "h3";
-import {CreateProjectInput, UpdateProjectInput} from "~~/server/model/project.model";
+import type {CreateProjectInput, UpdateProjectInput} from "~~/server/model/project.model";
 import {withTransaction} from "~~/server/db/postgres";
 import {HttpError} from "~~/server/errors/HttpError";
 import {del, get, set} from "~~/server/db/redis";

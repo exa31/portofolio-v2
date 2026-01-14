@@ -10,6 +10,7 @@ export const userSettingsModel = z.object({
     linkedin_profile: z.string().max(255).nullable().optional(),
     created_at: z.string(),
     updated_at: z.string(),
+    cv_url: z.url(),
 })
 
 export type UserSettingsModel = z.infer<typeof userSettingsModel>;

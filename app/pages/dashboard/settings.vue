@@ -13,6 +13,7 @@ const {
   fetchSettings,
   updateProfileSettings,
   updateSocialLinks,
+  uploadCV,
   isLoading,
   isSaving,
 } = useSettings()
@@ -30,6 +31,11 @@ const socialLinksForm = ref({
   github_profile: '',
   linkedin_profile: ''
 })
+
+const cvFile = ref<File | null>(null)
+const cvFileName = ref('')
+const cvUrl = ref<string>('')
+const showCVModal = ref(false)
 
 const originalData = ref({
   name: '',
@@ -59,6 +65,8 @@ watch(settingsData, (newData) => {
       github_profile: newData.github_profile || '',
       linkedin_profile: newData.linkedin_profile || ''
     }
+
+    cvUrl.value = newData.cv_url || ''
 
     originalData.value = {
       name: newData.name,
@@ -125,6 +133,52 @@ const saveSocialLinks = async () => {
       linkedin_profile: result.linkedin_profile || ''
     }
   }
+}
+
+const handleCVFileSelect = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const files = target.files
+  if (files && files.length > 0) {
+    const file = files[0]
+    // Validate file type (PDF only)
+    if (file!.type !== 'application/pdf') {
+      toast.showErrorToast("Error", "Only PDF files are allowed")
+      return
+    }
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024 // 5MB
+    if (file!.size > maxSize) {
+      toast.showErrorToast("Error", "File size must be less than 5MB")
+      return
+    }
+    cvFile.value = file!
+    cvFileName.value = file!.name
+  }
+}
+
+const uploadCVFile = async () => {
+  if (!cvFile.value) {
+    toast.showErrorToast("Error", "Please select a file")
+    return
+  }
+
+  const result = await uploadCV(cvFile.value)
+  if (result) {
+    cvUrl.value = result
+    cvFile.value = null
+    cvFileName.value = ''
+    // Reset file input
+    const fileInput = document.querySelector('#cvFileInput') as HTMLInputElement
+    if (fileInput) fileInput.value = ''
+  }
+}
+
+const openCVModal = () => {
+  showCVModal.value = true
+}
+
+const closeCVModal = () => {
+  showCVModal.value = false
 }
 </script>
 
@@ -261,6 +315,157 @@ const saveSocialLinks = async () => {
             <Icon v-else name="carbon:save" size="20"/>
             {{ isSaving ? 'Saving...' : 'Save Social Links' }}
           </button>
+        </div>
+      </div>
+
+      <!-- CV Upload -->
+      <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl overflow-hidden">
+        <!-- Header -->
+        <div class="px-6 py-4 border-b border-white/10 bg-white/5">
+          <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+            <Icon name="carbon:document" size="24" class="text-primary"/>
+            CV/Resume
+          </h2>
+        </div>
+
+        <!-- Content -->
+        <div class="p-6 space-y-4">
+          <!-- Current CV Preview -->
+          <div v-if="cvUrl" class="bg-white/5 border border-white/10 rounded-lg p-4">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <Icon name="carbon:document-pdf" size="24" class="text-red-400"/>
+                <div>
+                  <p class="text-sm font-semibold text-white">Current CV</p>
+                  <p class="text-xs text-white/50">PDF Document</p>
+                </div>
+              </div>
+              <a
+                  :href="cvUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="px-3 py-2 rounded-lg bg-primary hover:brightness-110 text-white text-xs font-medium transition-all flex items-center gap-1"
+              >
+                <Icon name="carbon:download" size="16"/>
+                Download
+              </a>
+              <button
+                  @click="openCVModal"
+                  class="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-medium transition-all flex items-center gap-1"
+              >
+                <Icon name="carbon:view" size="16"/>
+                Preview
+              </button>
+            </div>
+          </div>
+
+          <!-- CV File Input -->
+          <div>
+            <label class="block text-sm font-semibold text-white mb-2">Upload CV (PDF)</label>
+            <div class="flex items-center gap-3">
+              <input
+                  id="cvFileInput"
+                  type="file"
+                  accept=".pdf"
+                  @change="handleCVFileSelect"
+                  class="hidden"
+              />
+              <label
+                  for="cvFileInput"
+                  class="flex-1 px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white cursor-pointer hover:bg-white/15 transition-all flex items-center gap-2"
+              >
+                <Icon name="carbon:cloud-upload" size="20"/>
+                <span>{{ cvFileName || 'Choose PDF file...' }}</span>
+              </label>
+              <span class="text-xs text-white/50">Max 5MB</span>
+            </div>
+            <p class="text-xs text-white/40 mt-2">PDF files only. Maximum size: 5MB</p>
+          </div>
+
+          <!-- Upload Button -->
+          <button
+              @click="uploadCVFile"
+              :disabled="isSaving || !cvFile"
+              class="w-full px-6 py-3 rounded-lg bg-primary cursor-pointer text-white font-semibold hover:brightness-110 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+          >
+            <Icon v-if="isSaving" name="icon-park-outline:loading-four" size="16" class="animate-spin"/>
+            <Icon v-else name="carbon:upload" size="20"/>
+            {{ isSaving ? 'Uploading...' : 'Upload CV' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CV Preview Modal -->
+    <div v-if="showCVModal && cvUrl"
+         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <!-- Modal Container -->
+      <div
+          class="bg-[#0a1628] border border-white/10 rounded-2xl w-full max-w-4xl h-full max-h-[90vh] flex flex-col shadow-2xl">
+        <!-- Header -->
+        <div class="flex items-center justify-between p-6 border-b border-white/10 bg-white/5">
+          <div class="flex items-center gap-3">
+            <Icon name="carbon:document-pdf" size="24" class="text-red-400"/>
+            <div>
+              <h3 class="text-xl font-bold text-white">CV Preview</h3>
+              <p class="text-xs text-white/50">PDF Document</p>
+            </div>
+          </div>
+          <button
+              @click="closeCVModal"
+              class="p-2 hover:bg-white/10 rounded-lg transition-all"
+          >
+            <Icon name="carbon:close" size="24" class="text-white/70 hover:text-white"/>
+          </button>
+        </div>
+
+        <!-- PDF Viewer (Object) -->
+        <div class="flex-1 overflow-hidden bg-white/5">
+          <object
+              :data="cvUrl"
+              type="application/pdf"
+              class="w-full h-full"
+          >
+            <!-- Fallback jika object tidak support -->
+            <div class="flex flex-col items-center justify-center h-full gap-4 p-6">
+              <Icon name="carbon:document-pdf" size="48" class="text-red-400/50"/>
+              <div class="text-center">
+                <p class="text-white mb-2">Cannot display PDF in browser</p>
+                <p class="text-white/50 text-sm mb-4">Please download the file to view it</p>
+                <a
+                    :href="cvUrl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-primary hover:brightness-110 text-white font-medium rounded-lg transition-all"
+                >
+                  <Icon name="carbon:download" size="16"/>
+                  Download PDF
+                </a>
+              </div>
+            </div>
+          </object>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex items-center justify-between p-4 border-t border-white/10 bg-white/5">
+          <p class="text-xs text-white/50">PDF Preview</p>
+          <div class="flex gap-2">
+            <a
+                :href="cvUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-primary hover:brightness-110 text-white text-sm font-medium rounded-lg transition-all"
+            >
+              <Icon name="carbon:download" size="16"/>
+              Download
+            </a>
+            <button
+                @click="closeCVModal"
+                class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm font-medium rounded-lg transition-all"
+            >
+              Close
+            </button>
+          </div>
         </div>
       </div>
     </div>

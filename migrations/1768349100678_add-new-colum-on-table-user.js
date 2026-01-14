@@ -15,6 +15,7 @@ export const up = (pgm) => {
         open_to_opportunities: {type: 'boolean', notNull: true, default: false},
         github_profile: {type: 'varchar(255)', notNull: false, default: null},
         linkedin_profile: {type: 'varchar(255)', notNull: false, default: null},
+        cv_url: {type: 'varchar(255)', notNull: true, default: 'https://example.com/default-cv.pdf'},
     });
 };
 
@@ -29,4 +30,5 @@ export const down = (pgm) => {
     pgm.dropColumn('users', 'open_to_opportunities');
     pgm.dropColumn('users', 'github_profile');
     pgm.dropColumn('users', 'linkedin_profile');
+    pgm.dropColumn('users', 'cv_url');
 };
