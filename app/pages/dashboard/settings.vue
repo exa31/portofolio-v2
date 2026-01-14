@@ -204,7 +204,7 @@ const saveSocialLinks = async () => {
               :disabled="isSaving || !profileHasChanges"
               class="px-6 py-3 rounded-lg bg-primary text-white font-semibold hover:brightness-110 disabled:opacity-50 transition-all flex items-center gap-2"
           >
-            <Icon v-if="isSaving" name="carbon:loading" size="16" class="animate-spin"/>
+            <Icon v-if="isSaving" name="icon-park-outline:loading-four" size="16" class="animate-spin"/>
             <Icon v-else name="carbon:save" size="20"/>
             {{ isSaving ? 'Saving...' : 'Save Profile' }}
           </button>
@@ -257,7 +257,7 @@ const saveSocialLinks = async () => {
               :disabled="isSaving || !socialLinksHaveChanges"
               class="w-full px-6 py-3 rounded-lg bg-primary text-white font-semibold hover:brightness-110 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
           >
-            <Icon v-if="isSaving" name="carbon:loading" size="16" class="animate-spin"/>
+            <Icon v-if="isSaving" name="icon-park-outline:loading-four" size="16" class="animate-spin"/>
             <Icon v-else name="carbon:save" size="20"/>
             {{ isSaving ? 'Saving...' : 'Save Social Links' }}
           </button>
