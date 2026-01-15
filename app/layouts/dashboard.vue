@@ -1,13 +1,54 @@
 <script setup lang="ts">
 import {ref} from 'vue'
-import {useBreadCrumbStore} from "~/stores/bread-crumb";
+import {useBreadCrumbStore} from "~/stores/bread-crumb"
+import {jwtDecode} from 'jwt-decode'
+import Cookie from "~/utils/cookie";
 
 const isSidebarOpen = ref(false)
 const breadCrumbStore = useBreadCrumbStore()
 const route = useRoute()
 
+// Decode user data from JWT token
+const getUserFromToken = () => {
+  try {
+    let token = ''
+
+    // Get token from server-side or client-side
+    if (import.meta.server) {
+      // Server-side: get from cookie header
+      const headers = useRequestHeaders(['cookie'])
+      const cookies = headers.cookie ? Object.fromEntries(
+          headers.cookie.split('; ').map(c => {
+            const [key, value] = c.split('=')
+            return [key, value]
+          })
+      ) : {}
+      token = cookies.token || ''
+    } else {
+      // Client-side: get from cookie
+      token = Cookie.get("token") || ''
+    }
+
+    if (token) {
+      const decoded: any = jwtDecode(token)
+      return {
+        name: decoded.name || 'User',
+        email: decoded.email || '',
+        id: decoded.sub || ''
+      }
+    }
+  } catch (error) {
+    console.error('Failed to decode token:', error)
+  }
+
+  return null
+}
+
+const tokenData = getUserFromToken()
+
 const user = {
-  name: 'Alex Morgan',
+  name: tokenData?.name || '',
+  email: tokenData?.email || '',
   role: 'Full-Stack Developer',
   avatar: 'https://via.placeholder.com/150'
 }
@@ -29,13 +70,35 @@ const closeSidebar = () => {
   isSidebarOpen.value = false
 }
 
-// Generate initials from name
+const handleLogout = async () => {
+  try {
+    // Call logout API endpoint
+    await $fetch('/api/users/logout', {
+      method: 'POST',
+      credentials: 'include'
+    })
+  } catch (error) {
+    console.error('Logout API error:', error)
+  } finally {
+    // Clear cookies
+    Cookie.erase('token')
+
+    // Redirect to login page
+    await navigateTo('/login')
+  }
+}
+
+// Generate initials from first two words of name
 const getInitials = (name: string): string => {
-  return name
-      .split(' ')
-      .map(word => word.charAt(0).toUpperCase())
-      .join('')
-      .slice(0, 2)
+  const words = name.trim().split(/\s+/)
+  if (words.length >= 2) {
+    // Ambil huruf pertama dari 2 kata pertama
+    return (words[0]!.charAt(0) + words[1]!.charAt(0)).toUpperCase()
+  } else if (words.length === 1) {
+    // Jika hanya 1 kata, ambil 2 huruf pertama dari kata itu
+    return words[0]!.substring(0, 2).toUpperCase()
+  }
+  return 'U'
 }
 
 // Generate consistent color based on name
@@ -133,6 +196,7 @@ watchEffect(
           <span>Settings</span>
         </NuxtLink>
         <button
+            @click="handleLogout"
             class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-white/70 hover:bg-red-500/10 hover:text-red-400 transition-all text-sm font-medium">
           <Icon name="carbon:logout" size="20"/>
           <span>Log Out</span>
@@ -224,6 +288,7 @@ watchEffect(
             <span>Settings</span>
           </NuxtLink>
           <button
+              @click="handleLogout"
               class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-white/70 hover:bg-red-500/10 hover:text-red-400 transition-all text-sm font-medium">
             <Icon name="carbon:logout" size="20"/>
             <span>Log Out</span>

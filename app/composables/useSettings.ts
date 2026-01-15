@@ -21,7 +21,6 @@ export const useSettings = () => {
             return body.data
         } catch (error) {
             console.error('Failed to fetch settings:', error)
-            toast.showErrorToast("Error", "Failed to load settings")
             return null
         } finally {
             isLoading.value = false
@@ -61,11 +60,11 @@ export const useSettings = () => {
             )
             return body.data
         } catch (error) {
-            console.error('Failed to update profile:', error)
+            const message = getErrorMessageAxios(error)
             toast.updateToast(
                 loadingToast.id,
                 "Error",
-                "Failed to update profile",
+                message,
                 "error",
                 5000
             )
@@ -107,10 +106,11 @@ export const useSettings = () => {
             return body.data
         } catch (error) {
             console.error('Failed to update social links:', error)
+            const message = getErrorMessageAxios(error)
             toast.updateToast(
                 loadingToast.id,
                 "Error",
-                "Failed to update social links",
+                message,
                 "error",
                 5000
             )
@@ -156,10 +156,11 @@ export const useSettings = () => {
             return body.data.url
         } catch (error) {
             console.error('Failed to upload CV:', error)
+            const message = getErrorMessageAxios(error)
             toast.updateToast(
                 loadingToast.id,
                 "Error",
-                "Failed to upload CV",
+                message,
                 "error",
                 5000
             )

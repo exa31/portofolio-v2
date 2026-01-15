@@ -386,7 +386,7 @@ const closeCVModal = () => {
           <button
               @click="uploadCVFile"
               :disabled="isSaving || !cvFile"
-              class="w-full px-6 py-3 rounded-lg bg-primary cursor-pointer text-white font-semibold hover:brightness-110 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+              class="w-full px-6 py-3 rounded-lg bg-primary text-white font-semibold hover:brightness-110 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
           >
             <Icon v-if="isSaving" name="icon-park-outline:loading-four" size="16" class="animate-spin"/>
             <Icon v-else name="carbon:upload" size="20"/>
