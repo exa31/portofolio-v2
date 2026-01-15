@@ -65,7 +65,9 @@ export default defineNuxtPlugin((nuxtApp) => {
                     isRefreshing = true
 
                     refreshPromise = api
-                        .post('/api/users/refresh')
+                        .post('/api/users/refresh', {}, {
+                            withCredentials: true,
+                        })
                         .then((res) => {
                             Cookie.set('token', res.data.data.access_token, 1)
                         })
