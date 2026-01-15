@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import {ref} from 'vue'
+import {onMounted, ref} from 'vue'
 
 interface Message {
   id: string
   type: 'user' | 'assistant'
   content: string
+  isHtml?: boolean
   timestamp: Date
 }
 
@@ -22,12 +23,36 @@ const messages = ref<Message[]>([
 const userInput = ref('')
 const isLoading = ref(false)
 const messagesContainer = ref<HTMLElement>()
+const {sendMessage: callAI, loadChatHistory} = useAIChat()
 
 const predefinedQuestions = [
   'What\'s your tech stack?',
   'Are you open to work?',
   'Can you show me a recent project?'
 ]
+
+onMounted(() => {
+  // Load chat history from localStorage if available
+  if (import.meta.client) {
+    const history = loadChatHistory()
+    if (history.length > 0) {
+      const loadedMessages = history.map(msg => ({
+        id: String(msg.timestamp),
+        type: msg.role as 'user' | 'assistant',
+        content: msg.content,
+        isHtml: msg.role === 'assistant',
+        timestamp: new Date(msg.timestamp)
+      }))
+      messages.value = [messages.value[0]!, ...loadedMessages]
+
+      setTimeout(() => {
+        if (messagesContainer.value) {
+          messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+        }
+      }, 0)
+    }
+  }
+})
 
 const sendMessage = async () => {
   if (!userInput.value.trim()) return
@@ -40,6 +65,7 @@ const sendMessage = async () => {
     timestamp: new Date()
   }
 
+  const prompt = userMessage.content
   messages.value.push(userMessage)
   userInput.value = ''
   isLoading.value = true
@@ -51,15 +77,27 @@ const sendMessage = async () => {
     }
   }, 0)
 
-  // Simulate AI response
-  setTimeout(() => {
+  try {
+    // Call Gemini API via composable
+    const response = await callAI(prompt)
+
     const assistantMessage: Message = {
       id: (Date.now() + 1).toString(),
       type: 'assistant',
-      content: generateResponse(userMessage.content),
+      content: response || 'Sorry, I couldn\'t generate a response. Please try again.',
+      isHtml: true,
       timestamp: new Date()
     }
     messages.value.push(assistantMessage)
+  } catch (error) {
+    const assistantMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      type: 'assistant',
+      content: 'Sorry, I encountered an error. Please try again later.',
+      timestamp: new Date()
+    }
+    messages.value.push(assistantMessage)
+  } finally {
     isLoading.value = false
 
     setTimeout(() => {
@@ -67,22 +105,6 @@ const sendMessage = async () => {
         messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
       }
     }, 0)
-  }, 800)
-}
-
-const generateResponse = (question: string): string => {
-  const q = question.toLowerCase()
-
-  if (q.includes('stack') || q.includes('tech')) {
-    return 'I primarily work with Vue.js, React, Node.js, and TypeScript. I\'m also experienced with cloud platforms like AWS and Docker for containerization. On the frontend, I use Tailwind CSS for styling and various modern tools for optimization.'
-  } else if (q.includes('work') || q.includes('hire') || q.includes('available')) {
-    return 'Yes, I\'m currently open to new opportunities! I\'m looking for roles where I can contribute to meaningful projects and work with modern technologies. Feel free to check out my projects or contact me directly.'
-  } else if (q.includes('project')) {
-    return 'I have several featured projects including E-Commerce Dashboard, SaaS Analytics Platform, and FinTech Mobile App. Each project demonstrates different aspects of full-stack development. You can view them in the Projects section!'
-  } else if (q.includes('experience')) {
-    return 'I have over 5+ years of experience in full-stack development. I\'ve worked at companies like PT Astra International, PT Telkom, and PT Gojek. I lead teams, architect microservices, and focus on performance optimization.'
-  } else {
-    return 'That\'s a great question! I\'m here to help you learn more about my work and experience. Feel free to ask about my projects, skills, or anything else!'
   }
 }
 
@@ -165,7 +187,11 @@ const toggleMinimize = () => {
               <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
                 <Icon name="carbon:asleep-filled" size="16" class="text-primary"/>
               </div>
-              <div class="bg-white/10 border border-white/20 rounded-lg p-3 text-white/90 text-sm leading-relaxed">
+              <div v-if="message.isHtml"
+                   class="bg-white/10 border border-white/20 rounded-lg p-3 text-white/90 text-sm leading-relaxed prose prose-invert max-w-none"
+                   v-html="message.content"></div>
+              <div v-else
+                   class="bg-white/10 border border-white/20 rounded-lg p-3 text-white/90 text-sm leading-relaxed">
                 {{ message.content }}
               </div>
             </div>

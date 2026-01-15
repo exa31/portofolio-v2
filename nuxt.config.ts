@@ -38,6 +38,8 @@ export default defineNuxtConfig({
         minioUseSsl: process.env.MINIO_USE_SSL === 'true',
         minioPort: process.env.MINIO_PORT ? Number(process.env.MINIO_PORT) : 9000,
 
+        geminiApiKey: process.env.GEMINI_API_KEY,
+
         // Client-side public variables
         public: {
             googleClientId: process.env.NUXT_PUBLIC_GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID || '',

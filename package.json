@@ -13,6 +13,7 @@
     "migrate:create": "npx node-pg-migrate create -m migrations"
   },
   "dependencies": {
+    "@google/genai": "^1.36.0",
     "@nuxt/icon": "^2.1.1",
     "@nuxt/image": "^2.0.0",
     "@nuxt/ui": "^4.3.0",
