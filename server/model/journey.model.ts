@@ -33,6 +33,7 @@ export const createJourneySchema = z.object({
     attachments: z.string().max(255).optional(),
     is_current: z.boolean(),
     id_skills: z.array(z.number()).optional(),
+    skills: z.array(z.string()).optional(),
 });
 
 export type CreateJourneyInput = z.infer<typeof createJourneySchema>;

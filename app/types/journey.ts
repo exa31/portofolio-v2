@@ -12,6 +12,7 @@ export type Journey = {
     created_at?: string
     updated_at?: string
     id_skills?: number[] // For storing skill associations
+    skills?: string[]
 }
 
 export type JourneysResponse = {

@@ -91,7 +91,7 @@ export const getJourneyById = async (
                j.is_current,
                j.created_at,
                j.updated_at,
-               ARRAY_AGG(s.id) FILTER (WHERE s.id IS NOT NULL) AS id_skills
+               ARRAY_AGG(s.id) FILTER (WHERE s.id IS NOT NULL) AS id_skills, ARRAY_AGG(s.name) FILTER (WHERE s.name IS NOT NULL) AS skills
         FROM journeys j
                  LEFT JOIN journey_skills js ON j.id = js.journey_id
                  LEFT JOIN skills s ON js.skill_id = s.id
@@ -123,7 +123,7 @@ export const getJourneysByCursor = async (
                j.is_current,
                j.created_at,
                j.updated_at,
-               ARRAY_AGG(s.id) FILTER (WHERE s.id IS NOT NULL) AS id_skills
+               ARRAY_AGG(s.id) FILTER (WHERE s.id IS NOT NULL) AS id_skills, ARRAY_AGG(s.name) FILTER (WHERE s.name IS NOT NULL) AS skills
         FROM journeys j
                  LEFT JOIN journey_skills js ON j.id = js.journey_id
                  LEFT JOIN skills s ON js.skill_id = s.id
@@ -194,12 +194,12 @@ export const getAllJourneys = async (
                j.is_current,
                j.created_at,
                j.updated_at,
-               ARRAY_AGG(s.id) FILTER (WHERE s.id IS NOT NULL) AS id_skills
+               ARRAY_AGG(s.id) FILTER (WHERE s.id IS NOT NULL) AS id_skills, ARRAY_AGG(s.name) FILTER (WHERE s.name IS NOT NULL) AS skills
         FROM journeys j
                  LEFT JOIN journey_skills js ON j.id = js.journey_id
                  LEFT JOIN skills s ON js.skill_id = s.id
         GROUP BY j.id
-        ORDER BY j.id DESC
+        ORDER BY j.start_date DESC
     `
     const result = await client.query<JourneyModel>(sql)
 
