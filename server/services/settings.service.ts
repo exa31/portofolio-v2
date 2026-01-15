@@ -4,10 +4,10 @@ import {UpdateProfileSettingsInput, UpdateSocialLinksInput} from "~~/server/mode
 import {withTransaction} from "~~/server/db/postgres";
 import {HttpError} from "~~/server/errors/HttpError";
 
-export const getUserSettings = async (event: H3Event, userId: string) => {
+export const getUserSettings = async (event: H3Event,) => {
     return withTransaction(
         async (client) => {
-            const settings = await repository.getUserSettings(client, userId);
+            const settings = await repository.getUserSettings(client,);
             if (!settings) {
                 throw new HttpError(404, 'USER_NOT_FOUND', 'User not found');
             }
@@ -16,20 +16,20 @@ export const getUserSettings = async (event: H3Event, userId: string) => {
     )
 }
 
-export const updateProfileSettings = async (event: H3Event, userId: string, data: UpdateProfileSettingsInput) => {
+export const updateProfileSettings = async (event: H3Event, data: UpdateProfileSettingsInput) => {
     return withTransaction(
         async (client) => {
-            const user = await repository.getUserSettings(client, userId);
+            const user = await repository.getUserSettings(client);
             if (!user) {
                 throw new HttpError(404, 'USER_NOT_FOUND', 'User not found');
             }
 
-            const ok = await repository.updateProfileSettings(client, userId, data);
+            const ok = await repository.updateProfileSettings(client, data);
             if (!ok) {
                 throw new HttpError(500, 'PROFILE_UPDATE_FAILED', 'Failed to update profile settings');
             }
 
-            const updatedSettings = await repository.getUserSettings(client, userId);
+            const updatedSettings = await repository.getUserSettings(client,);
 
             return sendSuccess(
                 event,
@@ -42,20 +42,20 @@ export const updateProfileSettings = async (event: H3Event, userId: string, data
     )
 }
 
-export const updateSocialLinks = async (event: H3Event, userId: string, data: UpdateSocialLinksInput) => {
+export const updateSocialLinks = async (event: H3Event, data: UpdateSocialLinksInput) => {
     return withTransaction(
         async (client) => {
-            const user = await repository.getUserSettings(client, userId);
+            const user = await repository.getUserSettings(client);
             if (!user) {
                 throw new HttpError(404, 'USER_NOT_FOUND', 'User not found');
             }
 
-            const ok = await repository.updateSocialLinks(client, userId, data);
+            const ok = await repository.updateSocialLinks(client, data);
             if (!ok) {
                 throw new HttpError(500, 'SOCIAL_LINKS_UPDATE_FAILED', 'Failed to update social links');
             }
 
-            const updatedSettings = await repository.getUserSettings(client, userId);
+            const updatedSettings = await repository.getUserSettings(client);
 
             return sendSuccess(
                 event,

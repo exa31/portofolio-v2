@@ -5,7 +5,6 @@ import {withAuth} from "~~/server/utils/withAuth";
 import z from "zod";
 
 export default withAuth(async (event) => {
-    const userId = event.context.user.id! as string
     const parsed = await readValidatedBody(event, body => updateProfileSettingsSchema.safeParse(body))
 
     if (!parsed.success) {
@@ -13,6 +12,6 @@ export default withAuth(async (event) => {
         throw new HttpError(400, 'INVALID_INPUT', 'The request body is invalid', errors)
     }
 
-    return await updateProfileSettings(event, userId, parsed.data)
+    return await updateProfileSettings(event, parsed.data)
 })
 

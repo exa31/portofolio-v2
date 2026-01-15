@@ -5,7 +5,6 @@ import {updateUserCV} from "~~/server/repositories/settings.repository";
 import {withTransaction} from "~~/server/db/postgres";
 
 export default withAuth(async (event) => {
-    const userId = event.context.user.id! as string
     return await withTransaction(
         async (client) => {
 
@@ -44,7 +43,6 @@ export default withAuth(async (event) => {
 
                     const ok = await updateUserCV(
                         client,
-                        userId,
                         url
                     )
 

@@ -3,7 +3,6 @@ import {UpdateProfileSettingsInput, UpdateSocialLinksInput, UserSettingsModel} f
 
 export const getUserSettings = async (
     client: PoolClient,
-    userId: string
 ): Promise<UserSettingsModel | null> => {
     const sql = `
         SELECT id,
@@ -17,17 +16,14 @@ export const getUserSettings = async (
                cv_url,
                updated_at
         FROM users
-        WHERE id = $1
     `
-    const values = [userId]
 
-    const result = await client.query<UserSettingsModel>(sql, values)
+    const result = await client.query<UserSettingsModel>(sql)
     return result.rows[0] || null
 }
 
 export const updateProfileSettings = async (
     client: PoolClient,
-    userId: string,
     data: UpdateProfileSettingsInput
 ): Promise<boolean> => {
     const sql = `
@@ -36,13 +32,11 @@ export const updateProfileSettings = async (
             location              = $2,
             open_to_opportunities = $3,
             updated_at            = CURRENT_TIMESTAMP
-        WHERE id = $4
     `
     const values = [
         data.name,
         data.location || null,
         data.open_to_opportunities,
-        userId,
     ]
 
     const result = await client.query(sql, values)
@@ -51,7 +45,6 @@ export const updateProfileSettings = async (
 
 export const updateSocialLinks = async (
     client: PoolClient,
-    userId: string,
     data: UpdateSocialLinksInput
 ): Promise<boolean> => {
     const sql = `
@@ -59,12 +52,10 @@ export const updateSocialLinks = async (
         SET github_profile   = $1,
             linkedin_profile = $2,
             updated_at       = CURRENT_TIMESTAMP
-        WHERE id = $3
     `
     const values = [
         data.github_profile || null,
         data.linkedin_profile || null,
-        userId,
     ]
 
     const result = await client.query(sql, values)
@@ -73,18 +64,15 @@ export const updateSocialLinks = async (
 
 export const updateUserCV = async (
     client: PoolClient,
-    userId: string,
     cvUrl: string
 ): Promise<boolean> => {
     const sql = `
         UPDATE users
         SET cv_url     = $1,
             updated_at = CURRENT_TIMESTAMP
-        WHERE id = $2
     `
     const values = [
         cvUrl,
-        userId,
     ]
 
     const result = await client.query(sql, values)
