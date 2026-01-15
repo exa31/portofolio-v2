@@ -1,27 +1,31 @@
 import {del} from "~~/server/db/redis"
-import {sendSuccess} from "~~/server/utils/response"
+import {sendError, sendSuccess} from "~~/server/utils/response"
 import {withTransaction} from "~~/server/db/postgres";
 import {deleteToken} from "~~/server/repositories/token.repository";
 import {handleError} from "~~/server/utils/handleError";
+import {HttpError} from "~~/server/errors/HttpError";
 
 export default handleError(async (event) => {
     try {
-        // Get user ID dari token
-        const userId = event.context.user.id
-
+        const body = await readBody(event)
         await withTransaction(
             async (client) => {
                 // Hapus refresh token dari database jika disimpan di sana
                 // Delete refresh token dari Redis
-                if (userId) {
-                    const refreshToken = getCookie(event, 'refresh_token')
-                    await deleteToken(
-                        client,
-                        hashToSha256(refreshToken || '')
-                    )
-                    if (refreshToken) {
-                        await del(`user_refresh_token:${refreshToken}`)
-                    }
+
+                let refreshToken = getCookie(event, 'refresh_token')
+                if (!refreshToken) {
+                    refreshToken = body.refresh_token
+                }
+                if (!refreshToken) {
+                    throw new HttpError(401, 'MISSING_REFRESH_TOKEN', 'Refresh token is missing')
+                }
+                await deleteToken(
+                    client,
+                    hashToSha256(refreshToken || '')
+                )
+                if (refreshToken) {
+                    await del(`user_refresh_token:${refreshToken}`)
                 }
             }
         )
@@ -50,8 +54,11 @@ export default handleError(async (event) => {
 
         return sendSuccess(event, null, 'Logout successful', 'LOGOUT_SUCCESS', 200)
     } catch (error) {
+        if (error instanceof HttpError) {
+            throw error
+        }
         console.error('Logout error:', error)
-        return sendSuccess(event, null, 'Logout successful', 'LOGOUT_SUCCESS', 200)
+        return sendError(event, 500, 'LOGOUT_ERROR', 'An error occurred during logout')
     }
 })
 

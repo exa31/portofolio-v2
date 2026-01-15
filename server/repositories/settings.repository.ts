@@ -33,15 +33,13 @@ export const updateProfileSettings = async (
     const sql = `
         UPDATE users
         SET name                  = $1,
-            email                 = $2,
-            location              = $3,
-            open_to_opportunities = $4,
+            location              = $2,
+            open_to_opportunities = $3,
             updated_at            = CURRENT_TIMESTAMP
-        WHERE id = $5
+        WHERE id = $4
     `
     const values = [
         data.name,
-        data.email,
         data.location || null,
         data.open_to_opportunities,
         userId,

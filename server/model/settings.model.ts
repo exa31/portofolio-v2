@@ -17,7 +17,6 @@ export type UserSettingsModel = z.infer<typeof userSettingsModel>;
 
 export const updateProfileSettingsSchema = z.object({
     name: z.string().min(1).max(255),
-    email: z.email(),
     location: z.string().max(255).optional().nullable(),
     open_to_opportunities: z.boolean(),
 });

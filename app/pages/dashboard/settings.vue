@@ -226,6 +226,7 @@ const closeCVModal = () => {
             <input
                 v-model="profileForm.email"
                 type="email"
+                :disabled="true"
                 class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-primary/50 focus:bg-white/15 transition-all"
             />
           </div>
