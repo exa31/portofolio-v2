@@ -5,6 +5,7 @@ import type {Skill, SkillsResponse} from '~/types/skill'
 import FooterSection from "~/components/FooterSection.vue"
 import type {JourneysResponse} from "~/types/journey";
 import type {ProjectsResponse} from "~/types/project";
+import type {UserSettingsModel} from "~/types/settings";
 
 // ========== PAGE METADATA ==========
 definePageMeta({
@@ -44,6 +45,10 @@ const {data: journeysData, pending: journeysLoading} = await useFetch<BaseRespon
   watch: false,
 })
 
+const {data: dataUser, pending: loadingUser} = await useFetch<BaseResponse<UserSettingsModel>>('/api/settings', {
+  watch: false,
+})
+
 // ========== COMPUTED DATA ==========
 const projects = computed(() => {
   const apiProjects = projectsData.value?.data?.data ?? []
@@ -75,7 +80,7 @@ const experiences = computed(() => {
   const journeys = journeysData.value?.data?.data ?? []
 
   // Map API journeys to experiences format
-  return journeys.map((journey: any) => ({
+  return journeys.map((journey) => ({
     id: journey.id,
     company: journey.company,
     position: journey.title,
@@ -85,21 +90,50 @@ const experiences = computed(() => {
     description: journey.description || '',
     logo: "https://via.placeholder.com/80",
     responsibilities: journey.key_responsibilities || [],
-    technologies: journey.id_skills || [],
+    technologies: journey.skills || [],
     attachment: journey.attachments || null,
   }))
 })
+
+function diffInMonths(start: Date, end: Date): number {
+  return (
+      (end.getFullYear() - start.getFullYear()) * 12 +
+      (end.getMonth() - start.getMonth())
+  )
+}
+
+const totalExperienceYears = computed(() => {
+  const journeys = journeysData.value?.data?.data ?? []
+  let totalMonths = 0
+
+  journeys.forEach((journey) => {
+    if (!journey.start_date) return
+
+    const start = new Date(journey.start_date)
+    const end = journey.is_current
+        ? new Date()
+        : journey.end_date
+            ? new Date(journey.end_date)
+            : new Date()
+
+    totalMonths += diffInMonths(start, end)
+  })
+
+  // convert ke tahun (1 angka desimal)
+  return parseInt((totalMonths / 12).toFixed(0))
+})
+
 </script>
 
 <template>
   <div class="text-white">
     <!-- Hero Section -->
     <main class="container mx-auto px-6 py-20">
-      <HeroSection/>
+      <HeroSection :user="dataUser?.data"/>
     </main>
 
     <!-- About Section -->
-    <AboutSection/>
+    <AboutSection :user="dataUser?.data" :count_projects="projects.length" :count_experience="totalExperienceYears"/>
 
     <!-- Skills Section -->
     <SkillsSection :skills="skills"/>

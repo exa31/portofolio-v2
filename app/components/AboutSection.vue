@@ -1,4 +1,12 @@
 <script setup lang="ts">
+
+import type {UserSettingsModel} from "~/types/settings";
+
+defineProps<{
+  user?: UserSettingsModel | null
+  count_projects?: number
+  count_experience?: number
+}>()
 </script>
 
 <template>
@@ -19,23 +27,44 @@
             <NuxtImg src="/images/about.png" alt="Profile" class="h-full rounded-xl w-full"/>
 
             <!-- Status Badge -->
-            <div class="absolute -top-4 right-2 z-20">
-              <div
-                  class="inline-flex items-center gap-2 bg-gray-800 border border-white/10 text-white px-5 py-3 rounded-lg shadow-lg">
-                <div class="relative">
-                  <!-- Glow ring -->
-                  <span class="absolute inset-0 rounded-full bg-green-500/70 blur-md animate-ping"></span>
-                  <!-- Icon -->
-                  <div class="relative bg-green-900 p-1 w-8 h-8 rounded-full">
-                    <Icon name="weui:done2-filled" size="24" class="text-green-400"/>
+            <template v-if="user?.open_to_opportunities">
+              <div class="absolute -top-4 right-2 z-20">
+                <div
+                    class="inline-flex items-center gap-2 bg-gray-800 border border-white/10 text-white px-5 py-3 rounded-lg shadow-lg">
+                  <div class="relative">
+                    <!-- Glow ring -->
+                    <span class="absolute inset-0 rounded-full bg-green-500/70 blur-md animate-ping"></span>
+                    <!-- Icon -->
+                    <div class="relative bg-green-900 p-1 w-8 h-8 rounded-full">
+                      <Icon name="weui:done2-filled" size="24" class="text-green-400"/>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="text-white/50 text-xs uppercase">Status</div>
+                    <div class="text-white text-md font-medium">Open to Work</div>
                   </div>
                 </div>
-                <div>
-                  <div class="text-white/50 text-xs uppercase">Status</div>
-                  <div class="text-white text-md font-medium">Open to Work</div>
+              </div>
+            </template>
+            <template v-else>
+              <div class="absolute -top-4 right-2 z-20">
+                <div
+                    class="inline-flex items-center gap-2 bg-gray-800 border border-white/10 text-white px-5 py-3 rounded-lg shadow-lg">
+                  <div class="relative">
+                    <!-- Glow ring -->
+                    <span class="absolute inset-0 rounded-full bg-red-500/70 blur-md animate-ping"></span>
+                    <!-- Icon -->
+                    <div class="relative bg-red-900 p-1 w-8 h-8 rounded-full">
+                      <Icon name="mdi:lock" size="24" class="text-red-400"/>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="text-white/50 text-xs uppercase">Status</div>
+                    <div class="text-white text-md font-medium">Not Available</div>
+                  </div>
                 </div>
               </div>
-            </div>
+            </template>
           </div>
         </div>
 
@@ -73,7 +102,7 @@
           <div class="flex sm:flex-row flex-col gap-6 mb-8">
             <div class="flex items-center bg-[#1e2430] p-5 rounded-2xl gap-3">
               <div>
-                <div class="text-4xl font-black text-white">5+</div>
+                <div class="text-4xl font-black text-white">{{ count_experience || 0 }}+</div>
                 <div class="text-xs text-white/50 uppercase font-medium mt-4">Years Experience</div>
               </div>
               <div
@@ -84,7 +113,7 @@
 
             <div class="flex items-center bg-[#1e2430] p-5 rounded-2xl gap-3">
               <div>
-                <div class="text-4xl font-black text-white">50+</div>
+                <div class="text-4xl font-black text-white">{{ count_projects || 0 }}+</div>
                 <div class="text-xs text-white/50 uppercase mt-4 font-medium">Projects Shipped</div>
               </div>
               <div
@@ -128,7 +157,8 @@
 
           <!-- CTA Buttons -->
           <div class="flex sm:flex-row flex-col  gap-3 pt-4">
-            <a href="/resume.pdf"
+            <a :href="user?.cv_url"
+               target="_blank"
                class="primary-cta-btn inline-flex items-center gap-2 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition">
               <span>Download CV</span>
               <Icon name="material-symbols:download" size="20"/>

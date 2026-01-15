@@ -1,4 +1,11 @@
 <script setup lang="ts">
+
+import type {UserSettingsModel} from "~/types/settings";
+
+defineProps<{
+  user?: UserSettingsModel | null
+}>()
+
 </script>
 
 <template>
@@ -38,7 +45,7 @@
             <p class="text-xs text-white/50 mb-3">CONNECT WITH ME</p>
             <div class="flex gap-3">
               <a aria-label="Github"
-                 href="https://github.com/exa31"
+                 :href="user?.github_profile ?? 'https://github.com'"
                  target="_blank"
                  class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/6">
                 <Icon name="line-md:github" size="28"
@@ -46,7 +53,7 @@
               </a>
 
               <a aria-label="LinkedIn"
-                 href="https://www.linkedin.com/in/eka-nazhifan-75b116293/"
+                 :href="user?.linkedin_profile ?? 'https://www.linkedin.com'"
                  target="_blank"
                  class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/6">
                 <Icon name="jam:linkedin" size="28"
@@ -54,7 +61,7 @@
               </a>
 
               <a aria-label="Email"
-                 href="https://mail.google.com/mail/?view=cm&fs=1&to=ekaaa.jobs@gmail.com&su=Job%20Opportunity&body=Hi%20Eka,%0A%0AI'm%20interested%20in%20working%20with%20you."
+                 :href="`https://mail.google.com/mail/?view=cm&fs=1&to=${user?.email}&su=Job%20Opportunity&body=Hi%20Eka,%0A%0AI'm%20interested%20in%20working%20with%20you.`"
                  target="_blank"
                  rel="noopener noreferrer"
                  class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/6">
