@@ -119,7 +119,7 @@ export const useMessage = () => {
 
     const updateMessageStatus = async (id: string, status: 'unread' | 'read'): Promise<boolean> => {
         try {
-            const response = await $axios.put<BaseResponse<Message>>(`/api/messages/${id}`, {status})
+            const response = await $axios.put<BaseResponse<Message>>(`/api/messages`, {status, id})
 
             if (response.status === 200) {
                 // Update local state

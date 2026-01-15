@@ -2,9 +2,8 @@ import {HttpError} from "~~/server/errors/HttpError";
 import {createMessageSchema} from "~~/server/model/message.model";
 import {createMessage} from "~~/server/services/message.service";
 import z from "zod";
-import {withAuth} from "~~/server/utils/withAuth";
 
-export default withAuth(async (event) => {
+export default handleError(async (event) => {
     const parsed = await readValidatedBody(event, body => createMessageSchema.safeParse(body))
 
     if (!parsed.success) {

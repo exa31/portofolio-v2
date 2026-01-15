@@ -10,7 +10,7 @@ export default withAuth(async (event) => {
     }).safeParse(query));
 
     if (!parsed.success) {
-        throw new HttpError(400, 'INVALID_QUERY', 'The query parameters are invalid');
+        throw new HttpError(400, 'INVALID_QUERY', 'The query parameters are invalid', z.treeifyError(parsed.error).properties);
     }
 
     const query = parsed.data

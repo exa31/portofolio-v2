@@ -1,8 +1,7 @@
 import {HttpError} from "~~/server/errors/HttpError";
 import {getMessageById} from "~~/server/services/message.service";
-import {handleError} from "~~/server/utils/handleError";
 
-export default handleError(async (event) => {
+export default withAuth(async (event) => {
     const id = getRouterParam(event, 'id')
 
     if (!id) {
