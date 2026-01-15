@@ -2,8 +2,9 @@ import {HttpError} from "~~/server/errors/HttpError";
 import {updateMessageStatusSchema} from "~~/server/model/message.model";
 import {updateMessageStatus} from "~~/server/services/message.service";
 import z from "zod";
+import {withAuth} from "~~/server/utils/withAuth";
 
-export default defineEventHandler(async (event) => {
+export default withAuth(async (event) => {
 
     const parsed = await readValidatedBody(event, body => updateMessageStatusSchema.safeParse(body))
 

@@ -1,7 +1,8 @@
 import {HttpError} from "~~/server/errors/HttpError";
 import {getJourneyById} from "~~/server/services/journey.service";
+import {handleError} from "~~/server/utils/handleError";
 
-export default defineEventHandler(async (event) => {
+export default handleError(async (event) => {
     const id = getRouterParam(event, 'id')
 
     if (!id || isNaN(Number(id))) {

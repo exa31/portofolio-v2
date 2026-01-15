@@ -2,8 +2,9 @@ import {del} from "~~/server/db/redis"
 import {sendSuccess} from "~~/server/utils/response"
 import {withTransaction} from "~~/server/db/postgres";
 import {deleteToken} from "~~/server/repositories/token.repository";
+import {handleError} from "~~/server/utils/handleError";
 
-export default defineEventHandler(async (event) => {
+export default handleError(async (event) => {
     try {
         // Get user ID dari token
         const userId = event.context.user.id

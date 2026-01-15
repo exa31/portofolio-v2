@@ -2,8 +2,9 @@ import {paginationSchemaQuery} from "~~/server/utils/common";
 import {HttpError} from "~~/server/errors/HttpError";
 import z from "zod";
 import {getMessagesByCursor} from "~~/server/services/message.service";
+import {withAuth} from "~~/server/utils/withAuth";
 
-export default defineEventHandler(async (event) => {
+export default withAuth(async (event) => {
     const parsed = await getValidatedQuery(event, query => paginationSchemaQuery.extend({
         status: z.enum(["unread", "read"])
     }).safeParse(query));

@@ -2,8 +2,9 @@ import {HttpError} from "~~/server/errors/HttpError";
 import {updateJourneySchema} from "~~/server/model/journey.model";
 import {updateJourney} from "~~/server/services/journey.service";
 import z from "zod";
+import {withAuth} from "~~/server/utils/withAuth";
 
-export default defineEventHandler(async (event) => {
+export default withAuth(async (event) => {
     const parsed = await readValidatedBody(event, body => updateJourneySchema.safeParse(body))
 
 

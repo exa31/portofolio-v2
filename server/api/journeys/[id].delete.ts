@@ -1,7 +1,8 @@
 import {HttpError} from "~~/server/errors/HttpError";
 import {deleteJourney} from "~~/server/services/journey.service";
+import {withAuth} from "~~/server/utils/withAuth";
 
-export default defineEventHandler(async (event) => {
+export default withAuth(async (event) => {
     const id = getRouterParam(event, 'id')
 
     if (!id || isNaN(Number(id))) {

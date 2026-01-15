@@ -2,8 +2,9 @@ import {paginationSchemaQuery} from "~~/server/utils/common";
 import {HttpError} from "~~/server/errors/HttpError";
 import z from "zod";
 import {getJourneysByCursor, getJourneysNoPagination} from "~~/server/services/journey.service";
+import {handleError} from "~~/server/utils/handleError";
 
-export default defineEventHandler(async (event) => {
+export default handleError(async (event) => {
     const parsed = await getValidatedQuery(event, query => paginationSchemaQuery.extend({
         search: z.string().optional()
     }).safeParse(query));
