@@ -110,14 +110,6 @@ const openModal = (experience: Experience) => {
           </div>
         </div>
       </div>
-
-      <!-- Load Earlier History Link -->
-      <div class="text-center mt-16">
-        <p class="text-white/50 text-sm flex items-center justify-center gap-2">
-          <Icon name="carbon:time" size="16"/>
-          Load Earlier History
-        </p>
-      </div>
     </div>
 
     <!-- Experience Details Modal -->

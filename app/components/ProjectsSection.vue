@@ -85,15 +85,6 @@ const copyToClipboard = (text: string | undefined) => {
           </div>
         </div>
       </div>
-
-      <!-- Load more button -->
-      <div class="flex justify-center">
-        <button
-            class="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-white/10 text-white/70 font-semibold hover:bg-white/5 transition-all">
-          <span>Load More Projects</span>
-          <Icon name="tabler:chevron-down" size="20"/>
-        </button>
-      </div>
     </div>
   </section>
 
