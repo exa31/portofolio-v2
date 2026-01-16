@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref, watch} from 'vue'
+import {onMounted, ref, watch} from 'vue'
 
 definePageMeta({
   layout: false,
@@ -23,14 +23,25 @@ useHead({
 
 const isLoading = ref(false)
 const localError = ref<string | null>(null)
+const config = useRuntimeConfig()
+const debugInfo = ref<{ clientId?: string; clientUrl?: string }>({clientId: '', clientUrl: ''})
 
-const {initGoogleSignIn, signInWithGooglePopup, signInError} = useGoogleSignIn()
+const {initGoogleSignIn, signInError} = useGoogleSignIn()
 
 // Watch untuk reactive error dari composable
 watch(signInError, (newError) => {
   if (newError) {
     localError.value = newError
   }
+})
+
+onMounted(() => {
+  // Debug: Tampilkan konfigurasi Google
+  debugInfo.value = {
+    clientId: String(config.public.googleClientId || 'NOT SET'),
+    clientUrl: String(config.public.clientUrl || 'NOT SET'),
+  }
+  console.log('[Debug] Google Config:', debugInfo.value)
 })
 
 const handleGoogleLogin = async () => {

@@ -2,39 +2,55 @@ import {ref} from 'vue'
 import Cookie from "~/utils/cookie";
 
 export const useGoogleSignIn = () => {
-    const {$loadGoogleOAuth} = useNuxtApp()
     const router = useRouter()
     const config = useRuntimeConfig()
     const googleClientId = config.public.googleClientId
+    const clientUrl = config.public.clientUrl || window.location.origin
 
     // Error state untuk di-share ke component
     const signInError = ref<string | null>(null)
 
+    // Validate Google Client ID
+    const validateGoogleConfig = () => {
+        if (!googleClientId || googleClientId.trim() === '') {
+            signInError.value = 'Google Client ID is not configured. Please set NUXT_PUBLIC_GOOGLE_CLIENT_ID or GOOGLE_CLIENT_ID environment variable.'
+            console.error('[Google Auth]', signInError.value)
+            return false
+        }
+        if (!(window as any).google) {
+            signInError.value = 'Google OAuth library failed to load'
+            console.error('[Google Auth]', signInError.value)
+            return false
+        }
+        return true
+    }
+
     // Initialize Google Sign-In with pop-up
     const initGoogleSignIn = async () => {
         try {
-            if (!(window as any).google) {
-                signInError.value = 'Google OAuth library failed to load'
-                console.error(signInError.value)
+            if (!validateGoogleConfig()) {
                 return false
             }
 
-            // Initialize Google Accounts library
-            console.log(googleClientId)
+            // Initialize Google Accounts library with dynamic redirect_uri
+            const redirectUri = `${clientUrl}/`
+            console.log('[Google Auth] Initializing with Client ID:', googleClientId)
+            console.log('[Google Auth] Redirect URI:', redirectUri)
+
             ;(window as any).google.accounts.oauth2.initCodeClient(
                 {
                     client_id: googleClientId,
                     scope: 'email profile openid',
                     ux_mode: 'popup',
                     callback: handleGoogleSignInResponse,
-                    redirect_uri: 'http://localhost:3000',
+                    redirect_uri: redirectUri,
                 }
             ).requestCode()
 
             return true
         } catch (error) {
             signInError.value = error instanceof Error ? error.message : 'Failed to initialize Google Sign-In'
-            console.error(signInError.value, error)
+            console.error('[Google Auth] Error:', signInError.value, error)
             return false
         }
     }
@@ -46,36 +62,38 @@ export const useGoogleSignIn = () => {
 
             if (!credential) {
                 signInError.value = 'No credential received from Google'
-                console.error(signInError.value)
+                console.error('[Google Auth] No credential:', response)
                 return
             }
 
-            // Send ID token to your backend
+            console.log('[Google Auth] Received authorization code, sending to backend...')
+
+            // Send auth code to your backend
             const result = await $fetch('/api/users/login', {
                 method: 'POST',
                 credentials: 'include',
                 body: {
                     code: credential,
                 },
-
             }) as any
 
             if (!result?.data?.access_token) {
-                signInError.value = 'Failed to authenticate with Google'
-                console.error(signInError.value, result)
+                signInError.value = result?.message || 'Failed to authenticate with Google'
+                console.error('[Google Auth] Auth failed:', result)
                 return
             }
 
-            // Store the access token as needed (e.g., in a cookie or local storage)
+            // Store the access token
             Cookie.set('token', result.data.access_token, 1) // 1 day expiry
+            console.log('[Google Auth] Successfully authenticated')
 
             // Backend sets httpOnly cookies automatically
-            // Just redirect to dashboard
+            // Redirect to dashboard
             signInError.value = null
             await router.push('/dashboard')
         } catch (error) {
             signInError.value = error instanceof Error ? error.message : 'Google sign-in failed'
-            console.error('Google sign-in error:', error)
+            console.error('[Google Auth] Error:', signInError.value, error)
         }
     }
 
