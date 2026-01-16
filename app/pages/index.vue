@@ -326,12 +326,12 @@ const totalExperienceYears = computed(() => {
 <template>
   <div class="text-white">
     <!-- Hero Section -->
-    <main class="container mx-auto px-6 py-20" data-aos="fade-up">
+    <main class="container mx-auto px-6 py-20 overflow-hidden" data-aos="fade-up">
       <HeroSection :user="user"/>
     </main>
 
     <!-- About Section -->
-    <div data-aos="fade-up" data-aos-delay="100">
+    <div data-aos="fade-up" data-aos-delay="100" class="overflow-hidden">
       <AboutSection :user="user" :count_projects="projects.length" :count_experience="totalExperienceYears"/>
     </div>
 
@@ -351,12 +351,12 @@ const totalExperienceYears = computed(() => {
     </div>
 
     <!-- Contact Section -->
-    <div data-aos="fade-up" data-aos-delay="500">
+    <div data-aos="fade-up" data-aos-delay="500" class="overflow-hidden">
       <ContactSection :user="user"/>
     </div>
 
     <!-- Footer Section -->
-    <div data-aos="fade-up" data-aos-delay="600">
+    <div data-aos="fade-up" class="overflow-hidden" data-aos-delay="600">
       <FooterSection/>
     </div>
 
