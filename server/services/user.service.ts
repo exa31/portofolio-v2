@@ -195,8 +195,8 @@ export const refreshToken = async (event: H3Event, oldRefreshToken: string) => {
             } = signRefreshToken(userId!, name, email);
 
             await repository.updateToken(client, hashToSha256(oldRefreshToken), expiresAt, hashToSha256(newRefreshToken));
-            await del(`user_refresh_token:${refreshToken}`)
-            await set(`user_refresh_token:${refreshToken}`, JSON.stringify({id: userId}))
+            await del(`user_refresh_token:${oldRefreshToken}`)
+            await set(`user_refresh_token:${newRefreshToken}`, JSON.stringify({id: userId}))
 
             setCookie(
                 event,
