@@ -97,7 +97,13 @@ export const useMessage = () => {
             const response = await $axios.post<BaseResponse<Message>>('/api/messages', filteredData)
 
             if (response.status === 201) {
-                toast.showSuccessToast("Success", "Message sent successfully!")
+                toast.updateToast(
+                    loadingToast.id,
+                    "Success",
+                    "Message sent successfully!",
+                    "success",
+                    3000
+                )
                 return true
             }
             return false

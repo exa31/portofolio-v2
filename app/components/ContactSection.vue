@@ -1,4 +1,13 @@
 <script setup lang="ts">
+
+import type {UserSettingsModel} from "~/types/settings";
+
+defineProps<
+    {
+      user?: UserSettingsModel | null
+    }
+>()
+
 const formData = ref({
   name: '',
   email: '',
@@ -6,16 +15,24 @@ const formData = ref({
   message: ''
 })
 
-const isSubmitting = ref(false)
+const {createMessage, isSaving} = useMessage()
 
 const submitForm = async () => {
-  isSubmitting.value = true
-  // Add your form submission logic here
-  setTimeout(() => {
-    isSubmitting.value = false
-    // Reset form
-    formData.value = {name: '', email: '', subject: '', message: ''}
-  }, 1000)
+  try {
+    const success = await createMessage({
+      name: formData.value.name,
+      email: formData.value.email,
+      subject: formData.value.subject,
+      message: formData.value.message,
+    })
+
+    if (success) {
+      // Reset form after successful submission
+      formData.value = {name: '', email: '', subject: '', message: ''}
+    }
+  } catch (error) {
+    console.error('Failed to send message:', error)
+  }
 }
 </script>
 
@@ -49,7 +66,9 @@ const submitForm = async () => {
                 </div>
                 <div class="flex-1">
                   <p class="text-xs text-white/50 font-semibold mb-1">MAIL ME AT</p>
-                  <p class="text-white font-medium">jane.dev@example.com</p>
+                  <p class="text-white font-medium">{{
+                      user?.email || ''
+                    }}</p>
                   <button
                       class="text-primary text-sm hover:text-primary/80 transition-colors mt-2 flex items-center gap-1">
                     <Icon name="carbon:copy" size="14"/>
@@ -69,10 +88,19 @@ const submitForm = async () => {
                 </div>
                 <div class="flex-1">
                   <p class="text-xs text-white/50 font-semibold mb-1">BASED IN</p>
-                  <p class="text-white font-medium">Tegal, Indonesia</p>
+                  <p class="text-white font-medium">{{
+                      user?.location
+                    }}</p>
                   <div class="flex items-center gap-2 mt-2">
-                    <div class="w-2 h-2 rounded-full bg-green-500"></div>
-                    <span class="text-xs text-white/50">Currently Available</span>
+                    <template v-if="user?.open_to_opportunities">
+
+                      <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                      <span class="text-xs text-white/50">Currently Available</span>
+                    </template>
+                    <template v-else>
+                      <div class="w-2 h-2 rounded-full bg-red-500"></div>
+                      <span class="text-xs text-white/50">Not Available</span>
+                    </template>
                   </div>
                 </div>
               </div>
@@ -135,11 +163,11 @@ const submitForm = async () => {
             <!-- Submit Button -->
             <button
                 type="submit"
-                :disabled="isSubmitting"
+                :disabled="isSaving"
                 class="w-full px-6 py-4 rounded-lg bg-linear-to-r from-primary via-blue-600 to-primary text-white font-bold text-lg hover:shadow-lg hover:shadow-primary/30 hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              <Icon v-if="!isSubmitting" name="carbon:send-filled" size="20"/>
-              <span v-if="isSubmitting">Sending...</span>
+              <Icon v-if="!isSaving" name="carbon:send-filled" size="20"/>
+              <span v-if="isSaving">Sending...</span>
               <span v-else>Send Message</span>
             </button>
           </form>

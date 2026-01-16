@@ -7,8 +7,8 @@ interface Project {
   description: string;
   image: string;
   technologies: string[];
-  link: string;
-  liveUrl: string | null;
+  link?: string;
+  liveUrl?: string;
   details: string;
   features: string[];
 }

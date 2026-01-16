@@ -63,7 +63,7 @@ const projects = computed(() => {
     image: p.preview_image || '/images/hero.png',
     technologies: p.technologies || [],
     link: p.repo_url,
-    liveUrl: p.live_url || null,
+    liveUrl: p.live_url,
     details: p.description,
     features: p.features || [],
   }))
@@ -145,7 +145,7 @@ const totalExperienceYears = computed(() => {
     <ProjectsSection :projects="projects"/>
 
     <!-- Contact Section -->
-    <ContactSection/>
+    <ContactSection :user="dataUser?.data"/>
 
     <!-- Footer Section -->
     <FooterSection/>
