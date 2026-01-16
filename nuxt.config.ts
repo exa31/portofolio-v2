@@ -76,7 +76,10 @@ export default defineNuxtConfig({
 
         // Client-side public variables
         public: {
-            googleClientId: process.env.NUXT_PUBLIC_GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID || '',
+            googleClientId: process.env.NUXT_PUBLIC_GOOGLE_CLIENT_ID
+                || process.env.NUXT_GOOGLE_CLIENT_ID
+                || process.env.GOOGLE_CLIENT_ID
+                || '',
             apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
             clientUrl: process.env.CLIENT_URL || process.env.NUXT_PUBLIC_CLIENT_URL || 'http://localhost:3000',
             siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',

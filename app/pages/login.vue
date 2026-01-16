@@ -42,6 +42,10 @@ onMounted(() => {
     clientUrl: String(config.public.clientUrl || 'NOT SET'),
   }
   console.log('[Debug] Google Config:', debugInfo.value)
+  console.log('[Debug] Full config.public:', config.public)
+  console.log('[Debug] Raw googleClientId:', config.public.googleClientId)
+  console.log('[Debug] Type:', typeof config.public.googleClientId)
+  console.log('[Debug] Length:', config.public.googleClientId?.length)
 })
 
 const handleGoogleLogin = async () => {
