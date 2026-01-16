@@ -99,7 +99,7 @@ defineProps<{
               <div class="w-5 h-5 rounded-full bg-green-500"></div>
             </div>
 
-            <NuxtImg class="w-full rounded-b-xl" src="/images/hero.webp  "/>
+            <NuxtImg class="w-full rounded-b-xl" src="/images/hero.webp"/>
           </div>
         </div>
       </div>
