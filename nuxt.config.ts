@@ -80,9 +80,9 @@ export default defineNuxtConfig({
                 || process.env.NUXT_GOOGLE_CLIENT_ID
                 || process.env.NUXT_GOOGLE_CLIENT_ID
                 || '897905079551-k2chp1f1lu4f7dagjsg0nl03em61gm8m.apps.googleusercontent.com', // Temporary hardcoded fallback
-            apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-            clientUrl: process.env.NUXT_CLIENT_URL || process.env.NUXT_PUBLIC_CLIENT_URL || 'http://localhost:3000',
-            siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+            apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || process.env.NUXT_PUBLIC_SITE_URL || 'https://eka-dev.cloud',
+            clientUrl: process.env.NUXT_CLIENT_URL || process.env.NUXT_PUBLIC_CLIENT_URL || 'https://eka-dev.cloud',
+            siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://eka-dev.cloud',
         },
     },
 })
