@@ -1,0 +1,69 @@
+name: Build & Deploy Frontend to K3s (Kubernetes) via GHCR
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2️⃣ Get short SHA
+      - name: Get Commit SHA (short)
+        id: vars
+        run: echo "sha=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
+      # 3️⃣ Login to GHCR
+      - name: Log in to GHCR
+        run: |
+          echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io \
+            -u ${{ github.actor }} \
+            --password-stdin
+
+      # 4️⃣ Build Docker Image
+      - name: Build Docker image
+        run: |
+          IMAGE=ghcr.io/${{ github.repository_owner }}/portofolio-v2:${{ steps.vars.outputs.sha }}
+          docker build -t $IMAGE .
+
+      # 5️⃣ Push Docker Image
+      - name: Push Docker image
+        run: |
+          IMAGE=ghcr.io/${{ github.repository_owner }}/portofolio-v2:${{ steps.vars.outputs.sha }}
+          docker push $IMAGE
+
+      # 6️⃣ Setup SSH known_hosts
+      - name: Setup SSH known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          ssh-keyscan -p 31080 -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      # 7️⃣ Start SSH Agent (SECURE)
+      - name: Start SSH Agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+
+      # 8️⃣ Deploy to K3s
+      - name: Deploy to K3s
+        run: |
+          ssh -p 31080 deploy@${{ secrets.VPS_HOST }} << 'EOF'
+            set -e
+          
+            export KUBECONFIG=/etc/rancher/k3s/k3s.yaml          
+          
+            NEW_IMAGE="ghcr.io/${{ github.repository_owner }}/portofolio-v2:${{ steps.vars.outputs.sha }}"
+
+            kubectl set image deployment/portofolio-v2 \
+              -n dev-coffe \
+              portofolio-v2=$NEW_IMAGE
+
+            kubectl rollout status deployment/portofolio-v2 \
+              -n dev-coffe
+          EOF
