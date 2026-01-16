@@ -3,7 +3,7 @@ import {H3Event} from "h3";
 import type {CreateProjectInput, UpdateProjectInput} from "~~/server/model/project.model";
 import {withTransaction} from "~~/server/db/postgres";
 import {HttpError} from "~~/server/errors/HttpError";
-import {del, get, set} from "~~/server/db/redis";
+import {get, set} from "~~/server/db/redis";
 import {getMinioClient} from "~~/server/lib/minio";
 
 export const createProject = async (event: H3Event, body: CreateProjectInput) => {
@@ -23,7 +23,6 @@ export const createProject = async (event: H3Event, body: CreateProjectInput) =>
             }
 
             const projects = await repository.getAllProjects(client);
-            await del('projects:all'); // Invalidate cached projects list
             await set('projects:all', JSON.stringify(projects)); // Update cache with new projects list
 
             await minioClient.uploadFile("project", namaFile, body.image.data, body.image.contentType || "application/octet-stream");
@@ -88,8 +87,6 @@ export const updateProject = async (event: H3Event, data: UpdateProjectInput) =>
                 data.url = project.preview_image;
             }
 
-            console.log("Updated project data:", data);
-
             const ok = await repository.updateProject(client, data);
             if (!ok) {
                 throw new HttpError(500, 'PROJECT_UPDATE_FAILED', 'Failed to update project');
@@ -106,7 +103,6 @@ export const updateProject = async (event: H3Event, data: UpdateProjectInput) =>
             }
 
             const projects = await repository.getAllProjects(client);
-            await del('projects:all'); // Invalidate cached projects list
             await set('projects:all', JSON.stringify(projects)); // Update cache with new projects list
 
             if (data.image) await minioClient.uploadFile("project", namaFile, data.image.data, data.image.contentType || "application/octet-stream");
@@ -137,7 +133,6 @@ export const deleteProject = async (event: H3Event, id: number) => {
             }
 
             const projects = await repository.getAllProjects(client);
-            await del('projects:all'); // Invalidate cached projects list
             await set('projects:all', JSON.stringify(projects)); // Update cache with new projects list
 
             if (project.preview_image) {

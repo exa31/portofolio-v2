@@ -3,7 +3,7 @@ import {H3Event} from "h3";
 import {CreateJourneyInput, UpdateJourneyInput} from "~~/server/model/journey.model";
 import {withTransaction} from "~~/server/db/postgres";
 import {HttpError} from "~~/server/errors/HttpError";
-import {del, get, set} from "~~/server/db/redis";
+import {get, set} from "~~/server/db/redis";
 
 export const createJourney = async (event: H3Event, body: CreateJourneyInput) => {
     return withTransaction(
@@ -20,7 +20,7 @@ export const createJourney = async (event: H3Event, body: CreateJourneyInput) =>
                 }
             }
 
-            await del('journeys:all'); // Invalidate cached journeys list
+            await set('journeys:all', JSON.stringify(await repository.getAllJourneys(client))); // Update cache with new journeys list
 
             return sendSuccess(
                 event,
@@ -97,7 +97,7 @@ export const updateJourney = async (event: H3Event, data: UpdateJourneyInput) =>
                 await repository.linkSkillToJourney(client, data.id, [])
             }
 
-            await del('journeys:all'); // Invalidate cached journeys list
+            await set('journeys:all', JSON.stringify(await repository.getAllJourneys(client))); // Update cache with new journeys list
 
             return sendSuccess(
                 event,
@@ -123,7 +123,7 @@ export const deleteJourney = async (event: H3Event, id: number) => {
                 throw new HttpError(500, 'JOURNEY_DELETION_FAILED', 'Failed to delete journey');
             }
 
-            await del('journeys:all'); // Invalidate cached journeys list
+            await set('journeys:all', JSON.stringify(await repository.getAllJourneys(client))); // Update cache with new journeys list
 
             return sendSuccess(
                 event,

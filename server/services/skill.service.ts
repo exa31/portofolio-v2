@@ -3,7 +3,7 @@ import {CreateSkillsInput, UpdateSkillInput} from "~~/server/model/skill.model";
 import {withTransaction} from "~~/server/db/postgres";
 import * as repository from "~~/server/repositories/skill.repository";
 import {HttpError} from "~~/server/errors/HttpError";
-import {del, get, set} from "~~/server/db/redis";
+import {get, set} from "~~/server/db/redis";
 import {sendSuccess} from "~~/server/utils/response";
 
 export const createSkills = async (event: H3Event, body: CreateSkillsInput) => {
@@ -16,7 +16,6 @@ export const createSkills = async (event: H3Event, body: CreateSkillsInput) => {
 
             const skills = await repository.getAllSkills(client);
 
-            await del('skills:all'); // Invalidate cached skills list
             await set('skills:all', JSON.stringify(skills)); // Update cache with new skills list
 
             return sendSuccess(
@@ -75,7 +74,6 @@ export const updateSkill = async (event: H3Event, data: UpdateSkillInput) => {
                 throw new HttpError(500, 'SKILL_UPDATE_FAILED', 'Failed to update skill');
             }
 
-            await del('skills:all');
             await set('skills:all', JSON.stringify(await repository.getAllSkills(client)));
 
             return sendSuccess(event, null, "Skill updated successfully", "skill_updated");
@@ -96,7 +94,6 @@ export const deleteSkill = async (event: H3Event, id: number) => {
                 throw new HttpError(500, 'SKILL_DELETION_FAILED', 'Failed to delete skill');
             }
 
-            await del('skills:all');
             await set('skills:all', JSON.stringify(await repository.getAllSkills(client)));
 
             return sendSuccess(event, null, "Skill deleted successfully", "skill_deleted");

@@ -3,14 +3,23 @@ import {H3Event} from "h3";
 import {UpdateProfileSettingsInput, UpdateSocialLinksInput} from "~~/server/model/settings.model";
 import {withTransaction} from "~~/server/db/postgres";
 import {HttpError} from "~~/server/errors/HttpError";
+import {get, set} from "~~/server/db/redis";
 
 export const getUserSettings = async (event: H3Event,) => {
     return withTransaction(
         async (client) => {
+
+            const cacheSetting = await get(`user_settings`);
+
+            if (cacheSetting) {
+                return sendSuccess(event, JSON.parse(cacheSetting), "User settings retrieved successfully", "user_settings_retrieved");
+            }
+
             const settings = await repository.getUserSettings(client,);
             if (!settings) {
                 throw new HttpError(404, 'USER_NOT_FOUND', 'User not found');
             }
+            await set(`user_settings`, JSON.stringify(settings));
             return sendSuccess(event, settings, "User settings retrieved successfully", "user_settings_retrieved");
         }
     )
@@ -30,6 +39,8 @@ export const updateProfileSettings = async (event: H3Event, data: UpdateProfileS
             }
 
             const updatedSettings = await repository.getUserSettings(client,);
+
+            await set(`user_settings`, JSON.stringify(updatedSettings));
 
             return sendSuccess(
                 event,
@@ -56,6 +67,8 @@ export const updateSocialLinks = async (event: H3Event, data: UpdateSocialLinksI
             }
 
             const updatedSettings = await repository.getUserSettings(client);
+
+            await set(`user_settings`, JSON.stringify(updatedSettings));
 
             return sendSuccess(
                 event,
