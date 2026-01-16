@@ -1,7 +1,12 @@
 class Cookie {
 
-    static set(name: string, value: string, expires: number) {
-        document.cookie = `${name}=${value};expires=${expires};path=/;SameSite=Strict;Secure`;
+    static set(name: string, value: string, days: number) {
+        const date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        const expires = date.toUTCString();
+        const isProduction = process.env.NODE_ENV === 'production';
+        const secure = isProduction ? ';Secure' : '';
+        document.cookie = `${name}=${value};expires=${expires};path=/;SameSite=Lax${secure}`;
     }
 
     static get(name: string) {
@@ -16,7 +21,7 @@ class Cookie {
     }
 
     static erase(name: string) {
-        document.cookie = `${name}=; Max-Age=-99999999;path=/;SameSite=Strict;Secure`;
+        document.cookie = `${name}=; Max-Age=-99999999;path=/;SameSite=Lax`;
     }
 }
 

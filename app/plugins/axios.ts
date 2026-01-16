@@ -1,6 +1,5 @@
 // plugins/axios.ts
 import axios, {AxiosError, type AxiosInstance} from 'axios'
-import Cookie from '~/utils/cookie'
 
 export default defineNuxtPlugin((nuxtApp) => {
 
@@ -10,6 +9,14 @@ export default defineNuxtPlugin((nuxtApp) => {
     const headers = import.meta.server
         ? useRequestHeaders(['cookie'])
         : {}
+
+    // Use useCookie for consistent cookie handling
+    const tokenCookie = useCookie('token', {
+        maxAge: 86400, // 1 day
+        path: '/',
+        sameSite: 'lax',
+        secure: import.meta.env.PROD,
+    })
 
     const api: AxiosInstance = axios.create({
         baseURL: config.public.apiBaseUrl,
@@ -32,7 +39,7 @@ export default defineNuxtPlugin((nuxtApp) => {
             }
         } else {
             // Client: Authorization
-            const token = Cookie.get('token')
+            const token = tokenCookie.value
             if (token) {
                 config.headers = config.headers || {}
                 config.headers.Authorization = `Bearer ${token}`
@@ -69,7 +76,7 @@ export default defineNuxtPlugin((nuxtApp) => {
                             withCredentials: true,
                         })
                         .then((res) => {
-                            Cookie.set('token', res.data.data.access_token, 1)
+                            tokenCookie.value = res.data.data.access_token
                         })
                         .finally(() => {
                             isRefreshing = false
@@ -78,7 +85,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 
                 await refreshPromise
 
-                const token = Cookie.get('token')
+                const token = tokenCookie.value
                 if (token) {
                     originalRequest.headers.Authorization = `Bearer ${token}`
                 }

@@ -2,32 +2,23 @@
 import {ref} from 'vue'
 import {useBreadCrumbStore} from "~/stores/bread-crumb"
 import {jwtDecode} from 'jwt-decode'
-import Cookie from "~/utils/cookie";
 
 const isSidebarOpen = ref(false)
 const breadCrumbStore = useBreadCrumbStore()
 const route = useRoute()
 
+// Use useCookie for consistent cookie handling
+const tokenCookie = useCookie('token', {
+  maxAge: 86400, // 1 day
+  path: '/',
+  sameSite: 'lax',
+  secure: import.meta.env.PROD,
+})
+
 // Decode user data from JWT token
 const getUserFromToken = () => {
   try {
-    let token = ''
-
-    // Get token from server-side or client-side
-    if (import.meta.server) {
-      // Server-side: get from cookie header
-      const headers = useRequestHeaders(['cookie'])
-      const cookies = headers.cookie ? Object.fromEntries(
-          headers.cookie.split('; ').map(c => {
-            const [key, value] = c.split('=')
-            return [key, value]
-          })
-      ) : {}
-      token = cookies.token || ''
-    } else {
-      // Client-side: get from cookie
-      token = Cookie.get("token") || ''
-    }
+    const token = tokenCookie.value
 
     if (token) {
       const decoded: any = jwtDecode(token)
@@ -80,8 +71,8 @@ const handleLogout = async () => {
   } catch (error) {
     console.error('Logout API error:', error)
   } finally {
-    // Clear cookies
-    Cookie.erase('token')
+    // Clear cookie
+    tokenCookie.value = null
 
     // Redirect to login page
     await navigateTo('/login')

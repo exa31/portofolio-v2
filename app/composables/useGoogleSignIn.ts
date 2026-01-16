@@ -1,5 +1,4 @@
 import {ref} from 'vue'
-import Cookie from "~/utils/cookie";
 
 export const useGoogleSignIn = () => {
     const router = useRouter()
@@ -83,9 +82,16 @@ export const useGoogleSignIn = () => {
                 return
             }
 
-            // Store the access token
-            Cookie.set('token', result.data.access_token, 1) // 1 day expiry
-            console.log('[Google Auth] Successfully authenticated')
+            // Store the access token using useCookie for better SSR compatibility
+            const token = useCookie('token', {
+                maxAge: 86400, // 1 day
+                path: '/',
+                sameSite: 'lax',
+                secure: import.meta.env.PROD,
+            });
+            token.value = result.data.access_token;
+
+            console.log('[Google Auth] Successfully authenticated, token stored')
 
             // Backend sets httpOnly cookies automatically
             // Redirect to dashboard

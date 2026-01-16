@@ -1,18 +1,19 @@
 export default defineNuxtRouteMiddleware(async (to, from) => {
-        let token;
-        if (import.meta.server) {
-            const headers = useRequestHeaders(['cookie'])
-            token = headers.cookie
-                ? headers.cookie.replace(
-                    /(?:(?:^|.*;\s*)token\s*=\s*([^;]*).*$)|^.*$/,
-                    '$1'
-                )
-                : null;
-        } else {
-            token = useCookie('token').value;
-        }
-        if (!token && to.path.startsWith('/dashboard')) {
-            return navigateTo('/login');
-        }
+    // Skip auth check for non-dashboard routes
+    if (!to.path.startsWith('/dashboard')) {
+        return;
     }
-)
+
+    // Use useCookie for consistent cookie handling across client and server
+    const token = useCookie('token', {
+        maxAge: 86400, // 1 day
+        path: '/',
+        sameSite: 'lax', // Changed from 'strict' to 'lax' for better compatibility
+        secure: process.env.NODE_ENV === 'production',
+    });
+
+    // If no token, redirect to login
+    if (!token.value) {
+        return navigateTo('/login');
+    }
+})
