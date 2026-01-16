@@ -12,15 +12,12 @@ definePageMeta({
   layout: 'default'
 })
 
-useHead({
-  title: 'Portfolio - Developer Showcase',
-  meta: [
-    {
-      name: 'description',
-      content: 'Explore my portfolio, projects, and skills. Full-stack developer showcasing professional work and experiences.',
-    },
-  ],
-})
+// SEO Configuration
+const siteUrl = 'https://eka-dev.cloud' // TODO: Update with your domain
+const siteName = 'Eka - Full Stack Developer Portfolio'
+const siteDescription = 'Full Stack Developer specializing in Vue.js, Nuxt.js, React, Node.js, and Golang. Building scalable web applications, mobile apps with Flutter, and cloud-native solutions with Kubernetes & Docker.'
+const authorName = 'Eka'
+const ogImage = `${siteUrl}/images/og-image.png` // TODO: Create OG image
 
 // ========== FETCH DATA FROM API (SSR-compatible) ==========
 const {data: projectsData, pending: projectsLoading} = await useFetch<BaseResponse<ProjectsResponse>>('/api/projects', {
@@ -50,6 +47,8 @@ const {data: dataUser, pending: loadingUser} = await useFetch<BaseResponse<UserS
 })
 
 // ========== COMPUTED DATA ==========
+const user = computed(() => dataUser.value?.data)
+
 const projects = computed(() => {
   const apiProjects = projectsData.value?.data?.data ?? []
 
@@ -95,6 +94,130 @@ const experiences = computed(() => {
   }))
 })
 
+useHead({
+  title: 'Eka - Full Stack Developer | Vue.js, React, Node.js & Mobile Expert',
+  htmlAttrs: {
+    lang: 'en'
+  },
+  meta: [
+    // Primary Meta Tags
+    {
+      name: 'title',
+      content: 'Eka - Full Stack Developer | Vue.js, React, Node.js & Mobile Expert'
+    },
+    {
+      name: 'description',
+      content: siteDescription
+    },
+    {
+      name: 'keywords',
+      content: 'Full Stack Developer, Vue.js Developer, React Developer, Node.js, Golang Developer, Flutter Developer, Mobile App Development, Web Development, Nuxt.js, Next.js, TypeScript, Kubernetes, DevOps, CI/CD, PostgreSQL, MongoDB, REST API'
+    },
+    {
+      name: 'author',
+      content: authorName
+    },
+    {
+      name: 'robots',
+      content: 'index, follow'
+    },
+    {
+      name: 'googlebot',
+      content: 'index, follow'
+    },
+
+    // Open Graph / Facebook
+    {
+      property: 'og:type',
+      content: 'website'
+    },
+    {
+      property: 'og:url',
+      content: siteUrl
+    },
+    {
+      property: 'og:site_name',
+      content: siteName
+    },
+    {
+      property: 'og:title',
+      content: 'Eka - Full Stack Developer | Vue.js, React, Node.js & Mobile Expert'
+    },
+    {
+      property: 'og:description',
+      content: siteDescription
+    },
+    {
+      property: 'og:image',
+      content: ogImage
+    },
+    {
+      property: 'og:image:width',
+      content: '1200'
+    },
+    {
+      property: 'og:image:height',
+      content: '630'
+    },
+    {
+      property: 'og:locale',
+      content: 'en_US'
+    },
+
+    // Additional SEO
+    {
+      name: 'theme-color',
+      content: '#1e7fff'
+    },
+    {
+      name: 'msapplication-TileColor',
+      content: '#1e7fff'
+    },
+    {
+      name: 'apple-mobile-web-app-capable',
+      content: 'yes'
+    },
+    {
+      name: 'apple-mobile-web-app-status-bar-style',
+      content: 'black-translucent'
+    },
+  ],
+  link: [
+    {
+      rel: 'canonical',
+      href: siteUrl
+    },
+    {
+      rel: 'icon',
+      type: 'image/x-icon',
+      href: '/favicon.ico'
+    },
+    {
+      rel: 'apple-touch-icon',
+      href: '/favicon.ico'
+    },
+  ],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Person',
+        name: authorName,
+        url: siteUrl,
+        image: ogImage,
+        jobTitle: 'Full Stack Developer',
+        description: siteDescription,
+        knowsAbout: skills.value.map(skill => skill.name),
+        sameAs: [
+          user.value?.github_profile, // TODO: Update
+          user.value?.github_profile,  // TODO: Update
+        ]
+      })
+    }
+  ]
+})
+
 function diffInMonths(start: Date, end: Date): number {
   return (
       (end.getFullYear() - start.getFullYear()) * 12 +
@@ -129,12 +252,12 @@ const totalExperienceYears = computed(() => {
   <div class="text-white">
     <!-- Hero Section -->
     <main class="container mx-auto px-6 py-20" data-aos="fade-up">
-      <HeroSection :user="dataUser?.data"/>
+      <HeroSection :user="user"/>
     </main>
 
     <!-- About Section -->
     <div data-aos="fade-up" data-aos-delay="100">
-      <AboutSection :user="dataUser?.data" :count_projects="projects.length" :count_experience="totalExperienceYears"/>
+      <AboutSection :user="user" :count_projects="projects.length" :count_experience="totalExperienceYears"/>
     </div>
 
     <!-- Skills Section -->
@@ -154,7 +277,7 @@ const totalExperienceYears = computed(() => {
 
     <!-- Contact Section -->
     <div data-aos="fade-up" data-aos-delay="500">
-      <ContactSection :user="dataUser?.data"/>
+      <ContactSection :user="user"/>
     </div>
 
     <!-- Footer Section -->

@@ -27,20 +27,20 @@ const openModal = (experience: Experience) => {
 </script>
 
 <template>
-  <section id="work" class="py-24 bg-linear-to-b from-[#071026] to-[#071023]">
+  <section id="work" class="py-24 bg-linear-to-b from-[#071026] to-[#071023]" aria-labelledby="journey-heading">
     <div class="container mx-auto px-6">
       <!-- Header -->
-      <div class="text-center mb-16" data-aos="fade-up">
+      <header class="text-center mb-16" data-aos="fade-up">
         <p class="text-primary text-sm font-semibold mb-2 flex items-center justify-center gap-2">
           <Icon name="material-symbols:timeline" size="16"/>
           MY JOURNEY BEGINS HERE
         </p>
-        <h2 class="text-4xl md:text-5xl font-bold text-white mb-4">Professional Journey</h2>
+        <h2 id="journey-heading" class="text-4xl md:text-5xl font-bold text-white mb-4">Professional Journey</h2>
         <p class="text-white/60 max-w-2xl mx-auto">
           A timeline of building scalable solutions, solving complex problems, and continuous professional growth in the
           tech industry.
         </p>
-      </div>
+      </header>
 
       <!-- Timeline -->
       <div class="max-w-4xl mx-auto px-0 sm:px-4">

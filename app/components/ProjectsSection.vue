@@ -38,12 +38,12 @@ const copyToClipboard = (text: string | undefined) => {
 </script>
 
 <template>
-  <section id="project" class="py-20">
+  <section id="project" class="py-20" aria-labelledby="projects-heading">
     <div class="container mx-auto px-6">
       <!-- Header -->
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-12 gap-6" data-aos="fade-up">
+      <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-12 gap-6" data-aos="fade-up">
         <div>
-          <h2 class="text-5xl lg:text-6xl font-black mb-3 leading-tight">
+          <h2 id="projects-heading" class="text-5xl lg:text-6xl font-black mb-3 leading-tight">
             Featured
             <span class="text-primary">Projects</span>
           </h2>
@@ -51,7 +51,7 @@ const copyToClipboard = (text: string | undefined) => {
             A collection of applications demonstrating my technical abilities and problem-solving skills.
           </p>
         </div>
-      </div>
+      </header>
 
       <!-- Projects Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">

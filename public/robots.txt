@@ -1,2 +1,10 @@
+# Allow all crawlers
 User-Agent: *
-Disallow:
+Allow: /
+
+# Disallow admin/dashboard pages
+Disallow: /dashboard/
+Disallow: /login
+
+# Sitemap location
+Sitemap: https://eka-dev.cloud/sitemap.xml

@@ -10,10 +10,10 @@ defineProps<{
 </script>
 
 <template>
-  <section id="about" class="py-20">
+  <section id="about" class="py-20" aria-labelledby="about-heading">
     <div class="container mx-auto px-6">
       <div class="mb-12" data-aos="fade-up">
-        <h2 class="text-5xl lg:text-6xl font-black mb-3 leading-tight">About Me</h2>
+        <h2 id="about-heading" class="text-5xl lg:text-6xl font-black mb-3 leading-tight">About Me</h2>
         <p class="text-lg text-white/50 mb-6 leading-relaxed max-w-lg">
           Architecting the future of web and mobile applications with scalable, cloud-native solutions.
         </p>

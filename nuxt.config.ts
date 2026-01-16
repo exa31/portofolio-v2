@@ -11,6 +11,38 @@ export default defineNuxtConfig({
         '~/assets/css/main.css'
     ],
 
+    // ========== SEO & META ==========
+    app: {
+        head: {
+            charset: 'utf-8',
+            viewport: 'width=device-width, initial-scale=1, maximum-scale=5',
+            title: 'Eka - Full Stack Developer Portfolio',
+            meta: [
+                {name: 'format-detection', content: 'telephone=no'},
+            ],
+            link: [
+                {rel: 'icon', type: 'image/x-icon', href: '/favicon.ico'},
+                {rel: 'preconnect', href: 'https://fonts.googleapis.com'},
+                {rel: 'dns-prefetch', href: 'https://fonts.googleapis.com'},
+            ],
+        },
+    },
+
+    // ========== NITRO (Server) CONFIG ==========
+    nitro: {
+        compressPublicAssets: true,
+        prerender: {
+            crawlLinks: true,
+            routes: ['/'],
+        },
+    },
+
+    // ========== IMAGE OPTIMIZATION ==========
+    image: {
+        quality: 80,
+        format: ['webp', 'avif', 'png', 'jpg'],
+    },
+
     // ========== RUNTIME CONFIG ==========
     runtimeConfig: {
         // Server-side private variables

@@ -7,16 +7,16 @@ defineProps<{
 </script>
 
 <template>
-  <section id="stack" class="py-20">
+  <section id="stack" class="py-20" aria-labelledby="skills-heading">
     <div class="container mx-auto px-6">
       <!-- Header -->
-      <div class="text-center mb-16" data-aos="fade-up">
-        <h2 class="text-5xl lg:text-6xl font-black mb-3 leading-tight">Skills & Tech Stack</h2>
+      <header class="text-center mb-16" data-aos="fade-up">
+        <h2 id="skills-heading" class="text-5xl lg:text-6xl font-black mb-3 leading-tight">Skills & Tech Stack</h2>
         <p class="text-lg text-white/50 max-w-2xl mx-auto leading-relaxed">
           A comprehensive overview of my technical ecosystem. From frontend architecture to backend scalability,
           explore the tools I use to build modern web solutions
         </p>
-      </div>
+      </header>
 
       <!-- Tech Stack Grid -->
       <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">

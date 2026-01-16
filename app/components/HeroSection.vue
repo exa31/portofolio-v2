@@ -9,7 +9,7 @@ defineProps<{
 </script>
 
 <template>
-  <section class="py-10">
+  <section class="py-10" aria-label="Hero section">
     <div class="container mx-auto px-6">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
         <!-- Left Column -->
@@ -30,37 +30,41 @@ defineProps<{
             clean architecture, and real-world production needs.
           </p>
 
-          <div class="flex gap-4 mb-8" data-aos="fade-right" data-aos-delay="200">
-            <a href="#work"
-               class="inline-flex items-center justify-center bg-primary text-white px-6 py-3 rounded-lg shadow hover:brightness-105">
+          <nav class="flex gap-4 mb-8" data-aos="fade-right" data-aos-delay="200" aria-label="Primary navigation">
+            <a href="#project"
+               class="inline-flex items-center justify-center bg-primary text-white px-6 py-3 rounded-lg shadow hover:brightness-105"
+               aria-label="View my projects">
               View Projects
             </a>
             <a href="#contact"
-               class="inline-flex items-center justify-center border border-white/10 text-white/90 px-6 py-3 rounded-lg hover:bg-white/5">
+               class="inline-flex items-center justify-center border border-white/10 text-white/90 px-6 py-3 rounded-lg hover:bg-white/5"
+               aria-label="Contact me">
               Contact Me
             </a>
-          </div>
+          </nav>
 
           <div data-aos="fade-right" data-aos-delay="300">
             <p class="text-xs text-white/50 mb-3">CONNECT WITH ME</p>
-            <div class="flex gap-3">
-              <a aria-label="Github"
+            <nav class="flex gap-3" aria-label="Social media links">
+              <a aria-label="Visit my Github profile"
                  :href="user?.github_profile ?? 'https://github.com'"
                  target="_blank"
+                 rel="noopener noreferrer"
                  class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/6">
                 <Icon name="line-md:github" size="28"
                       class="text-white/50 hover:text-white/70 duration-300 transition-colors"/>
               </a>
 
-              <a aria-label="LinkedIn"
+              <a aria-label="Visit my LinkedIn profile"
                  :href="user?.linkedin_profile ?? 'https://www.linkedin.com'"
                  target="_blank"
+                 rel="noopener noreferrer"
                  class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/6">
                 <Icon name="jam:linkedin" size="28"
                       class="text-white/50 hover:text-white/70 duration-300 transition-colors"/>
               </a>
 
-              <a aria-label="Email"
+              <a aria-label="Send me an email"
                  :href="`https://mail.google.com/mail/?view=cm&fs=1&to=${user?.email}&su=Job%20Opportunity&body=Hi%20Eka,%0A%0AI'm%20interested%20in%20working%20with%20you.`"
                  target="_blank"
                  rel="noopener noreferrer"
@@ -68,7 +72,7 @@ defineProps<{
                 <Icon name="material-symbols:alternate-email" size="28"
                       class="text-white/50 hover:text-white/70 duration-300 transition-colors"/>
               </a>
-            </div>
+            </nav>
           </div>
         </div>
 
