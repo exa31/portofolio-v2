@@ -5,7 +5,7 @@ export type Project = {
     image: File | null
     status: boolean
     features: string[]
-    technologies: number[]
+    technologies: string[]
     repo_url?: string
     live_url?: string
     start_date?: string

@@ -62,7 +62,7 @@ const projects = computed(() => {
     description: p.description || '',
     image: p.preview_image || '/images/hero.png',
     technologies: p.technologies || [],
-    link: p.repo_url || 'https://github.com',
+    link: p.repo_url,
     liveUrl: p.live_url || null,
     details: p.description,
     features: p.features || [],

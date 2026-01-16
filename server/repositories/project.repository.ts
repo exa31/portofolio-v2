@@ -113,7 +113,7 @@ export const getProjectCursorPagination = async (
     let sql = `
         SELECT p.id,
                p.name,
-               p.image,
+               p.image           AS preview_image,
                p.description,
                p.start_date,
                p.end_date,
@@ -157,7 +157,7 @@ export const getAllProjects = async (
     const sql = `
         SELECT p.id,
                p.name,
-               p.image,
+               p.image           AS preview_image,
                p.description,
                p.start_date,
                p.end_date,

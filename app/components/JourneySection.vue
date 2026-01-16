@@ -2,7 +2,7 @@
 import {ref} from 'vue'
 
 interface Experience {
-  id: number
+  id?: number
   company: string
   position: string
   period: string
@@ -77,7 +77,7 @@ const openModal = (experience: Experience) => {
                     </h3>
                     <p class="text-primary text-xs sm:text-sm font-medium mt-1">{{ experience.company }}</p>
                   </div>
-                  <span class="text-xs sm:text-sm text-white/50 flex-shrink-0">{{ experience.period }}</span>
+                  <span class="text-xs sm:text-sm text-white/50 shrink-0">{{ experience.period }}</span>
                 </div>
 
                 <p class="text-white/70 mb-4">{{ experience.description }}</p>
@@ -114,7 +114,7 @@ const openModal = (experience: Experience) => {
 
     <!-- Experience Details Modal -->
     <UModal v-model:open="isOpen"
-            :ui="{content:'w-full max-w-5xl'}">
+            :ui="{content:'w-full max-w-5xl',header:'px-6 sm:px-12 py-4 sm:py-8',body:'p-0',footer:'p-0'}">
       <template #title>
         <h2 class="text-2xl sm:text-4xl font-black text-white mb-1 sm:mb-2 wrap-break-word">
           {{ selectedExperience?.position }}</h2>

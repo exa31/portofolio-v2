@@ -1,6 +1,20 @@
 <script setup lang="ts">
+
+interface Project {
+  id?: number;
+  title: string;
+  shortDesc: string;
+  description: string;
+  image: string;
+  technologies: string[];
+  link: string;
+  liveUrl: string | null;
+  details: string;
+  features: string[];
+}
+
 defineProps<{
-  projects: any[]
+  projects: Project[]
 }>()
 
 const selectedProject = ref<any>(null)
@@ -89,9 +103,10 @@ const copyToClipboard = (text: string | undefined) => {
   </section>
 
   <!-- Project Modal -->
-  <UModal v-model:open="isModalOpen" :ui="{content:'w-full max-w-5xl '}">
+  <UModal v-model:open="isModalOpen"
+          :ui="{content:'w-full max-w-5xl',header:'px-6 sm:px-12 py-4 sm:py-8',body:'p-0',footer:'p-0'}">
     <template #title>
-      <h2 class="text-2xl sm:text-4xl font-black text-white mb-1 sm:mb-2 wrap-break-word">{{
+      <h2 class="text-2xl sm:text-3xl font-black text-white mb-1 sm:mb-2 wrap-break-word">{{
           selectedProject?.title
         }}</h2>
     </template>
@@ -153,7 +168,7 @@ const copyToClipboard = (text: string | undefined) => {
                 </div>
                 <p class="text-2xl sm:text-3xl font-black"
                    :class="selectedProject?.liveUrl ? 'text-green-400' : 'text-yellow-400'">
-                  {{ selectedProject?.liveUrl ? 'Live' : 'Shipped' }}</p>
+                  {{ selectedProject?.liveUrl ? 'Published' : 'Draft' }}</p>
                 <p class="text-xs text-white/40 mt-2">{{
                     selectedProject?.liveUrl ? 'Online & Running' : 'In Portfolio'
                   }}</p>
@@ -285,6 +300,7 @@ const copyToClipboard = (text: string | undefined) => {
             :to="selectedProject?.link"
             target="_blank"
             external
+            v-if="selectedProject?.link"
             color="primary"
             size="lg"
             class="bg-primary text-white hover:brightness-110 font-bold rounded-lg text-sm sm:text-base"
