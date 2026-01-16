@@ -15,7 +15,7 @@ const Config = useAppConfig();
 const googleClient = new OAuth2Client({
     client_id: Config.googleClientId,
     client_secret: Config.googleClientSecret,
-    redirectUri: 'http://localhost:3000',
+    redirectUri: Config.clientUrl,
 });
 
 export const loginWithGoogle = async (event: H3Event, code: string) => {

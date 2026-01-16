@@ -53,7 +53,7 @@ export default defineNuxtConfig({
         googleClientId: process.env.NUXT_GOOGLE_CLIENT_ID,
         googleClientSecret: process.env.NUXT_GOOGLE_CLIENT_SECRET,
         redisUrl: process.env.NUXT_REDIS_URL,
-        clientUrl: process.env.NUXT_CLIENT_URL || 'http://localhost:3000',
+        clientUrl: process.env.NUXT_CLIENT_URL || 'https://eka-dev.cloud',
 
         pgHost: process.env.NUXT_PG_HOST || 'localhost',
         pgPort: process.env.NUXT_PG_PORT ? Number(process.env.NUXT_PG_PORT) : 5432,
