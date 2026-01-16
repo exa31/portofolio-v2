@@ -48,40 +48,40 @@ export default defineNuxtConfig({
     // ========== RUNTIME CONFIG ==========
     runtimeConfig: {
         // Server-side private variables
-        mode: process.env.MODE || 'production',
-        jwtSecret: process.env.JWT_SECRET,
-        googleClientId: process.env.GOOGLE_CLIENT_ID,
-        googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        redisUrl: process.env.REDIS_URL,
-        clientUrl: process.env.CLIENT_URL || 'http://localhost:3000',
+        mode: process.env.NUXT_MODE || 'production',
+        jwtSecret: process.env.NUXT_JWT_SECRET,
+        googleClientId: process.env.NUXT_GOOGLE_CLIENT_ID,
+        googleClientSecret: process.env.NUXT_GOOGLE_CLIENT_SECRET,
+        redisUrl: process.env.NUXT_REDIS_URL,
+        clientUrl: process.env.NUXT_CLIENT_URL || 'http://localhost:3000',
 
-        pgHost: process.env.PG_HOST || 'localhost',
-        pgPort: process.env.PG_PORT ? Number(process.env.PG_PORT) : 5432,
-        pgUser: process.env.PG_USER || 'postgres',
-        pgPassword: process.env.PG_PASSWORD || 'password',
-        pgDatabase: process.env.PG_DATABASE || 'mydatabase',
-        pgMax: process.env.PG_MAX ? Number(process.env.PG_MAX) : 10,
-        pgIdleTimeoutMs: process.env.PG_IDLE_TIMEOUT_MS ? Number(process.env.PG_IDLE_TIMEOUT_MS) : 30000,
-        pgConnectionTimeoutMs: process.env.PG_CONNECTION_TIMEOUT_MS ? Number(process.env.PG_CONNECTION_TIMEOUT_MS) : 2000,
-        pgSsl: process.env.PG_SSL === 'true',
-        databaseUrl: process.env.DATABASE_URL,
+        pgHost: process.env.NUXT_PG_HOST || 'localhost',
+        pgPort: process.env.NUXT_PG_PORT ? Number(process.env.NUXT_PG_PORT) : 5432,
+        pgUser: process.env.NUXT_PG_USER || 'postgres',
+        pgPassword: process.env.NUXT_PG_PASSWORD || 'password',
+        pgDatabase: process.env.NUXT_PG_DATABASE || 'mydatabase',
+        pgMax: process.env.NUXT_PG_MAX ? Number(process.env.NUXT_PG_MAX) : 10,
+        pgIdleTimeoutMs: process.env.NUXT_PG_IDLE_TIMEOUT_MS ? Number(process.env.NUXT_PG_IDLE_TIMEOUT_MS) : 30000,
+        pgConnectionTimeoutMs: process.env.NUXT_PG_CONNECTION_TIMEOUT_MS ? Number(process.env.NUXT_PG_CONNECTION_TIMEOUT_MS) : 2000,
+        pgSsl: process.env.NUXT_PG_SSL === 'true',
+        databaseUrl: process.env.NUXT_DATABASE_URL,
 
-        minioEndpoint: process.env.MINIO_ENDPOINT,
-        minioAccessKey: process.env.MINIO_ACCESS_KEY,
-        minioSecretKey: process.env.MINIO_SECRET_KEY,
-        minioUseSsl: process.env.MINIO_USE_SSL === 'true',
-        minioPort: process.env.MINIO_PORT ? Number(process.env.MINIO_PORT) : 9000,
+        minioEndpoint: process.env.NUXT_MINIO_ENDPOINT,
+        minioAccessKey: process.env.NUXT_MINIO_ACCESS_KEY,
+        minioSecretKey: process.env.NUXT_MINIO_SECRET_KEY,
+        minioUseSsl: process.env.NUXT_MINIO_USE_SSL === 'true',
+        minioPort: process.env.NUXT_MINIO_PORT ? Number(process.env.NUXT_MINIO_PORT) : 9000,
 
-        geminiApiKey: process.env.GEMINI_API_KEY,
+        geminiApiKey: process.env.NUXT_GEMINI_API_KEY,
 
         // Client-side public variables
         public: {
             googleClientId: process.env.NUXT_PUBLIC_GOOGLE_CLIENT_ID
                 || process.env.NUXT_GOOGLE_CLIENT_ID
-                || process.env.GOOGLE_CLIENT_ID
-                || '',
+                || process.env.NUXT_GOOGLE_CLIENT_ID
+                || '897905079551-k2chp1f1lu4f7dagjsg0nl03em61gm8m.apps.googleusercontent.com', // Temporary hardcoded fallback
             apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-            clientUrl: process.env.CLIENT_URL || process.env.NUXT_PUBLIC_CLIENT_URL || 'http://localhost:3000',
+            clientUrl: process.env.NUXT_CLIENT_URL || process.env.NUXT_PUBLIC_CLIENT_URL || 'http://localhost:3000',
             siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
         },
     },
