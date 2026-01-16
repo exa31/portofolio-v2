@@ -41,7 +41,7 @@ const copyToClipboard = (text: string | undefined) => {
   <section id="project" class="py-20">
     <div class="container mx-auto px-6">
       <!-- Header -->
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-12 gap-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-12 gap-6" data-aos="fade-up">
         <div>
           <h2 class="text-5xl lg:text-6xl font-black mb-3 leading-tight">
             Featured
@@ -56,10 +56,12 @@ const copyToClipboard = (text: string | undefined) => {
       <!-- Projects Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
         <div
-            v-for="project in projects"
+            v-for="(project, index) in projects"
             :key="project.id"
             @click="openProjectModal(project)"
             class="group relative overflow-hidden rounded-2xl bg-[#1a2332] border border-white/5 cursor-pointer transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
+            data-aos="fade-up"
+            :data-aos-delay="index * 100"
         >
           <!-- Image -->
           <div class="relative h-56 bg-linear-to-b from-white/5 to-transparent overflow-hidden">

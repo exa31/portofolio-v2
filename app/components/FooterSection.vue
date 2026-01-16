@@ -11,9 +11,9 @@ const handleScrollToTop = () => {
   <footer class="bg-linear-to-b from-[#0a0f1a] to-[#050810] border-t border-white/10">
     <div class="container mx-auto px-6">
       <!-- Footer Content -->
-      <div class="py-12 flex flex-col sm:flex-row items-center justify-between gap-8">
+      <div class="py-12 flex flex-col sm:flex-row items-center justify-between gap-8" data-aos="fade-up">
         <!-- Brand Section -->
-        <div class="flex flex-col items-center sm:items-start gap-4">
+        <div class="flex flex-col items-center sm:items-start gap-4" data-aos="fade-right" data-aos-delay="100">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-md bg-primary/10 flex items-center justify-center border border-white/5">
               <Icon name="material-symbols-light:terminal" size="24" class="text-primary"/>
@@ -23,7 +23,7 @@ const handleScrollToTop = () => {
         </div>
 
         <!-- Copyright & Links -->
-        <div class="text-center sm:text-right">
+        <div class="text-center sm:text-right" data-aos="fade-left" data-aos-delay="100">
           <p class="text-white/60 text-sm mb-3">
             <span class="font-semibold text-white">© {{ currentYear }} Eka Dev.</span>
             <span class="mx-2">•</span>
@@ -48,7 +48,7 @@ const handleScrollToTop = () => {
       </div>
 
       <!-- Back to Top Button -->
-      <div class="py-4 border-t border-white/10 flex justify-center">
+      <div class="py-4 border-t border-white/10 flex justify-center" data-aos="fade-up" data-aos-delay="200">
         <button
             @click="handleScrollToTop"
             class="p-2 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:bg-primary/20 hover:border-primary/50 hover:text-primary transition-all duration-300 group"

@@ -12,7 +12,7 @@ defineProps<{
 <template>
   <section id="about" class="py-20">
     <div class="container mx-auto px-6">
-      <div class="mb-12">
+      <div class="mb-12" data-aos="fade-up">
         <h2 class="text-5xl lg:text-6xl font-black mb-3 leading-tight">About Me</h2>
         <p class="text-lg text-white/50 mb-6 leading-relaxed max-w-lg">
           Architecting the future of web and mobile applications with scalable, cloud-native solutions.
@@ -21,7 +21,7 @@ defineProps<{
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
         <!-- Left: Image Card -->
-        <div class="relative flex justify-center lg:justify-start order-2 lg:order-1">
+        <div class="relative flex justify-center lg:justify-start order-2 lg:order-1" data-aos="fade-right">
           <div class="relative w-full max-w-sm">
             <!-- Card -->
             <NuxtImg src="/images/about.png" alt="Profile" class="h-full rounded-xl w-full"/>
@@ -69,16 +69,19 @@ defineProps<{
         </div>
 
         <!-- Right: Content -->
-        <div class="text-white order-1 lg:order-2 pt-8 lg:pt-0">
+        <div class="text-white order-1 lg:order-2 pt-8 lg:pt-0" data-aos="fade-left">
           <!-- Badge -->
           <div
-              class="inline-flex items-center gap-2 bg-[#0b2a35] text-sky-300 px-3 py-1 rounded-full text-[10px] uppercase mb-6 font-medium">
+              class="inline-flex items-center gap-2 bg-[#0b2a35] text-sky-300 px-3 py-1 rounded-full text-[10px] uppercase mb-6 font-medium"
+              data-aos="fade-up"
+              data-aos-delay="100">
             <Icon name="material-symbols-light:stars" size="24" class="text-sky-400"/>
             PROBLEM SOLVER
           </div>
 
           <!-- Main Heading -->
-          <h3 class="text-4xl lg:text-5xl font-black leading-tight mb-8 max-w-2xl">
+          <h3 class="text-4xl lg:text-5xl font-black leading-tight mb-8 max-w-2xl" data-aos="fade-up"
+              data-aos-delay="200">
             Bridging <span
               class="text-transparent bg-clip-text bg-linear-to-r from-blue-400 to-blue-600">Backend Logic</span>
             with <span
@@ -86,20 +89,20 @@ defineProps<{
           </h3>
 
           <!-- Description -->
-          <p class="text-white/60 text-sm leading-relaxed mb-6 max-w-lg">
+          <p class="text-white/60 text-sm leading-relaxed mb-6 max-w-lg" data-aos="fade-up" data-aos-delay="300">
             I don't just write code; I engineer resilient ecosystems. As a seasoned Full Stack developer, I
             seamlessly navigate between creating intuitive mobile and web interfaces and architecting powerful
             backend systems.
           </p>
 
-          <p class="text-white/60 text-sm leading-relaxed mb-8 max-w-lg">
+          <p class="text-white/60 text-sm leading-relaxed mb-8 max-w-lg" data-aos="fade-up" data-aos-delay="400">
             My expertise extends to DevOps, where I leverage Kubernetes and CI/CD pipelines to automate deployments
             and ensure 99.9% uptime. Whether it's optimization, scalability, or user experience, I deliver solutions
             that drive growth.
           </p>
 
           <!-- Stats Row -->
-          <div class="flex sm:flex-row flex-col gap-6 mb-8">
+          <div class="flex sm:flex-row flex-col gap-6 mb-8" data-aos="fade-up" data-aos-delay="500">
             <div class="flex items-center bg-[#1e2430] p-5 rounded-2xl gap-3">
               <div>
                 <div class="text-4xl font-black text-white">{{ count_experience || 0 }}+</div>
@@ -124,7 +127,7 @@ defineProps<{
           </div>
 
           <!-- Core Competencies -->
-          <div class="mb-8">
+          <div class="mb-8" data-aos="fade-up" data-aos-delay="600">
             <div class="text-xs uppercase text-white/50 font-bold mb-3 tracking-wide">Core Competencies</div>
             <div class="flex flex-wrap gap-3">
               <span
@@ -156,7 +159,7 @@ defineProps<{
           </div>
 
           <!-- CTA Buttons -->
-          <div class="flex sm:flex-row flex-col  gap-3 pt-4">
+          <div class="flex sm:flex-row flex-col  gap-3 pt-4" data-aos="fade-up" data-aos-delay="700">
             <a :href="user?.cv_url"
                target="_blank"
                class="primary-cta-btn inline-flex items-center gap-2 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition">

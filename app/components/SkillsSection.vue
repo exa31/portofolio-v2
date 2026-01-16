@@ -10,7 +10,7 @@ defineProps<{
   <section id="stack" class="py-20">
     <div class="container mx-auto px-6">
       <!-- Header -->
-      <div class="text-center mb-16">
+      <div class="text-center mb-16" data-aos="fade-up">
         <h2 class="text-5xl lg:text-6xl font-black mb-3 leading-tight">Skills & Tech Stack</h2>
         <p class="text-lg text-white/50 max-w-2xl mx-auto leading-relaxed">
           A comprehensive overview of my technical ecosystem. From frontend architecture to backend scalability,
@@ -23,12 +23,14 @@ defineProps<{
         <!-- Dynamic Skills from API -->
         <!--        class="group relative bg-[#1a2332] border border-white/5 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 hover:border-blue-500/30 hover:bg-blue-500/5 transition-all duration-300 cursor-pointer min-h-45">-->
         <div
-            v-for="skill in skills"
+            v-for="(skill, index) in skills"
             :key="skill.id"
             class="group relative bg-[#1a2332] border border-white/5 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 hover:border-(--skill-color)/30 hover:bg-(--skill-color)/5 transition-all duration-300 cursor-pointer min-h-45"
             :style="{
              '--skill-color': skill.color || '#64748b'
             }"
+            data-aos="zoom-in"
+            :data-aos-delay="index * 50"
         >
           <div
               class="w-16 h-16 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform"

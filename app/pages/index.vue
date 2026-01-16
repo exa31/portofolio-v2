@@ -128,27 +128,39 @@ const totalExperienceYears = computed(() => {
 <template>
   <div class="text-white">
     <!-- Hero Section -->
-    <main class="container mx-auto px-6 py-20">
+    <main class="container mx-auto px-6 py-20" data-aos="fade-up">
       <HeroSection :user="dataUser?.data"/>
     </main>
 
     <!-- About Section -->
-    <AboutSection :user="dataUser?.data" :count_projects="projects.length" :count_experience="totalExperienceYears"/>
+    <div data-aos="fade-up" data-aos-delay="100">
+      <AboutSection :user="dataUser?.data" :count_projects="projects.length" :count_experience="totalExperienceYears"/>
+    </div>
 
     <!-- Skills Section -->
-    <SkillsSection :skills="skills"/>
+    <div data-aos="fade-up" data-aos-delay="200">
+      <SkillsSection :skills="skills"/>
+    </div>
 
     <!-- Journey Section -->
-    <JourneySection :experiences="experiences"/>
+    <div data-aos="fade-up" data-aos-delay="300">
+      <JourneySection :experiences="experiences"/>
+    </div>
 
     <!-- Projects Section -->
-    <ProjectsSection :projects="projects"/>
+    <div data-aos="fade-up" data-aos-delay="400">
+      <ProjectsSection :projects="projects"/>
+    </div>
 
     <!-- Contact Section -->
-    <ContactSection :user="dataUser?.data"/>
+    <div data-aos="fade-up" data-aos-delay="500">
+      <ContactSection :user="dataUser?.data"/>
+    </div>
 
     <!-- Footer Section -->
-    <FooterSection/>
+    <div data-aos="fade-up" data-aos-delay="600">
+      <FooterSection/>
+    </div>
 
     <!-- AI Assistant Section -->
     <AIAssistant/>

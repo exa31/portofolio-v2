@@ -30,7 +30,7 @@ const openModal = (experience: Experience) => {
   <section id="work" class="py-24 bg-linear-to-b from-[#071026] to-[#071023]">
     <div class="container mx-auto px-6">
       <!-- Header -->
-      <div class="text-center mb-16">
+      <div class="text-center mb-16" data-aos="fade-up">
         <p class="text-primary text-sm font-semibold mb-2 flex items-center justify-center gap-2">
           <Icon name="material-symbols:timeline" size="16"/>
           MY JOURNEY BEGINS HERE
@@ -52,9 +52,11 @@ const openModal = (experience: Experience) => {
           <!-- Timeline items -->
           <div class="space-y-6 sm:space-y-8">
             <div
-                v-for="(experience) in experiences"
+                v-for="(experience, index) in experiences"
                 :key="experience.id"
                 class="relative pl-20 sm:pl-24"
+                data-aos="fade-right"
+                :data-aos-delay="index * 100"
             >
               <!-- Timeline dot -->
               <div class="absolute left-0 w-16 h-16 flex items-center justify-center">

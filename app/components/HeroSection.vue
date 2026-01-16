@@ -14,7 +14,7 @@ defineProps<{
       <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
         <!-- Left Column -->
         <div>
-          <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight mb-6">
+          <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight mb-6" data-aos="fade-right">
             Hi, I'm
             <span class="bg-linear-to-r from-blue-600 via-sky-400 to-white bg-clip-text text-transparent">
               Eka</span>.<br/>
@@ -22,7 +22,7 @@ defineProps<{
             Engineer.
           </h1>
 
-          <p class="text-white/70 max-w-xl mb-8">
+          <p class="text-white/70 max-w-xl mb-8" data-aos="fade-right" data-aos-delay="100">
             I build end-to-end digital products — from modern web interfaces and scalable backend systems
             to cross-platform mobile applications.
             <br/><br/>
@@ -30,7 +30,7 @@ defineProps<{
             clean architecture, and real-world production needs.
           </p>
 
-          <div class="flex gap-4 mb-8">
+          <div class="flex gap-4 mb-8" data-aos="fade-right" data-aos-delay="200">
             <a href="#work"
                class="inline-flex items-center justify-center bg-primary text-white px-6 py-3 rounded-lg shadow hover:brightness-105">
               View Projects
@@ -41,7 +41,7 @@ defineProps<{
             </a>
           </div>
 
-          <div>
+          <div data-aos="fade-right" data-aos-delay="300">
             <p class="text-xs text-white/50 mb-3">CONNECT WITH ME</p>
             <div class="flex gap-3">
               <a aria-label="Github"
@@ -73,7 +73,7 @@ defineProps<{
         </div>
 
         <!-- Right Column (Card) -->
-        <div class="flex justify-center rounded-2xl md:justify-end relative">
+        <div class="flex justify-center rounded-2xl md:justify-end relative" data-aos="fade-left" data-aos-delay="200">
           <!-- Glow -->
           <div
               class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2

@@ -41,8 +41,8 @@ const submitForm = async () => {
     <div class="container mx-auto px-6">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
         <!-- Left Column -->
-        <div class="space-y-8">
-          <div>
+        <div class="space-y-8" data-aos="fade-right">
+          <div data-aos="fade-up" data-aos-delay="100">
             <p class="text-primary text-sm font-semibold mb-2 flex items-center gap-2">
               <Icon name="carbon:email" size="16"/>
               GET IN TOUCH
@@ -55,7 +55,7 @@ const submitForm = async () => {
           </div>
 
           <!-- Contact Info Cards -->
-          <div class="space-y-4">
+          <div class="space-y-4" data-aos="fade-up" data-aos-delay="200">
             <!-- Email Card -->
             <div
                 class="group bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-6 hover:border-primary/50 transition-all duration-300">
@@ -110,10 +110,11 @@ const submitForm = async () => {
 
         <!-- Right Column - Contact Form -->
         <div
-            class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 hover:border-white/20 transition-all duration-300">
+            class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 hover:border-white/20 transition-all duration-300"
+            data-aos="fade-left">
           <form @submit.prevent="submitForm" class="space-y-6">
             <!-- Name & Email Row -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" data-aos="fade-up" data-aos-delay="300">
               <div>
                 <label class="block text-sm text-white/70 font-medium mb-2">Name</label>
                 <input
@@ -137,7 +138,7 @@ const submitForm = async () => {
             </div>
 
             <!-- Subject -->
-            <div>
+            <div data-aos="fade-up" data-aos-delay="400">
               <label class="block text-sm text-white/70 font-medium mb-2">Subject</label>
               <input
                   v-model="formData.subject"
@@ -149,7 +150,7 @@ const submitForm = async () => {
             </div>
 
             <!-- Message -->
-            <div>
+            <div data-aos="fade-up" data-aos-delay="500">
               <label class="block text-sm text-white/70 font-medium mb-2">Message</label>
               <textarea
                   v-model="formData.message"
@@ -165,6 +166,8 @@ const submitForm = async () => {
                 type="submit"
                 :disabled="isSaving"
                 class="w-full px-6 py-4 rounded-lg bg-linear-to-r from-primary via-blue-600 to-primary text-white font-bold text-lg hover:shadow-lg hover:shadow-primary/30 hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                data-aos="fade-up"
+                data-aos-delay="600"
             >
               <Icon v-if="!isSaving" name="carbon:send-filled" size="20"/>
               <span v-if="isSaving">Sending...</span>
