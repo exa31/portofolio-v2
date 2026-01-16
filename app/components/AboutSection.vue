@@ -24,7 +24,7 @@ defineProps<{
         <div class="relative flex justify-center lg:justify-start order-2 lg:order-1" data-aos="fade-right">
           <div class="relative w-full max-w-sm">
             <!-- Card -->
-            <NuxtImg src="/images/about.png" alt="Profile" class="h-full rounded-xl w-full"/>
+            <NuxtImg src="/images/about.webp" alt="Profile" class="h-full rounded-xl w-full"/>
 
             <!-- Status Badge -->
             <template v-if="user?.open_to_opportunities">

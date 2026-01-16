@@ -1,15 +1,39 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
     compatibilityDate: '2025-07-15',
-    devtools: {enabled: true},
+    devtools: {enabled: false}, // Disable in production
 
     // ========== MODULES ==========
     modules: ['@nuxt/ui', '@nuxt/image', '@pinia/nuxt', 'nuxt-gtag'],
 
     // ========== STYLES ==========
-    css: [
-        '~/assets/css/main.css'
-    ],
+    css: ['~/assets/css/main.css'],
+
+    // ========== BUILD OPTIMIZATION ==========
+    build: {
+        transpile: ['@google/genai'],
+    },
+
+    // ========== VITE CONFIG ==========
+    vite: {
+        build: {
+            rollupOptions: {
+                output: {
+                    manualChunks: (id) => {
+                        if (id.includes('node_modules')) {
+                            if (id.includes('@nuxt/ui') || id.includes('@headlessui')) {
+                                return 'vendor-ui';
+                            }
+                            if (id.includes('@google')) {
+                                return 'vendor-google';
+                            }
+                            return 'vendor';
+                        }
+                    },
+                },
+            },
+        },
+    },
 
     // ========== SEO & META ==========
     app: {
@@ -19,8 +43,6 @@ export default defineNuxtConfig({
             title: 'Eka - Full Stack Developer Portfolio',
             meta: [
                 {name: 'format-detection', content: 'telephone=no'},
-                // Add Google Search Console verification after domain verification
-                // { name: 'google-site-verification', content: 'YOUR_VERIFICATION_CODE' }
             ],
             link: [
                 {rel: 'icon', type: 'image/x-icon', href: '/favicon.ico'},
@@ -32,7 +54,11 @@ export default defineNuxtConfig({
 
     // ========== NITRO (Server) CONFIG ==========
     nitro: {
-        compressPublicAssets: true,
+        compressPublicAssets: {
+            gzip: true,
+            brotli: true,
+        },
+        minify: true,
         prerender: {
             crawlLinks: true,
             routes: ['/', '/privacy', '/terms'],
@@ -42,12 +68,24 @@ export default defineNuxtConfig({
     // ========== IMAGE OPTIMIZATION ==========
     image: {
         quality: 80,
-        format: ['webp', 'avif', 'png', 'jpg'],
+        format: ['webp', 'avif'],
+        screens: {
+            xs: 320,
+            sm: 640,
+            md: 768,
+            lg: 1024,
+            xl: 1280,
+            xxl: 1536,
+        },
+    },
+
+    // ========== EXPERIMENTAL FEATURES ==========
+    experimental: {
+        payloadExtraction: true,
     },
 
     // ========== RUNTIME CONFIG ==========
     runtimeConfig: {
-        // Server-side private variables
         mode: process.env.NUXT_MODE || 'production',
         jwtSecret: process.env.NUXT_JWT_SECRET,
         googleClientId: process.env.NUXT_GOOGLE_CLIENT_ID,
@@ -74,14 +112,10 @@ export default defineNuxtConfig({
 
         geminiApiKey: process.env.NUXT_GEMINI_API_KEY,
 
-        // Client-side public variables
         public: {
-            googleClientId: process.env.NUXT_PUBLIC_GOOGLE_CLIENT_ID
-                || process.env.NUXT_GOOGLE_CLIENT_ID
-                || process.env.NUXT_GOOGLE_CLIENT_ID
-                || '897905079551-k2chp1f1lu4f7dagjsg0nl03em61gm8m.apps.googleusercontent.com', // Temporary hardcoded fallback
-            apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || process.env.NUXT_PUBLIC_SITE_URL || 'https://eka-dev.cloud',
-            clientUrl: process.env.NUXT_CLIENT_URL || process.env.NUXT_PUBLIC_CLIENT_URL || 'https://eka-dev.cloud',
+            googleClientId: process.env.NUXT_PUBLIC_GOOGLE_CLIENT_ID || '',
+            apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || 'https://eka-dev.cloud',
+            clientUrl: process.env.NUXT_CLIENT_URL || 'https://eka-dev.cloud',
             siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://eka-dev.cloud',
         },
     },

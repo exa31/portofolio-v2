@@ -17,7 +17,7 @@ const siteUrl = 'https://eka-dev.cloud' // TODO: Update with your domain
 const siteName = 'Eka - Full Stack Developer Portfolio'
 const siteDescription = 'Full Stack Developer specializing in Vue.js, Nuxt.js, React, Node.js, and Golang. Building scalable web applications, mobile apps with Flutter, and cloud-native solutions with Kubernetes & Docker.'
 const authorName = 'Eka'
-const ogImage = `${siteUrl}/images/og-image.png` // TODO: Create OG image
+const ogImage = `${siteUrl}/images/og-image.webp` // TODO: Create OG image
 
 // ========== FETCH DATA FROM API (SSR-compatible) ==========
 const config = useRuntimeConfig()
@@ -67,7 +67,7 @@ const projects = computed(() => {
     title: p.name,
     shortDesc: p.description || '',
     description: p.description || '',
-    image: p.preview_image || '/images/hero.png',
+    image: p.preview_image || '/images/hero.webp',
     technologies: p.technologies || [],
     link: p.repo_url,
     liveUrl: p.live_url,
