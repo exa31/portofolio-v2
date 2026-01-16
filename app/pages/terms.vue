@@ -1,6 +1,78 @@
 <script setup lang="ts">
+const siteUrl = 'https://eka-dev.cloud'
+const pageUrl = `${siteUrl}/terms`
+const pageTitle = 'Terms of Service - Eka Dev Portfolio'
+const pageDescription = 'Read the Terms of Service for Eka Dev Portfolio. Understand the rules and guidelines for using our website and services.'
+
 useHead({
-  title: 'Terms of Service - Eka Dev Portfolio'
+  title: pageTitle,
+  htmlAttrs: {
+    lang: 'en'
+  },
+  meta: [
+    {
+      name: 'description',
+      content: pageDescription
+    },
+    {
+      name: 'robots',
+      content: 'index, follow'
+    },
+    // Open Graph
+    {
+      property: 'og:type',
+      content: 'website'
+    },
+    {
+      property: 'og:url',
+      content: pageUrl
+    },
+    {
+      property: 'og:title',
+      content: pageTitle
+    },
+    {
+      property: 'og:description',
+      content: pageDescription
+    },
+    // Twitter Card
+    {
+      name: 'twitter:card',
+      content: 'summary'
+    },
+    {
+      name: 'twitter:title',
+      content: pageTitle
+    },
+    {
+      name: 'twitter:description',
+      content: pageDescription
+    },
+  ],
+  link: [
+    {
+      rel: 'canonical',
+      href: pageUrl
+    }
+  ],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'WebPage',
+        name: pageTitle,
+        url: pageUrl,
+        description: pageDescription,
+        inLanguage: 'en-US',
+        isPartOf: {
+          '@type': 'WebSite',
+          url: siteUrl,
+          name: 'Eka Dev Portfolio'
+        }
+      })
+    }
+  ]
 })
 
 definePageMeta(

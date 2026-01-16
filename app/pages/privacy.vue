@@ -1,6 +1,78 @@
 <script setup lang="ts">
+const siteUrl = 'https://eka-dev.cloud'
+const pageUrl = `${siteUrl}/privacy`
+const pageTitle = 'Privacy Policy - Eka Dev Portfolio'
+const pageDescription = 'Learn how Eka Dev Portfolio collects, uses, and protects your personal information. Our privacy policy explains our data practices and your rights.'
+
 useHead({
-  title: 'Privacy Policy - Eka Dev Portfolio'
+  title: pageTitle,
+  htmlAttrs: {
+    lang: 'en'
+  },
+  meta: [
+    {
+      name: 'description',
+      content: pageDescription
+    },
+    {
+      name: 'robots',
+      content: 'index, follow'
+    },
+    // Open Graph
+    {
+      property: 'og:type',
+      content: 'website'
+    },
+    {
+      property: 'og:url',
+      content: pageUrl
+    },
+    {
+      property: 'og:title',
+      content: pageTitle
+    },
+    {
+      property: 'og:description',
+      content: pageDescription
+    },
+    // Twitter Card
+    {
+      name: 'twitter:card',
+      content: 'summary'
+    },
+    {
+      name: 'twitter:title',
+      content: pageTitle
+    },
+    {
+      name: 'twitter:description',
+      content: pageDescription
+    },
+  ],
+  link: [
+    {
+      rel: 'canonical',
+      href: pageUrl
+    }
+  ],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'WebPage',
+        name: pageTitle,
+        url: pageUrl,
+        description: pageDescription,
+        inLanguage: 'en-US',
+        isPartOf: {
+          '@type': 'WebSite',
+          url: siteUrl,
+          name: 'Eka Dev Portfolio'
+        }
+      })
+    }
+  ]
 })
 
 definePageMeta(

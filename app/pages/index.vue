@@ -164,6 +164,32 @@ useHead({
       content: 'en_US'
     },
 
+    // Twitter Card
+    {
+      name: 'twitter:card',
+      content: 'summary_large_image'
+    },
+    {
+      name: 'twitter:site',
+      content: '@ESyafrino' // TODO: Update with your Twitter handle
+    },
+    {
+      name: 'twitter:creator',
+      content: '@ESyafrino' // TODO: Update with your Twitter handle
+    },
+    {
+      name: 'twitter:title',
+      content: 'Eka - Full Stack Developer | Vue.js, React, Node.js & Mobile Expert'
+    },
+    {
+      name: 'twitter:description',
+      content: siteDescription
+    },
+    {
+      name: 'twitter:image',
+      content: ogImage
+    },
+
     // Additional SEO
     {
       name: 'theme-color',
@@ -196,6 +222,14 @@ useHead({
       rel: 'apple-touch-icon',
       href: '/favicon.ico'
     },
+    {
+      rel: 'preconnect',
+      href: 'https://fonts.googleapis.com'
+    },
+    {
+      rel: 'dns-prefetch',
+      href: 'https://fonts.googleapis.com'
+    },
   ],
   script: [
     {
@@ -210,9 +244,50 @@ useHead({
         description: siteDescription,
         knowsAbout: skills.value.map(skill => skill.name),
         sameAs: [
-          user.value?.github_profile, // TODO: Update
-          user.value?.github_profile,  // TODO: Update
-        ]
+          user.value?.github_profile,
+          user.value?.linkedin_profile,
+        ],
+        worksFor: {
+          '@type': 'Organization',
+          name: 'Freelance Developer'
+        }
+      })
+    },
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: siteName,
+        url: siteUrl,
+        description: siteDescription,
+        author: {
+          '@type': 'Person',
+          name: authorName
+        },
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: `${siteUrl}/?s={search_term_string}`,
+          'query-input': 'required name=search_term_string'
+        }
+      })
+    },
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        itemListElement: projects.value.slice(0, 6).map((project, index) => ({
+          '@type': 'ListItem',
+          position: index + 1,
+          item: {
+            '@type': 'CreativeWork',
+            name: project.title,
+            description: project.description,
+            url: project.liveUrl || project.link,
+            image: project.image
+          }
+        }))
       })
     }
   ]

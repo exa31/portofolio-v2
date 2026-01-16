@@ -4,7 +4,7 @@ export default defineNuxtConfig({
     devtools: {enabled: true},
 
     // ========== MODULES ==========
-    modules: ['@nuxt/ui', '@nuxt/image', '@pinia/nuxt'],
+    modules: ['@nuxt/ui', '@nuxt/image', '@pinia/nuxt', 'nuxt-gtag'],
 
     // ========== STYLES ==========
     css: [
@@ -19,6 +19,8 @@ export default defineNuxtConfig({
             title: 'Eka - Full Stack Developer Portfolio',
             meta: [
                 {name: 'format-detection', content: 'telephone=no'},
+                // Add Google Search Console verification after domain verification
+                // { name: 'google-site-verification', content: 'YOUR_VERIFICATION_CODE' }
             ],
             link: [
                 {rel: 'icon', type: 'image/x-icon', href: '/favicon.ico'},
@@ -33,7 +35,7 @@ export default defineNuxtConfig({
         compressPublicAssets: true,
         prerender: {
             crawlLinks: true,
-            routes: ['/'],
+            routes: ['/', '/privacy', '/terms'],
         },
     },
 
