@@ -33,13 +33,13 @@ export default handleError(async (event) => {
     const config = useRuntimeConfig()
     const apiKey = config.geminiApiKey
 
-    if (!apiKey) {
-        console.warn('GEMINI_API_KEY not set')
-        return {
-            success: false,
-            message: 'AI service is not configured',
-            data: null,
-        }
+    if (!apiKey || apiKey.trim() === '') {
+        console.error('[AI Chat] GEMINI_API_KEY not configured')
+        throw new HttpError(
+            500,
+            'AI_NOT_CONFIGURED',
+            'AI service is not configured. Please set GEMINI_API_KEY environment variable.'
+        )
     }
 
     const contents = `
@@ -186,8 +186,11 @@ Always represent Eka as a fast-learning, performance-oriented developer with str
     `
 
     try {
-        const ai = new GoogleGenAI({});
+        // Initialize GoogleGenAI with API key
+        console.info('[AI Chat] Initializing GoogleGenAI with API key...')
+        const ai = new GoogleGenAI({apiKey});
 
+        console.info('[AI Chat] Sending request to Gemini API...')
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
             contents: contents
@@ -195,17 +198,17 @@ Always represent Eka as a fast-learning, performance-oriented developer with str
         const text = response.text
 
         if (!text || !text.trim()) {
-            console.warn('Empty response from Gemini')
+            console.warn('[AI Chat] Empty response from Gemini')
             throw new HttpError(
                 500,
-                "",
+                "EMPTY_AI_RESPONSE",
                 "The AI service did not return any content."
             )
         }
 
         const htmlContent = markdownToHtml(text.trim())
 
-        console.info(`[AI Chat] Generated response for prompt: ${prompt.substring(0, 50)}...`)
+        console.info(`[AI Chat] ✅ Generated response (${text.length} chars) for prompt: "${prompt.substring(0, 50)}..."`)
 
         return sendSuccess(
             event,
@@ -215,10 +218,24 @@ Always represent Eka as a fast-learning, performance-oriented developer with str
             200
         )
     } catch (error) {
-        console.error('[AI Chat] Error:', error)
+        console.error('[AI Chat] ❌ Error:', error)
+
+        // Handle specific error types
         if (error instanceof HttpError) {
             throw error
         }
+
+        // Handle Google Auth errors
+        if (error instanceof Error && error.message.includes('default credentials')) {
+            console.error('[AI Chat] Google Auth error - API key might be invalid or not properly configured')
+            throw new HttpError(
+                500,
+                "GEMINI_AUTH_ERROR",
+                "Failed to authenticate with Gemini API. Please check GEMINI_API_KEY environment variable."
+            )
+        }
+
+        // Handle generic errors
         throw new HttpError(
             500,
             "INTERNAL_SERVER_ERROR",
