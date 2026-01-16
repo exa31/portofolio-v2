@@ -20,7 +20,12 @@ const authorName = 'Eka'
 const ogImage = `${siteUrl}/images/og-image.png` // TODO: Create OG image
 
 // ========== FETCH DATA FROM API (SSR-compatible) ==========
+const config = useRuntimeConfig()
+const baseURL = import.meta.server ? config.public.apiBaseUrl : ''
+
+// Use useFetch with baseURL for SSR compatibility
 const {data: projectsData, pending: projectsLoading} = await useFetch<BaseResponse<ProjectsResponse>>('/api/projects', {
+  baseURL,
   query: {
     pagination: false,
     limit: 6,
@@ -29,6 +34,7 @@ const {data: projectsData, pending: projectsLoading} = await useFetch<BaseRespon
 })
 
 const {data: skillsData, pending: skillsLoading} = await useFetch<BaseResponse<SkillsResponse>>('/api/skills', {
+  baseURL,
   query: {
     pagination: false,
   },
@@ -36,6 +42,7 @@ const {data: skillsData, pending: skillsLoading} = await useFetch<BaseResponse<S
 })
 
 const {data: journeysData, pending: journeysLoading} = await useFetch<BaseResponse<JourneysResponse>>('/api/journeys', {
+  baseURL,
   query: {
     pagination: false,
   },
@@ -43,6 +50,7 @@ const {data: journeysData, pending: journeysLoading} = await useFetch<BaseRespon
 })
 
 const {data: dataUser, pending: loadingUser} = await useFetch<BaseResponse<UserSettingsModel>>('/api/settings', {
+  baseURL,
   watch: false,
 })
 
