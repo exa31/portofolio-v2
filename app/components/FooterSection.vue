@@ -1,22 +1,6 @@
 <script setup lang="ts">
 const currentYear = new Date().getFullYear()
 
-const socialLinks = [
-  {name: 'GitHub', icon: 'line-md:github-loop', href: 'https://github.com/exa31', color: 'hover:text-white'},
-  {
-    name: 'LinkedIn',
-    icon: 'jam:linkedin',
-    href: 'https://www.linkedin.com/in/eka-nazhifan-75b116293/',
-    color: 'hover:text-blue-400'
-  },
-  {
-    name: 'Email',
-    icon: 'material-symbols:alternate-email',
-    href: 'mailto:ekaaa.jobs@gmail.com',
-    color: 'hover:text-primary'
-  }
-]
-
 const handleScrollToTop = () => {
   window.scrollTo({top: 0, behavior: 'smooth'})
 }
@@ -35,20 +19,6 @@ const handleScrollToTop = () => {
               <Icon name="material-symbols-light:terminal" size="24" class="text-primary"/>
             </div>
             <span class="font-bold text-lg text-white">Eka Dev.</span>
-          </div>
-          <!-- Social Links -->
-          <div class="flex gap-3">
-            <a
-                v-for="social in socialLinks"
-                :key="social.name"
-                :href="social.href"
-                :aria-label="social.name"
-                target="_blank"
-                rel="noopener noreferrer"
-                :class="['w-9 h-9 rounded-full bg-white/10 flex items-center justify-center border border-white/20 text-white/60 transition-all duration-300', social.color]"
-            >
-              <Icon :name="social.icon" size="18"/>
-            </a>
           </div>
         </div>
 
