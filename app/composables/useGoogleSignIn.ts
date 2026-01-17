@@ -4,7 +4,7 @@ export const useGoogleSignIn = () => {
     const router = useRouter()
     const config = useRuntimeConfig()
     const googleClientId = config.public.googleClientId
-    const clientUrl = config.public.clientUrl || window.location.origin
+    const clientUrl = config.public.clientUrl
 
     // Error state untuk di-share ke component
     const signInError = ref<string | null>(null)

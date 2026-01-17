@@ -1,58 +1,67 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
     compatibilityDate: '2025-07-15',
-    devtools: {enabled: false}, // Disable in production
+    devtools: {enabled: false},
 
     // ========== MODULES ==========
     modules: ['@nuxt/ui', '@nuxt/image', '@pinia/nuxt', 'nuxt-gtag'],
 
-    // ========== STYLES ==========
     css: ['~/assets/css/main.css'],
 
-    // ========== BUILD OPTIMIZATION ==========
+    // ========== BUILD ==========
     build: {
         transpile: ['@google/genai'],
     },
 
-    // ========== VITE CONFIG ==========
+    // ========== VITE ==========
     vite: {
+        esbuild: {
+            minifyIdentifiers: false,
+        },
+
         build: {
             rollupOptions: {
                 output: {
-                    manualChunks: (id) => {
-                        if (id.includes('node_modules')) {
-                            if (id.includes('@nuxt/ui') || id.includes('@headlessui')) {
-                                return 'vendor-ui';
-                            }
-                            if (id.includes('@google')) {
-                                return 'vendor-google';
-                            }
-                            return 'vendor';
+                    manualChunks(id) {
+                        if (!id.includes('node_modules')) return
+
+                        // ✅ UI libs aman
+                        if (id.includes('@nuxt/ui') || id.includes('@headlessui')) {
+                            return 'vendor-ui'
                         }
+
+                        // ✅ Google libs aman
+                        if (id.includes('@google')) {
+                            return 'vendor-google'
+                        }
+
+                        // ❌ JANGAN split util / nuxt core
+                        return undefined
                     },
                 },
             },
         },
     },
 
-    // ========== SEO & META ==========
+    // ========== SSR ==========
+    ssr: true,
+
+    // ========== SEO ==========
     app: {
         head: {
             charset: 'utf-8',
             viewport: 'width=device-width, initial-scale=1, maximum-scale=5',
             title: 'Eka - Full Stack Developer Portfolio',
-            meta: [
-                {name: 'format-detection', content: 'telephone=no'},
-            ],
+            meta: [{name: 'format-detection', content: 'telephone=no'}],
             link: [
-                {rel: 'icon', type: 'image/x-icon', href: '/favicon.ico'},
+                {rel: 'icon', href: '/favicon.ico'},
                 {rel: 'preconnect', href: 'https://fonts.googleapis.com'},
                 {rel: 'dns-prefetch', href: 'https://fonts.googleapis.com'},
             ],
         },
     },
 
-    // ========== NITRO (Server) CONFIG ==========
+    // ========== NITRO ==========
     nitro: {
         compressPublicAssets: {
             gzip: true,
@@ -65,23 +74,10 @@ export default defineNuxtConfig({
         },
     },
 
-    // ========== IMAGE OPTIMIZATION ==========
+    // ========== IMAGE ==========
     image: {
         quality: 80,
         format: ['webp', 'avif'],
-        screens: {
-            xs: 320,
-            sm: 640,
-            md: 768,
-            lg: 1024,
-            xl: 1280,
-            xxl: 1536,
-        },
-    },
-
-    // ========== EXPERIMENTAL FEATURES ==========
-    experimental: {
-        payloadExtraction: true,
     },
 
     // ========== RUNTIME CONFIG ==========

@@ -7,17 +7,18 @@ const isSidebarOpen = ref(false)
 const breadCrumbStore = useBreadCrumbStore()
 const route = useRoute()
 
-// Use useCookie for consistent cookie handling
-const tokenCookie = useCookie('token', {
-  maxAge: 86400, // 1 day
-  path: '/',
-  sameSite: 'lax',
-  secure: import.meta.env.PROD,
-})
-
 // Decode user data from JWT token
 const getUserFromToken = () => {
   try {
+    // Use useCookie for consistent cookie handling
+    const tokenCookie = useCookie('token', {
+      maxAge: 86400,
+      path: '/',
+      sameSite: 'lax',
+      secure: import.meta.env.PROD,
+      readonly: true,
+    })
+
     const token = tokenCookie.value
 
     if (token) {
@@ -72,6 +73,12 @@ const handleLogout = async () => {
     console.error('Logout API error:', error)
   } finally {
     // Clear cookie
+    const tokenCookie = useCookie('token', {
+      maxAge: 86400,
+      path: '/',
+      sameSite: 'lax',
+      secure: import.meta.env.PROD,
+    })
     tokenCookie.value = null
 
     // Redirect to login page
