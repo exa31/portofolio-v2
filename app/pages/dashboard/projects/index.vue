@@ -230,7 +230,7 @@ const deleteProjectHandler = async (id: number) => {
         <!-- Image -->
         <div class="relative h-48 bg-white/5 overflow-hidden">
           <NuxtImg
-              :src="project.image"
+              :src="project.preview_image"
               :alt="project.name"
               class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
           />
