@@ -127,7 +127,7 @@ const toggleMinimize = () => {
 
 <template>
   <!-- AI Assistant Button -->
-  <div class="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-4">
+  <div class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-1000 flex flex-col items-end gap-4">
     <!-- Chat Window -->
     <Transition
         enter-active-class="transition duration-300 ease-out"
@@ -139,8 +139,8 @@ const toggleMinimize = () => {
     >
       <div
           v-show="isOpen && !isMinimized"
-          class="mb-4 w-96 bg-linear-to-br from-[#0f1520] to-[#071026] border border-white/10 rounded-2xl shadow-2xl shadow-primary/20 overflow-hidden flex flex-col"
-          style="height: 600px"
+          class="mb-4 w-[calc(100vw-2rem)] sm:w-96 max-w-96 bg-linear-to-br from-[#0f1520] to-[#071026] border border-white/10 rounded-2xl shadow-2xl shadow-primary/20 overflow-hidden flex flex-col"
+          style="max-height: calc(100vh - 8rem); height: min(600px, calc(100vh - 8rem))"
       >
         <!-- Header -->
         <div class="bg-linear-to-r from-primary via-blue-600 to-primary p-4 flex items-center justify-between">
@@ -183,7 +183,7 @@ const toggleMinimize = () => {
               ]"
           >
             <!-- Assistant Message -->
-            <div v-if="message.type === 'assistant'" class="flex gap-3 max-w-xs">
+            <div v-if="message.type === 'assistant'" class="flex gap-3 max-w-[85%] sm:max-w-xs">
               <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
                 <Icon name="carbon:asleep-filled" size="16" class="text-primary"/>
               </div>
@@ -197,7 +197,7 @@ const toggleMinimize = () => {
             </div>
 
             <!-- User Message -->
-            <div v-else class="flex gap-3 max-w-xs justify-end">
+            <div v-else class="flex gap-3 max-w-[85%] sm:max-w-xs justify-end">
               <div class="bg-primary text-white rounded-lg p-3 text-sm leading-relaxed">
                 {{ message.content }}
               </div>
@@ -224,12 +224,12 @@ const toggleMinimize = () => {
         <div v-if="messages.length <= 1 && !isLoading"
              class="px-4 py-3 border-t border-white/10 space-y-2 bg-[#0a0f1a]">
           <p class="text-xs text-white/50 px-2">Quick questions:</p>
-          <div class="flex flex-wrap gap-2">
+          <div class="flex flex-col sm:flex-row sm:flex-wrap gap-2">
             <button
                 v-for="(question, idx) in predefinedQuestions"
                 :key="idx"
                 @click="askQuestion(question)"
-                class="flex-1 min-w-fit px-3 py-2 text-xs rounded-lg bg-white/10 border border-white/20 text-white/70 hover:bg-primary/20 hover:border-primary/50 hover:text-primary transition-all"
+                class="w-full sm:flex-1 sm:min-w-fit px-3 py-2 text-xs rounded-lg bg-white/10 border border-white/20 text-white/70 hover:bg-primary/20 hover:border-primary/50 hover:text-primary transition-all"
             >
               {{ question }}
             </button>
@@ -237,18 +237,18 @@ const toggleMinimize = () => {
         </div>
 
         <!-- Input Area -->
-        <div class="p-4 border-t border-white/10 bg-[#0a0f1a]">
+        <div class="p-3 sm:p-4 border-t border-white/10 bg-[#0a0f1a]">
           <form @submit.prevent="sendMessage" class="flex gap-2">
             <input
                 v-model="userInput"
                 type="text"
                 placeholder="Ask a follow-up question..."
-                class="flex-1 px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-primary/50 focus:bg-white/15 transition-all text-sm"
+                class="flex-1 px-3 sm:px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-primary/50 focus:bg-white/15 transition-all text-sm"
             />
             <button
                 type="submit"
                 :disabled="isLoading"
-                class="px-4 py-2 rounded-lg bg-primary text-white hover:brightness-110 disabled:opacity-50 transition-all"
+                class="px-3 sm:px-4 py-2 rounded-lg bg-primary text-white hover:brightness-110 disabled:opacity-50 transition-all"
             >
               <Icon name="carbon:send-filled" size="18"/>
             </button>
@@ -268,7 +268,7 @@ const toggleMinimize = () => {
     >
       <div
           v-show="isOpen && isMinimized"
-          class="mb-4 w-80 bg-linear-to-r from-primary via-blue-600 to-primary border border-white/10 rounded-xl shadow-lg shadow-primary/20 p-4 cursor-pointer hover:shadow-xl hover:shadow-primary/30 transition-all"
+          class="mb-4 w-[calc(100vw-2rem)] sm:w-80 max-w-80 bg-linear-to-r from-primary via-blue-600 to-primary border border-white/10 rounded-xl shadow-lg shadow-primary/20 p-4 cursor-pointer hover:shadow-xl hover:shadow-primary/30 transition-all"
           @click="toggleMinimize"
       >
         <div class="flex items-center justify-between">
@@ -290,9 +290,8 @@ const toggleMinimize = () => {
     <button
         @click="toggleChat"
         :class="[
-          'w-14 h-14 rounded-full cursor-pointer shadow-lg transition-all duration-300 flex items-center justify-center text-white font-bold text-2xl hover:scale-110',
-
- 'bg-linear-to-br from-primary via-blue-600 to-primary hover:shadow-xl hover:shadow-primary/40'
+          'w-12 h-12 sm:w-14 sm:h-14 rounded-full cursor-pointer shadow-lg transition-all duration-300 flex items-center justify-center text-white font-bold text-2xl hover:scale-110',
+          'bg-linear-to-br from-primary via-blue-600 to-primary hover:shadow-xl hover:shadow-primary/40'
         ]"
     >
       <Icon v-if="!isOpen" name="material-symbols:smart-toy" size="24"/>

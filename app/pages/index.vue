@@ -364,7 +364,7 @@ const totalExperienceYears = computed(() => {
     </div>
 
     <!-- Footer Section -->
-    <div data-aos="fade-up" class="overflow-hidden" data-aos-delay="600">
+    <div class="overflow-hidden">
       <FooterSection/>
     </div>
 

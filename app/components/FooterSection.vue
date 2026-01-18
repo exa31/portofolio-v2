@@ -48,7 +48,7 @@ const handleScrollToTop = () => {
       </div>
 
       <!-- Back to Top Button -->
-      <div class="py-4 border-t border-white/10 flex justify-center" data-aos="fade-up" data-aos-delay="200">
+      <div class="py-4 border-t border-white/10 flex justify-center">
         <button
             @click="handleScrollToTop"
             class="p-2 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:bg-primary/20 hover:border-primary/50 hover:text-primary transition-all duration-300 group"
