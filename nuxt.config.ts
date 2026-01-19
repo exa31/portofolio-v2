@@ -13,6 +13,10 @@ export default defineNuxtConfig({
         transpile: ['@google/genai'],
     },
 
+    colorMode: {
+        preference: 'dark',
+    },
+
     // ========== VITE ==========
     vite: {
         esbuild: {
