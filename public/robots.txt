@@ -1,10 +1,29 @@
-# Allow all crawlers
+# Robots.txt for eka-dev.cloud
 User-Agent: *
 Allow: /
 
-# Disallow admin/dashboard pages
+# Disallow private pages
 Disallow: /dashboard/
 Disallow: /login
+Disallow: /admin/
 
-# Sitemap location
+# Allow CSS, JS, images
+Allow: /*.css$
+Allow: /*.js$
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.gif$
+Allow: /*.webp$
+Allow: /*.svg$
+Allow: /*.ico$
+
+# Disallow query parameters that create duplicate content
+Disallow: /*?*
+
+# Sitemaps
 Sitemap: https://eka-dev.cloud/sitemap.xml
+Sitemap: https://www.eka-dev.cloud/sitemap.xml
+
+# Crawl delay (optional - remove if not needed)
+Crawl-delay: 1

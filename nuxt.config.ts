@@ -56,9 +56,37 @@ export default defineNuxtConfig({
             charset: 'utf-8',
             viewport: 'width=device-width, initial-scale=1, maximum-scale=5',
             title: 'Eka - Full Stack Developer Portfolio',
-            meta: [{name: 'format-detection', content: 'telephone=no'}],
+            meta: [
+                {name: 'format-detection', content: 'telephone=no'},
+                {name: 'mobile-web-app-capable', content: 'yes'},
+                {name: 'apple-mobile-web-app-capable', content: 'yes'},
+                {name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent'},
+                {
+                    name: 'description',
+                    content: 'Eka - Full Stack Developer with expertise in Node.js, Go, Java, Python, React, Vue, and Flutter. Building scalable web and mobile solutions.'
+                },
+                {name: 'theme-color', content: '#000000'},
+                {property: 'og:title', content: 'Eka - Full Stack Developer Portfolio'},
+                {
+                    property: 'og:description',
+                    content: 'Eka - Full Stack Developer with expertise in Node.js, Go, Java, Python, React, Vue, and Flutter. Building scalable web and mobile solutions.'
+                },
+                {property: 'og:image', content: 'https://eka-dev.cloud/og-image.webp'},
+                {property: 'og:url', content: 'https://eka-dev.cloud'},
+                {property: 'og:type', content: 'website'},
+                {name: 'twitter:card', content: 'summary_large_image'},
+                {name: 'twitter:title', content: 'Eka - Full Stack Developer Portfolio'},
+                {
+                    name: 'twitter:description',
+                    content: 'Eka - Full Stack Developer with expertise in Node.js, Go, Java, Python, React, Vue, and Flutter. Building scalable web and mobile solutions.'
+                },
+                {name: 'twitter:image', content: 'https://eka-dev.cloud/og-image.webp'},
+                // ⬇️ Tambahkan verification code setelah di-verify di Google Search Console
+                // {name: 'google-site-verification', content: 'YOUR_VERIFICATION_CODE'}
+            ],
             link: [
                 {rel: 'icon', href: '/favicon.ico'},
+                {rel: 'canonical', href: 'https://eka-dev.cloud'},
                 {rel: 'preconnect', href: 'https://fonts.googleapis.com'},
                 {rel: 'dns-prefetch', href: 'https://fonts.googleapis.com'},
             ],
