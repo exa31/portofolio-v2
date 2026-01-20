@@ -51,6 +51,7 @@ const handleScrollToTop = () => {
       <div class="py-4 border-t border-white/10 flex justify-center">
         <button
             @click="handleScrollToTop"
+            aria-label="Scroll to top of page"
             class="p-2 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:bg-primary/20 hover:border-primary/50 hover:text-primary transition-all duration-300 group"
         >
           <Icon name="carbon:arrow-up" size="18" class="group-hover:scale-110 transition-transform"/>

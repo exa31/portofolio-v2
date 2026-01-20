@@ -289,6 +289,7 @@ const toggleMinimize = () => {
     <!-- Main Chat Button -->
     <button
         @click="toggleChat"
+        :aria-label="isOpen ? 'Close AI Assistant chat' : 'Open AI Assistant chat'"
         :class="[
           'w-12 h-12 sm:w-14 sm:h-14 rounded-full cursor-pointer shadow-lg transition-all duration-300 flex items-center justify-center text-white font-bold text-2xl hover:scale-110',
           'bg-linear-to-br from-primary via-blue-600 to-primary hover:shadow-xl hover:shadow-primary/40'
