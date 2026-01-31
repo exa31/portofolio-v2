@@ -4,10 +4,24 @@ export const useGoogleSignIn = () => {
     const router = useRouter()
     const config = useRuntimeConfig()
     const googleClientId = config.public.googleClientId
-    const clientUrl = config.public.clientUrl
 
     // Error state untuk di-share ke component
     const signInError = ref<string | null>(null)
+
+    // Get current domain to support www.eka-dev.cloud and eka-dev.cloud
+    const getCurrentDomain = (): string => {
+        if (import.meta.server) {
+            // Default to non-www version for server-side
+            return 'https://eka-dev.cloud'
+        }
+
+        const currentHost = window.location.hostname
+        const protocol = window.location.protocol
+
+        // Normalize domain to support both www and non-www
+        // Google OAuth will redirect to the same domain that initiated the request
+        return `${protocol}//${currentHost}`
+    }
 
     // Validate Google Client ID
     const validateGoogleConfig = () => {
@@ -32,8 +46,10 @@ export const useGoogleSignIn = () => {
             }
 
             // Initialize Google Accounts library with dynamic redirect_uri
-            const redirectUri = `${clientUrl}/`
+            const currentDomain = getCurrentDomain()
+            const redirectUri = `${currentDomain}/`
             console.log('[Google Auth] Initializing with Client ID:', googleClientId)
+            console.log('[Google Auth] Current Domain:', currentDomain)
             console.log('[Google Auth] Redirect URI:', redirectUri)
 
             ;(window as any).google.accounts.oauth2.initCodeClient(

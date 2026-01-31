@@ -12,13 +12,31 @@ import {sendSuccess} from "~~/server/utils/response";
 
 const Config = useAppConfig();
 
-const googleClient = new OAuth2Client({
-    client_id: Config.googleClientId,
-    client_secret: Config.googleClientSecret,
-    redirectUri: Config.clientUrl,
-});
+// Helper function to create OAuth2Client with dynamic redirectUri
+const createGoogleClient = (redirectUri: string) => {
+    return new OAuth2Client({
+        client_id: Config.googleClientId,
+        client_secret: Config.googleClientSecret,
+        redirectUri: redirectUri,
+    });
+};
+
+// Helper function to get redirect URI from request headers
+const getRedirectUriFromRequest = (event: H3Event): string => {
+    const host = getHeader(event, 'x-forwarded-host') || getHeader(event, 'host') || 'localhost:3000';
+    const proto = getHeader(event, 'x-forwarded-proto') || 'https';
+
+    // Ensure we have proper format
+    const redirectUri = `${proto}://${host}`;
+    console.log('[OAuth2] Detected redirectUri from request:', redirectUri);
+    return redirectUri;
+};
 
 export const loginWithGoogle = async (event: H3Event, code: string) => {
+    // Get dynamic redirectUri from request headers
+    const redirectUri = getRedirectUriFromRequest(event);
+    const googleClient = createGoogleClient(redirectUri);
+
     const {tokens, res} = await googleClient.getToken(
         code)
     ;
