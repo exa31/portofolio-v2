@@ -1,13 +1,11 @@
 <script setup lang="ts">
-
-import CountUp from 'vue-countup-v3'
 import type {UserSettingsModel} from "~/types/settings";
 
 defineProps<{
   user?: UserSettingsModel | null
   count_projects?: number
   count_experience?: number
-}>()
+}>();
 </script>
 
 <template>
@@ -107,11 +105,9 @@ defineProps<{
             <div class="flex items-center bg-[#1e2430] p-5 rounded-2xl gap-3">
               <div>
                 <div class="text-4xl font-black text-white flex items-center gap-2">
-                  <CountUp
-                      :end-val="count_experience || 0"
-                      :duration="2"
-                      :options="{ useEasing: true, separator: ',' }"
-                  />
+                  <ClientOnly>
+                    <CountUpNumber :end-val="count_experience || 0" :duration="2"/>
+                  </ClientOnly>
                   +
                 </div>
                 <div class="text-xs text-white/50 uppercase font-medium mt-4">Years Experience</div>
@@ -125,11 +121,9 @@ defineProps<{
             <div class="flex items-center bg-[#1e2430] p-5 rounded-2xl gap-3">
               <div>
                 <div class="text-4xl font-black text-white flex items-center gap-2">
-                  <CountUp
-                      :end-val="count_projects || 0"
-                      :duration="2"
-                      :options="{ useEasing: true, separator: ',' }"
-                  />
+                  <ClientOnly>
+                    <CountUpNumber :end-val="count_projects || 0" :duration="2"/>
+                  </ClientOnly>
                   +
                 </div>
                 <div class="text-xs text-white/50 uppercase mt-4 font-medium">Projects Shipped</div>

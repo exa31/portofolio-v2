@@ -99,6 +99,12 @@ export default defineNuxtConfig({
             gzip: true,
             brotli: true,
         },
+        routeRules: {
+            '/dashboard/**': {prerender: false},
+            '/login': {prerender: false},
+            '/api/**': {prerender: false},
+            '/dashboard': {prerender: false},
+        },
         minify: true,
         prerender: {
             crawlLinks: true,
