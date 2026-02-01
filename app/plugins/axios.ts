@@ -18,8 +18,20 @@ export default defineNuxtPlugin((nuxtApp) => {
         secure: import.meta.env.PROD,
     })
 
+    // 🔄 AUTO BASEURL - mengikuti parent domain
+    let baseURL = config.public.apiBaseUrl
+    if (import.meta.client && typeof window !== 'undefined') {
+        // Client-side: gunakan window.location.origin (otomatis ngikutin domain saat ini)
+        baseURL = window.location.origin
+    } else if (import.meta.server) {
+        // Server-side: gunakan host dari request headers
+        const host = useRequestHeaders(['host']).host || config.public.apiBaseUrl
+        const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http'
+        baseURL = `${protocol}://${host}`
+    }
+
     const api: AxiosInstance = axios.create({
-        baseURL: config.public.apiBaseUrl,
+        baseURL,
         withCredentials: true,
     })
 
