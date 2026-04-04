@@ -1,7 +1,7 @@
-import {Pool, type PoolClient, type QueryResult, type  QueryResultRow} from 'pg';
-import {useAppConfig} from '~~/server/utils/config';
-import {formatPgError} from "~~/server/utils/pgError";
-import {HttpError} from "~~/server/errors/HttpError";
+import { Pool, type PoolClient, type QueryResult, type QueryResultRow } from 'pg';
+import { useAppConfig } from '~~/server/utils/config';
+import { formatPgError } from "~~/server/utils/pgError";
+import { HttpError } from "~~/server/errors/HttpError";
 
 const Config = useAppConfig();
 
@@ -18,6 +18,13 @@ export type PostgresConfig = {
 };
 
 let pool: Pool | null = null;
+let initPromise: Promise<void> | null = null;
+let lastInitCfg: Partial<PostgresConfig> | undefined;
+let lastInitOptions: {
+    retries?: number;
+    initialDelayMs?: number;
+    factor?: number;
+} | undefined;
 
 function buildPoolConfig(cfg?: Partial<PostgresConfig>) {
     const host = cfg?.host ?? Config.pgHost;
@@ -29,7 +36,7 @@ function buildPoolConfig(cfg?: Partial<PostgresConfig>) {
     const idleTimeoutMillis = Number(cfg?.idleTimeoutMillis ?? Config.pgIdleTimeoutMs);
     const connectionTimeoutMillis = Number(cfg?.connectionTimeoutMillis ?? Config.pgConnectionTimeoutMs);
 
-    const ssl = cfg?.ssl ?? (Config.pgSsl ? {rejectUnauthorized: false} : undefined);
+    const ssl = cfg?.ssl ?? (Config.pgSsl ? { rejectUnauthorized: false } : undefined);
 
     return {
         host,
@@ -53,57 +60,79 @@ export async function initPostgres(cfg?: Partial<PostgresConfig>, options?: {
     initialDelayMs?: number;
     factor?: number;
 }): Promise<void> {
+    lastInitCfg = cfg;
+    lastInitOptions = options;
+
     if (pool) {
         return;
     }
 
-    const poolConfig = buildPoolConfig(cfg);
-    pool = new Pool(poolConfig);
+    if (initPromise) {
+        await initPromise;
+        return;
+    }
 
-    pool.on('error', (err: Error, _client: PoolClient) => {
-        // Log an unexpected error on an idle client
-        // Avoid printing credentials
-        // eslint-disable-next-line no-console
-        console.error('[postgres] unexpected error on idle client', {message: err.message});
-    });
+    initPromise = (async () => {
+        const poolConfig = buildPoolConfig(cfg);
+        pool = new Pool(poolConfig);
 
-    const retries = options?.retries ?? 5;
-    const initialDelayMs = options?.initialDelayMs ?? 200;
-    const factor = options?.factor ?? 2;
-
-    let attempt = 0;
-    let lastErr: Error | null = null;
-
-    while (attempt < retries) {
-        try {
-            const client = await pool.connect();
-            client.release();
+        pool.on('error', (err: Error, _client: PoolClient) => {
+            // Log an unexpected error on an idle client
+            // Avoid printing credentials
             // eslint-disable-next-line no-console
-            console.info(`[postgres] connected to ${poolConfig.host}:${poolConfig.port}/${poolConfig.database}`);
-            return;
-        } catch (err: any) {
-            lastErr = err;
-            attempt += 1;
-            const wait = initialDelayMs * Math.pow(factor, attempt - 1);
-            // eslint-disable-next-line no-console
-            console.warn(`[postgres] connect attempt ${attempt} failed (${err?.message}). retrying in ${wait}ms`);
-            await delay(wait);
+            console.error('[postgres] unexpected error on idle client', { message: err.message });
+        });
+
+        const retries = options?.retries ?? 5;
+        const initialDelayMs = options?.initialDelayMs ?? 200;
+        const factor = options?.factor ?? 2;
+
+        let attempt = 0;
+        let lastErr: Error | null = null;
+
+        while (attempt < retries) {
+            try {
+                const client = await pool.connect();
+                client.release();
+                // eslint-disable-next-line no-console
+                console.info(`[postgres] connected to ${poolConfig.host}:${poolConfig.port}/${poolConfig.database}`);
+                return;
+            } catch (err: any) {
+                lastErr = err;
+                attempt += 1;
+                const wait = initialDelayMs * Math.pow(factor, attempt - 1);
+                // eslint-disable-next-line no-console
+                console.warn(`[postgres] connect attempt ${attempt} failed (${err?.message}). retrying in ${wait}ms`);
+                await delay(wait);
+            }
         }
-    }
 
-    // If we are here, all attempts failed. Drain the pool and throw.
+        // If we are here, all attempts failed. Drain the pool and throw.
+        try {
+            await pool.end();
+        } catch (_) {
+            // ignore
+        }
+        pool = null;
+        throw new Error(`[postgres] could not establish a connection after ${retries} attempts. last error: ${lastErr?.message}`);
+    })();
+
     try {
-        await pool.end();
-    } catch (_) {
-        // ignore
+        await initPromise;
+    } finally {
+        initPromise = null;
     }
-    pool = null;
-    throw new Error(`[postgres] could not establish a connection after ${retries} attempts. last error: ${lastErr?.message}`);
+}
+
+async function ensurePostgresInitialized(): Promise<void> {
+    if (pool) return;
+    await initPostgres(lastInitCfg, lastInitOptions);
 }
 
 export async function query<T extends QueryResultRow = any>(text: string, params?: any[]): Promise<QueryResult<T>> {
-    if (!pool) throw new Error('Postgres pool not initialized. Call initPostgres() first.');
+    await ensurePostgresInitialized();
     try {
+        if (!pool) throw new Error('Postgres pool not initialized. Call initPostgres() first.');
         return pool.query<T>(text, params);
     } catch (err) {
         // Re-throw with some context but avoid leaking sensitive info
@@ -113,11 +142,13 @@ export async function query<T extends QueryResultRow = any>(text: string, params
 }
 
 export async function getClient(): Promise<PoolClient> {
+    await ensurePostgresInitialized();
     if (!pool) throw new Error('Postgres pool not initialized. Call initPostgres() first.');
     return pool.connect();
 }
 
 export async function withTransaction<T>(fn: (client: PoolClient) => Promise<T>): Promise<T> {
+    await ensurePostgresInitialized();
     if (!pool) throw new Error('Postgres pool not initialized. Call initPostgres() first.');
     const client = await pool.connect();
     try {
@@ -168,5 +199,5 @@ export async function shutdownPostgres(timeoutMs = 5000): Promise<void> {
     }
 }
 
-export {pool};
-export type {PoolClient};
+export { pool };
+export type { PoolClient };
