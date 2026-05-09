@@ -1,4 +1,4 @@
-name: Build & Deploy Frontend to K3s (Kubernetes) via GHCR
+name: Build & Deploy Portofolio v2 to VPS via GHCR
 
 on:
   push:
@@ -50,13 +50,13 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_KEY }}
 
-      # 8️⃣ Deploy to K3s
-      - name: Deploy to K3s
+      # 8️⃣ Deploy to VPS
+      - name: Deploy to VPS
         run: |
           ssh -p 31080 deploy@${{ secrets.VPS_HOST }} << 'EOF'
             set -e
           
-            export KUBECONFIG=/etc/rancher/k3s/k3s.yaml          
+            export KUBECONFIG=/home/deploy/.kube/config         
           
             NEW_IMAGE="ghcr.io/${{ github.repository_owner }}/portofolio-v2:${{ steps.vars.outputs.sha }}"
 
