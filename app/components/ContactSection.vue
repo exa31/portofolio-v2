@@ -1,6 +1,6 @@
 <script setup lang="ts">
-
 import type {UserSettingsModel} from "~/types/settings";
+import { ref } from 'vue'
 
 defineProps<
     {
@@ -42,8 +42,14 @@ const submitForm = async () => {
     <div class="container mx-auto px-6">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
         <!-- Left Column -->
-        <div class="space-y-8" data-aos="fade-right">
-          <header data-aos="fade-up" data-aos-delay="100">
+        <Motion
+            :initial="{ opacity: 0, x: -50 }"
+            :while-in-view="{ opacity: 1, x: 0 }"
+            :viewport="{ once: true, amount: 0.3 }"
+            :transition="{ duration: 0.8, ease: 'easeOut' }"
+            class="space-y-8 contact-info-reveal"
+        >
+          <header>
             <p class="text-primary text-sm font-semibold mb-2 flex items-center gap-2">
               <Icon name="carbon:email" size="16"/>
               GET IN TOUCH
@@ -57,7 +63,7 @@ const submitForm = async () => {
           </header>
 
           <!-- Contact Info Cards -->
-          <address class="space-y-4 not-italic" data-aos="fade-up" data-aos-delay="200">
+          <address class="space-y-4 not-italic">
             <!-- Email Card -->
             <div
                 class="group bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-6 hover:border-primary/50 transition-all duration-300">
@@ -110,15 +116,18 @@ const submitForm = async () => {
               </div>
             </div>
           </address>
-        </div>
+        </Motion>
 
-        <!-- Right Column - Contact Form -->
-        <div
-            class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 hover:border-white/20 transition-all duration-300"
-            data-aos="fade-left">
+        <Motion
+            :initial="{ opacity: 0, x: 50 }"
+            :while-in-view="{ opacity: 1, x: 0 }"
+            :viewport="{ once: true, amount: 0.3 }"
+            :transition="{ duration: 0.8, ease: 'easeOut' }"
+            class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 hover:border-white/20 transition-all duration-300 contact-form-reveal"
+        >
           <form @submit.prevent="submitForm" class="space-y-6" aria-label="Contact form">
             <!-- Name & Email Row -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" data-aos="fade-up" data-aos-delay="300">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label for="contact-name" class="block text-sm text-white/70 font-medium mb-2">Name</label>
                 <input
@@ -146,7 +155,7 @@ const submitForm = async () => {
             </div>
 
             <!-- Subject -->
-            <div data-aos="fade-up" data-aos-delay="400">
+            <div>
               <label for="contact-subject" class="block text-sm text-white/70 font-medium mb-2">Subject</label>
               <input
                   id="contact-subject"
@@ -160,7 +169,7 @@ const submitForm = async () => {
             </div>
 
             <!-- Message -->
-            <div data-aos="fade-up" data-aos-delay="500">
+            <div>
               <label for="contact-message" class="block text-sm text-white/70 font-medium mb-2">Message</label>
               <textarea
                   id="contact-message"
@@ -179,15 +188,13 @@ const submitForm = async () => {
                 :disabled="isSaving"
                 :aria-busy="isSaving"
                 class="w-full px-6 py-4 rounded-lg bg-linear-to-r from-primary via-blue-600 to-primary text-white font-bold text-lg hover:shadow-lg hover:shadow-primary/30 hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                data-aos="fade-up"
-                data-aos-delay="600"
             >
               <Icon v-if="!isSaving" name="carbon:send-filled" size="20" aria-hidden="true"/>
               <span v-if="isSaving">Sending...</span>
               <span v-else>Send Message</span>
             </button>
           </form>
-        </div>
+        </Motion>
       </div>
     </div>
   </section>

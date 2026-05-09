@@ -18,13 +18,13 @@
     "@nuxt/image": "^2.0.0",
     "@nuxt/ui": "^4.3.0",
     "@pinia/nuxt": "^0.11.3",
-    "aos": "^2.3.4",
     "axios": "^1.13.2",
     "countup.js": "^2.9.0",
     "google-auth-library": "^10.5.0",
     "jsonwebtoken": "^9.0.3",
     "jwt-decode": "^4.0.0",
     "minio": "^8.0.6",
+    "motion-v": "^2.2.1",
     "nuxt": "^4.2.2",
     "nuxt-gtag": "^4.1.0",
     "pg": "^8.16.3",
@@ -35,7 +35,6 @@
     "zod": "^4.3.5"
   },
   "devDependencies": {
-    "@types/aos": "^3.0.7",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.0.3",
     "@types/pg": "^8.16.0",

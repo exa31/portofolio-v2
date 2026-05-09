@@ -11,9 +11,9 @@ const handleScrollToTop = () => {
   <footer class="bg-linear-to-b from-[#0a0f1a] to-[#050810] border-t border-white/10">
     <div class="container mx-auto px-6">
       <!-- Footer Content -->
-      <div class="py-12 flex flex-col sm:flex-row items-center justify-between gap-8" data-aos="fade-up">
+      <div class="py-12 flex flex-col sm:flex-row items-center justify-between gap-8">
         <!-- Brand Section -->
-        <div class="flex flex-col items-center sm:items-start gap-4" data-aos="fade-right" data-aos-delay="100">
+        <div class="flex flex-col items-center sm:items-start gap-4">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-md bg-primary/10 flex items-center justify-center border border-white/5">
               <Icon name="material-symbols-light:terminal" size="24" class="text-primary"/>
@@ -23,7 +23,7 @@ const handleScrollToTop = () => {
         </div>
 
         <!-- Copyright & Links -->
-        <div class="text-center sm:text-right" data-aos="fade-left" data-aos-delay="100">
+        <div class="text-center sm:text-right">
           <p class="text-white/60 text-sm mb-3">
             <span class="font-semibold text-white">© {{ currentYear }} Eka Dev.</span>
             <span class="mx-2">•</span>

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
 import type {UserSettingsModel} from "~/types/settings";
 
 defineProps<{
@@ -12,16 +11,28 @@ defineProps<{
 <template>
   <section id="about" class="py-20" aria-labelledby="about-heading">
     <div class="container mx-auto px-6">
-      <div class="mb-12" data-aos="fade-up">
+      <Motion
+          :initial="{ opacity: 0, y: 30 }"
+          :while-in-view="{ opacity: 1, y: 0 }"
+          :viewport="{ once: true, amount: 0.3 }"
+          :transition="{ duration: 0.8, ease: 'easeOut' }"
+          class="mb-12"
+      >
         <h2 id="about-heading" class="text-5xl lg:text-6xl font-black mb-3 leading-tight">About Me</h2>
         <p class="text-lg text-white/50 mb-6 leading-relaxed max-w-lg">
           Architecting the future of web and mobile applications with scalable, cloud-native solutions.
         </p>
-      </div>
+      </Motion>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
         <!-- Left: Image Card -->
-        <div class="relative flex justify-center lg:justify-start order-2 lg:order-1" data-aos="fade-right">
+        <Motion
+            :initial="{ opacity: 0, x: -50 }"
+            :while-in-view="{ opacity: 1, x: 0 }"
+            :viewport="{ once: true, amount: 0.3 }"
+            :transition="{ duration: 1, ease: 'easeOut' }"
+            class="relative flex justify-center lg:justify-start order-2 lg:order-1 about-image"
+        >
           <div class="relative w-full max-w-sm">
             <!-- Card -->
             <NuxtImg src="/images/about.webp" alt="Profile" class="h-full rounded-xl w-full"/>
@@ -66,43 +77,72 @@ defineProps<{
               </div>
             </template>
           </div>
-        </div>
+        </Motion>
 
         <!-- Right: Content -->
-        <div class="text-white order-1 lg:order-2 pt-8 lg:pt-0" data-aos="fade-left">
+        <div class="text-white order-1 lg:order-2 pt-8 lg:pt-0 about-content">
           <!-- Badge -->
-          <div
+          <Motion
+              :initial="{ opacity: 0, y: 20 }"
+              :while-in-view="{ opacity: 1, y: 0 }"
+              :viewport="{ once: true }"
+              :transition="{ duration: 0.5, delay: 0.1 }"
               class="inline-flex items-center gap-2 bg-[#0b2a35] text-sky-300 px-3 py-1 rounded-full text-[10px] uppercase mb-6 font-medium"
-              data-aos="fade-up"
-              data-aos-delay="100">
+          >
             <Icon name="material-symbols-light:stars" size="24" class="text-sky-400"/>
             PROBLEM SOLVER
-          </div>
+          </Motion>
 
           <!-- Main Heading -->
-          <h3 class="text-4xl lg:text-5xl font-black leading-tight mb-8 max-w-2xl" data-aos="fade-up"
-              data-aos-delay="200">
-            Bridging <span
-              class="text-transparent bg-clip-text bg-linear-to-r from-blue-400 to-blue-600">Backend Logic</span>
-            with <span
-              class="text-transparent bg-clip-text bg-linear-to-r from-cyan-400 to-blue-400">Frontend Magic.</span>
-          </h3>
+          <Motion
+              :initial="{ opacity: 0, y: 20 }"
+              :while-in-view="{ opacity: 1, y: 0 }"
+              :viewport="{ once: true }"
+              :transition="{ duration: 0.5, delay: 0.2 }"
+          >
+            <h3 class="text-4xl lg:text-5xl font-black leading-tight mb-8 max-w-2xl">
+              Bridging <span
+                class="text-transparent bg-clip-text bg-linear-to-r from-blue-400 to-blue-600">Backend Logic</span>
+              with <span
+                class="text-transparent bg-clip-text bg-linear-to-r from-cyan-400 to-blue-400">Frontend Magic.</span>
+            </h3>
+          </Motion>
 
           <!-- Description -->
-          <p class="text-white/60 text-sm leading-relaxed mb-6 max-w-lg" data-aos="fade-up" data-aos-delay="300">
-            I don't just write code; I engineer resilient ecosystems. As a seasoned Full Stack developer, I
-            seamlessly navigate between creating intuitive mobile and web interfaces and architecting powerful
-            backend systems.
-          </p>
+          <Motion
+              :initial="{ opacity: 0, y: 20 }"
+              :while-in-view="{ opacity: 1, y: 0 }"
+              :viewport="{ once: true }"
+              :transition="{ duration: 0.5, delay: 0.3 }"
+          >
+            <p class="text-white/60 text-sm leading-relaxed mb-6 max-w-lg">
+              I don't just write code; I engineer resilient ecosystems. As a seasoned Full Stack developer, I
+              seamlessly navigate between creating intuitive mobile and web interfaces and architecting powerful
+              backend systems.
+            </p>
+          </Motion>
 
-          <p class="text-white/60 text-sm leading-relaxed mb-8 max-w-lg" data-aos="fade-up" data-aos-delay="400">
-            My expertise extends to DevOps, where I leverage Kubernetes and CI/CD pipelines to automate deployments
-            and ensure 99.9% uptime. Whether it's optimization, scalability, or user experience, I deliver solutions
-            that drive growth.
-          </p>
+          <Motion
+              :initial="{ opacity: 0, y: 20 }"
+              :while-in-view="{ opacity: 1, y: 0 }"
+              :viewport="{ once: true }"
+              :transition="{ duration: 0.5, delay: 0.4 }"
+          >
+            <p class="text-white/60 text-sm leading-relaxed mb-8 max-w-lg">
+              My expertise extends to DevOps, where I leverage Kubernetes and CI/CD pipelines to automate deployments
+              and ensure 99.9% uptime. Whether it's optimization, scalability, or user experience, I deliver solutions
+              that drive growth.
+            </p>
+          </Motion>
 
           <!-- Stats Row -->
-          <div class="flex sm:flex-row flex-col gap-6 mb-8" data-aos="fade-up" data-aos-delay="500">
+          <Motion
+              :initial="{ opacity: 0, y: 20 }"
+              :while-in-view="{ opacity: 1, y: 0 }"
+              :viewport="{ once: true }"
+              :transition="{ duration: 0.5, delay: 0.5 }"
+              class="flex sm:flex-row flex-col gap-6 mb-8"
+          >
             <div class="flex items-center bg-[#1e2430] p-5 rounded-2xl gap-3">
               <div>
                 <div class="text-4xl font-black text-white">{{ count_experience || 0 }}+</div>
@@ -124,10 +164,16 @@ defineProps<{
                 <Icon name="material-symbols:rocket-launch-rounded" size="20" class="text-blue-400"/>
               </div>
             </div>
-          </div>
+          </Motion>
 
           <!-- Core Competencies -->
-          <div class="mb-8" data-aos="fade-up" data-aos-delay="600">
+          <Motion
+              :initial="{ opacity: 0, y: 20 }"
+              :while-in-view="{ opacity: 1, y: 0 }"
+              :viewport="{ once: true }"
+              :transition="{ duration: 0.5, delay: 0.6 }"
+              class="mb-8"
+          >
             <div class="text-xs uppercase text-white/50 font-bold mb-3 tracking-wide">Core Competencies</div>
             <div class="flex flex-wrap gap-3">
               <span
@@ -156,10 +202,16 @@ defineProps<{
                 Kubernetes
               </span>
             </div>
-          </div>
+          </Motion>
 
           <!-- CTA Buttons -->
-          <div class="flex sm:flex-row flex-col  gap-3 pt-4" data-aos="fade-up" data-aos-delay="700">
+          <Motion
+              :initial="{ opacity: 0, y: 20 }"
+              :while-in-view="{ opacity: 1, y: 0 }"
+              :viewport="{ once: true }"
+              :transition="{ duration: 0.5, delay: 0.7 }"
+              class="flex sm:flex-row flex-col gap-3 pt-4"
+          >
             <a :href="user?.cv_url"
                target="_blank"
                class="primary-cta-btn inline-flex items-center gap-2 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition">
@@ -171,7 +223,7 @@ defineProps<{
               <span>Get in Touch</span>
               <Icon name="material-symbols:arrow-forward-ios" size="16"/>
             </NuxtLink>
-          </div>
+          </Motion>
         </div>
       </div>
     </div>

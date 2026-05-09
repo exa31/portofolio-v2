@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // ========== IMPORTS ==========
-import {computed} from 'vue'
+import {computed, onMounted, ref, nextTick} from 'vue'
 import type {Skill, SkillsResponse} from '~/types/skill'
 import FooterSection from "~/components/FooterSection.vue"
 import type {JourneysResponse} from "~/types/journey";
@@ -21,7 +21,7 @@ const ogImage = `${siteUrl}/images/og-image.webp` // TODO: Create OG image
 
 // ========== FETCH DATA FROM API (SSR-compatible) ==========
 const config = useRuntimeConfig()
-const baseURL = import.meta.server ? config.public.apiBaseUrl : ''
+const baseURL = config.public.apiBaseUrl
 
 // Use useFetch with baseURL for SSR compatibility
 const {data: projectsData, pending: projectsLoading} = await useFetch<BaseResponse<ProjectsResponse>>('/api/projects', {
@@ -329,37 +329,38 @@ const totalExperienceYears = computed(() => {
   return parseInt((totalMonths / 12).toFixed(0))
 })
 
+
 </script>
 
 <template>
   <div class="text-white">
     <!-- Hero Section -->
-    <main class="container mx-auto px-6 py-20 overflow-hidden" data-aos="fade-up">
+    <main class="container mx-auto px-6 py-20 overflow-hidden">
       <HeroSection :user="user"/>
     </main>
 
     <!-- About Section -->
-    <div data-aos="fade-up" data-aos-delay="100" class="overflow-hidden">
+    <div class="overflow-hidden">
       <AboutSection :user="user" :count_projects="projects.length" :count_experience="totalExperienceYears"/>
     </div>
 
     <!-- Skills Section -->
-    <div data-aos="fade-up" data-aos-delay="200">
+    <div>
       <SkillsSection :skills="skills"/>
     </div>
 
     <!-- Journey Section -->
-    <div data-aos="fade-up" data-aos-delay="300">
+    <div>
       <JourneySection :experiences="experiences"/>
     </div>
 
     <!-- Projects Section -->
-    <div data-aos="fade-up" data-aos-delay="400">
+    <div>
       <ProjectsSection :projects="projects"/>
     </div>
 
     <!-- Contact Section -->
-    <div data-aos="fade-up" data-aos-delay="500" class="overflow-hidden">
+    <div class="overflow-hidden">
       <ContactSection :user="user"/>
     </div>
 

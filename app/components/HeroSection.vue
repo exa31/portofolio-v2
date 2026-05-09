@@ -1,11 +1,9 @@
 <script setup lang="ts">
-
 import type {UserSettingsModel} from "~/types/settings";
 
 defineProps<{
   user?: UserSettingsModel | null
 }>()
-
 </script>
 
 <template>
@@ -14,70 +12,99 @@ defineProps<{
       <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
         <!-- Left Column -->
         <div>
-          <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight mb-6" data-aos="fade-right">
-            Hi, I'm
-            <span class="bg-linear-to-r from-blue-600 via-sky-400 to-white bg-clip-text text-transparent">
-              Eka</span>.<br/>
-            Full-Stack<br/>
-            Engineer.
-          </h1>
+          <Motion
+              :initial="{ opacity: 0, y: 50 }"
+              :animate="{ opacity: 1, y: 0 }"
+              :transition="{ duration: 1, ease: 'easeOut', delay: 0.2 }"
+          >
+            <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight mb-6 hero-title">
+              Hi, I'm
+              <span class="bg-linear-to-r from-blue-600 via-sky-400 to-white bg-clip-text text-transparent">
+                Eka</span>.<br/>
+              Full-Stack<br/>
+              Engineer.
+            </h1>
+          </Motion>
 
-          <p class="text-white/70 max-w-xl mb-8" data-aos="fade-right" data-aos-delay="100">
-            I build end-to-end digital products — from modern web interfaces and scalable backend systems
-            to cross-platform mobile applications.
-            <br/><br/>
-            Experienced in Frontend, Backend, and Mobile development with a strong focus on performance,
-            clean architecture, and real-world production needs.
-          </p>
+          <Motion
+              :initial="{ opacity: 0, y: 30 }"
+              :animate="{ opacity: 1, y: 0 }"
+              :transition="{ duration: 1, ease: 'easeOut', delay: 0.4 }"
+          >
+            <p class="text-white/70 max-w-xl mb-8 hero-desc">
+              I build end-to-end digital products — from modern web interfaces and scalable backend systems
+              to cross-platform mobile applications.
+              <br/><br/>
+              Experienced in Frontend, Backend, and Mobile development with a strong focus on performance,
+              clean architecture, and real-world production needs.
+            </p>
+          </Motion>
 
-          <nav class="flex gap-4 mb-8" data-aos="fade-right" data-aos-delay="200" aria-label="Primary navigation">
-            <a href="#project"
-               class="inline-flex items-center justify-center bg-primary text-white px-6 py-3 rounded-lg shadow hover:brightness-105"
-               aria-label="View my projects">
-              View Projects
-            </a>
-            <a href="#contact"
-               class="inline-flex items-center justify-center border border-white/10 text-white/90 px-6 py-3 rounded-lg hover:bg-white/5"
-               aria-label="Contact me">
-              Contact Me
-            </a>
-          </nav>
-
-          <div data-aos="fade-right" data-aos-delay="300">
-            <p class="text-xs text-white/50 mb-3">CONNECT WITH ME</p>
-            <nav class="flex gap-3" aria-label="Social media links">
-              <a aria-label="Visit my Github profile"
-                 :href="user?.github_profile ?? 'https://github.com'"
-                 target="_blank"
-                 rel="noopener noreferrer"
-                 class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/6">
-                <Icon name="line-md:github" size="28"
-                      class="text-white/50 hover:text-white/70 duration-300 transition-colors"/>
+          <Motion
+              :initial="{ opacity: 0, y: 20 }"
+              :animate="{ opacity: 1, y: 0 }"
+              :transition="{ duration: 1, ease: 'easeOut', delay: 0.6 }"
+          >
+            <nav class="flex gap-4 mb-8 hero-nav" aria-label="Primary navigation">
+              <a href="#project"
+                 class="inline-flex items-center justify-center bg-primary text-white px-6 py-3 rounded-lg shadow hover:brightness-105"
+                 aria-label="View my projects">
+                View Projects
               </a>
-
-              <a aria-label="Visit my LinkedIn profile"
-                 :href="user?.linkedin_profile ?? 'https://www.linkedin.com'"
-                 target="_blank"
-                 rel="noopener noreferrer"
-                 class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/6">
-                <Icon name="jam:linkedin" size="28"
-                      class="text-white/50 hover:text-white/70 duration-300 transition-colors"/>
-              </a>
-
-              <a aria-label="Send me an email"
-                 :href="`https://mail.google.com/mail/?view=cm&fs=1&to=${user?.email}&su=Job%20Opportunity&body=Hi%20Eka,%0A%0AI'm%20interested%20in%20working%20with%20you.`"
-                 target="_blank"
-                 rel="noopener noreferrer"
-                 class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/6">
-                <Icon name="material-symbols:alternate-email" size="28"
-                      class="text-white/50 hover:text-white/70 duration-300 transition-colors"/>
+              <a href="#contact"
+                 class="inline-flex items-center justify-center border border-white/10 text-white/90 px-6 py-3 rounded-lg hover:bg-white/5"
+                 aria-label="Contact me">
+                Contact Me
               </a>
             </nav>
-          </div>
+          </Motion>
+
+          <Motion
+              :initial="{ opacity: 0, y: 20 }"
+              :animate="{ opacity: 1, y: 0 }"
+              :transition="{ duration: 1, ease: 'easeOut', delay: 0.8 }"
+          >
+            <div class="hero-social">
+              <p class="text-xs text-white/50 mb-3">CONNECT WITH ME</p>
+              <nav class="flex gap-3" aria-label="Social media links">
+                <a aria-label="Visit my Github profile"
+                   :href="user?.github_profile ?? 'https://github.com'"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/6">
+                  <Icon name="line-md:github" size="28"
+                        class="text-white/50 hover:text-white/70 duration-300 transition-colors"/>
+                </a>
+
+                <a aria-label="Visit my LinkedIn profile"
+                   :href="user?.linkedin_profile ?? 'https://www.linkedin.com'"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/6">
+                  <Icon name="jam:linkedin" size="28"
+                        class="text-white/50 hover:text-white/70 duration-300 transition-colors"/>
+                </a>
+
+                <a aria-label="Send me an email"
+                   :href="`https://mail.google.com/mail/?view=cm&fs=1&to=${user?.email}&su=Job%20Opportunity&body=Hi%20Eka,%0A%0AI'm%20interested%20in%20working%20with%20you.`"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/6">
+                  <Icon name="material-symbols:alternate-email" size="28"
+                        class="text-white/50 hover:text-white/70 duration-300 transition-colors"/>
+                </a>
+              </nav>
+            </div>
+          </Motion>
         </div>
 
         <!-- Right Column (Card) -->
-        <div class="flex justify-center rounded-2xl md:justify-end relative" data-aos="fade-left" data-aos-delay="200">
+        <Motion
+            :initial="{ opacity: 0, x: 50, scale: 0.9 }"
+            :animate="{ opacity: 1, x: 0, scale: 1 }"
+            :transition="{ duration: 1, ease: 'easeOut', delay: 0.5 }"
+            class="flex justify-center rounded-2xl md:justify-end relative hero-card"
+        >
           <!-- Glow -->
           <div
               class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
@@ -101,7 +128,7 @@ defineProps<{
 
             <NuxtImg class="w-full rounded-b-xl" alt="Hero Image" src="/images/hero.webp"/>
           </div>
-        </div>
+        </Motion>
       </div>
 
       <div class="mt-10 py-8 flex justify-center">

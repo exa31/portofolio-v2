@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 
 interface Project {
   id?: number;
@@ -41,7 +42,13 @@ const copyToClipboard = (text: string | undefined) => {
   <section id="project" class="py-20" aria-labelledby="projects-heading">
     <div class="container mx-auto px-6">
       <!-- Header -->
-      <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-12 gap-6" data-aos="fade-up">
+      <Motion
+          :initial="{ opacity: 0, y: 30 }"
+          :while-in-view="{ opacity: 1, y: 0 }"
+          :viewport="{ once: true, amount: 0.3 }"
+          :transition="{ duration: 0.8, ease: 'easeOut' }"
+          class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-12 gap-6"
+      >
         <div>
           <h2 id="projects-heading" class="text-5xl lg:text-6xl font-black mb-3 leading-tight">
             Featured
@@ -51,17 +58,23 @@ const copyToClipboard = (text: string | undefined) => {
             A collection of applications demonstrating my technical abilities and problem-solving skills.
           </p>
         </div>
-      </header>
+      </Motion>
 
       <!-- Projects Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-        <div
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12 projects-grid">
+        <Motion
             v-for="(project, index) in projects"
             :key="project.id"
+            :initial="{ opacity: 0, y: 30 }"
+            :while-in-view="{ opacity: 1, y: 0 }"
+            :viewport="{ once: true, amount: 0.1 }"
+            :transition="{ 
+              duration: 0.6, 
+              delay: (index % 3) * 0.15, 
+              ease: 'easeOut' 
+            }"
             @click="openProjectModal(project)"
-            class="group relative overflow-hidden rounded-2xl bg-[#1a2332] border border-white/5 cursor-pointer transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
-            data-aos="fade-up"
-            :data-aos-delay="index * 100"
+            class="group relative overflow-hidden rounded-2xl bg-[#1a2332] border border-white/5 cursor-pointer transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 project-card"
         >
           <!-- Image -->
           <div class="relative h-56 bg-linear-to-b from-white/5 to-transparent overflow-hidden">
@@ -99,7 +112,7 @@ const copyToClipboard = (text: string | undefined) => {
               </span>
             </div>
           </div>
-        </div>
+        </Motion>
       </div>
     </div>
   </section>

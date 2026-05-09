@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref} from 'vue'
+import { ref } from 'vue'
 
 interface Experience {
   id?: number
@@ -30,7 +30,13 @@ const openModal = (experience: Experience) => {
   <section id="work" class="py-24 bg-linear-to-b from-[#071026] to-[#071023]" aria-labelledby="journey-heading">
     <div class="container mx-auto px-6">
       <!-- Header -->
-      <header class="text-center mb-16" data-aos="fade-up">
+      <Motion
+          :initial="{ opacity: 0, y: 30 }"
+          :while-in-view="{ opacity: 1, y: 0 }"
+          :viewport="{ once: true, amount: 0.3 }"
+          :transition="{ duration: 0.8, ease: 'easeOut' }"
+          class="text-center mb-16"
+      >
         <p class="text-primary text-sm font-semibold mb-2 flex items-center justify-center gap-2">
           <Icon name="material-symbols:timeline" size="16"/>
           MY JOURNEY BEGINS HERE
@@ -40,7 +46,7 @@ const openModal = (experience: Experience) => {
           A timeline of building scalable solutions, solving complex problems, and continuous professional growth in the
           tech industry.
         </p>
-      </header>
+      </Motion>
 
       <!-- Timeline -->
       <div class="max-w-4xl mx-auto px-0 sm:px-4">
@@ -50,13 +56,15 @@ const openModal = (experience: Experience) => {
               class="absolute left-8 sm:left-8 top-0 bottom-0 w-0.5 bg-linear-to-b from-primary via-primary/50 to-transparent"/>
 
           <!-- Timeline items -->
-          <div class="space-y-6 sm:space-y-8">
-            <div
+          <div class="space-y-6 sm:space-y-8 journey-timeline">
+            <Motion
                 v-for="(experience, index) in experiences"
                 :key="experience.id"
-                class="relative pl-20 sm:pl-24"
-                data-aos="fade-right"
-                :data-aos-delay="index * 100"
+                :initial="{ opacity: 0, x: -30 }"
+                :while-in-view="{ opacity: 1, x: 0 }"
+                :viewport="{ once: true, amount: 0.2 }"
+                :transition="{ duration: 0.6, delay: index * 0.15, ease: 'easeOut' }"
+                class="relative pl-20 sm:pl-24 journey-item"
             >
               <!-- Timeline dot -->
               <div class="absolute left-0 w-16 h-16 flex items-center justify-center">
@@ -108,7 +116,7 @@ const openModal = (experience: Experience) => {
                   <Icon name="carbon:arrow-right" size="16"/>
                 </div>
               </div>
-            </div>
+            </Motion>
           </div>
         </div>
       </div>

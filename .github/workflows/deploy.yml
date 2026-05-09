@@ -64,6 +64,6 @@ jobs:
               -n dev-coffe \
               portofolio-v2=$NEW_IMAGE
 
-            kubectl rollout status deployment/portofolio-v2 \
-              -n dev-coffe
+            # kubectl rollout status deployment/portofolio-v2 \
+            #   -n dev-coffe
           EOF
