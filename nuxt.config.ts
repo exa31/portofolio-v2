@@ -175,6 +175,7 @@ export default defineNuxtConfig({
       : 9000,
 
     geminiApiKey: process.env.NUXT_GEMINI_API_KEY,
+    resendApiKey: process.env.NUXT_RESEND_API_KEY,
 
     public: {
       googleClientId:

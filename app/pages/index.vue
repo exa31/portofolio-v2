@@ -1,90 +1,101 @@
 <script setup lang="ts">
 // ========== IMPORTS ==========
-import {computed, onMounted, ref, nextTick} from 'vue'
-import type {Skill, SkillsResponse} from '~/types/skill'
-import FooterSection from "~/components/FooterSection.vue"
-import type {JourneysResponse} from "~/types/journey";
-import type {ProjectsResponse} from "~/types/project";
-import type {UserSettingsModel} from "~/types/settings";
+import { computed, onMounted, ref, nextTick } from "vue";
+import type { Skill, SkillsResponse } from "~/types/skill";
+import FooterSection from "~/components/FooterSection.vue";
+import type { JourneysResponse } from "~/types/journey";
+import type { ProjectsResponse } from "~/types/project";
+import type { UserSettingsModel } from "~/types/settings";
 
 // ========== PAGE METADATA ==========
 definePageMeta({
-  layout: 'default'
-})
+  layout: "default",
+});
 
 // SEO Configuration
-const siteUrl = 'https://eka-dev.cloud' // TODO: Update with your domain
-const siteName = 'Eka - Full Stack Developer Portfolio'
-const siteDescription = 'Full Stack Developer specializing in Vue.js, Nuxt.js, React, Node.js, and Golang. Building scalable web applications, mobile apps with Flutter, and cloud-native solutions with Kubernetes & Docker.'
-const authorName = 'Eka'
-const ogImage = `${siteUrl}/images/og-image.webp` // TODO: Create OG image
+const siteUrl = "https://eka-dev.cloud"; // TODO: Update with your domain
+const siteName = "Eka - Full Stack Developer Portfolio";
+const siteDescription =
+  "Full Stack Developer specializing in Vue.js, Nuxt.js, React, Node.js, and Golang. Building scalable web applications, mobile apps with Flutter, and cloud-native solutions with Kubernetes & Docker.";
+const authorName = "Eka";
+const ogImage = `${siteUrl}/images/og-image.webp`; // TODO: Create OG image
 
 // ========== FETCH DATA FROM API (SSR-compatible) ==========
-const config = useRuntimeConfig()
-const baseURL = config.public.apiBaseUrl
+const config = useRuntimeConfig();
+const baseURL = config.public.apiBaseUrl;
 
 // Use useFetch with baseURL for SSR compatibility
-const {data: projectsData, pending: projectsLoading} = await useFetch<BaseResponse<ProjectsResponse>>('/api/projects', {
+const { data: projectsData, pending: projectsLoading } = await useFetch<
+  BaseResponse<ProjectsResponse>
+>("/api/projects", {
   baseURL,
   query: {
     pagination: false,
     limit: 6,
   },
   watch: false,
-})
+});
 
-const {data: skillsData, pending: skillsLoading} = await useFetch<BaseResponse<SkillsResponse>>('/api/skills', {
+const { data: skillsData, pending: skillsLoading } = await useFetch<
+  BaseResponse<SkillsResponse>
+>("/api/skills", {
   baseURL,
   query: {
     pagination: false,
   },
   watch: false,
-})
+});
 
-const {data: journeysData, pending: journeysLoading} = await useFetch<BaseResponse<JourneysResponse>>('/api/journeys', {
+const { data: journeysData, pending: journeysLoading } = await useFetch<
+  BaseResponse<JourneysResponse>
+>("/api/journeys", {
   baseURL,
   query: {
     pagination: false,
   },
   watch: false,
-})
+});
 
-const {data: dataUser, pending: loadingUser} = await useFetch<BaseResponse<UserSettingsModel>>('/api/settings', {
+const { data: dataUser, pending: loadingUser } = await useFetch<
+  BaseResponse<UserSettingsModel>
+>("/api/settings", {
   baseURL,
   watch: false,
-})
+});
 
 // ========== COMPUTED DATA ==========
-const user = computed(() => dataUser.value?.data)
+const user = computed(() => dataUser.value?.data);
 
 const projects = computed(() => {
-  const apiProjects = projectsData.value?.data?.data ?? []
+  const apiProjects = projectsData.value?.data?.data ?? [];
 
   // Map API projects to expected format for components
-  return apiProjects.map(p => ({
+  return apiProjects.map((p) => ({
     ...p,
     id: p.id,
     title: p.name,
-    shortDesc: p.description || '',
-    description: p.description || '',
-    image: p.preview_image || '/images/hero.webp',
+    shortDesc: p.description || "",
+    description: p.description || "",
+    image: p.preview_image || "/images/hero.webp",
     technologies: p.technologies || [],
     link: p.repo_url,
     liveUrl: p.live_url,
     details: p.description,
     features: p.features || [],
-  }))
-})
+  }));
+});
 
 const skills = computed(() => {
-  return (skillsData.value?.data?.data ?? []) as Skill[]
-})
+  return (skillsData.value?.data?.data ?? []) as Skill[];
+});
 
-const isLoading = computed(() => projectsLoading.value || skillsLoading.value || journeysLoading.value)
+const isLoading = computed(
+  () => projectsLoading.value || skillsLoading.value || journeysLoading.value,
+);
 
 // ========== EXPERIENCE DATA dari API ==========
 const experiences = computed(() => {
-  const journeys = journeysData.value?.data?.data ?? []
+  const journeys = journeysData.value?.data?.data ?? [];
 
   // Map API journeys to experiences format
   return journeys.map((journey) => ({
@@ -92,286 +103,288 @@ const experiences = computed(() => {
     company: journey.company,
     position: journey.title,
     period: journey.is_current
-        ? `${formatDate(journey.start_date)} - Present`
-        : `${formatDate(journey.start_date)} - ${formatDate(journey.end_date)}`,
-    description: journey.description || '',
+      ? `${formatDate(journey.start_date)} - Present`
+      : `${formatDate(journey.start_date)} - ${formatDate(journey.end_date)}`,
+    description: journey.description || "",
     logo: "https://via.placeholder.com/80",
     responsibilities: journey.key_responsibilities || [],
     technologies: journey.skills || [],
     attachment: journey.attachments || null,
-  }))
-})
-
+  }));
+});
+console.log(useRuntimeConfig().public);
 useHead({
-  title: 'Eka - Full Stack Developer | Vue.js, React, Node.js & Mobile Expert',
+  title: "Eka - Full Stack Developer | Vue.js, React, Node.js & Mobile Expert",
   htmlAttrs: {
-    lang: 'en'
+    lang: "en",
   },
   meta: [
     // Primary Meta Tags
     {
-      name: 'title',
-      content: 'Eka - Full Stack Developer | Vue.js, React, Node.js & Mobile Expert'
+      name: "title",
+      content:
+        "Eka - Full Stack Developer | Vue.js, React, Node.js & Mobile Expert",
     },
     {
-      name: 'description',
-      content: siteDescription
+      name: "description",
+      content: siteDescription,
     },
     {
-      name: 'keywords',
-      content: 'Full Stack Developer, Vue.js Developer, React Developer, Node.js, Golang Developer, Flutter Developer, Mobile App Development, Web Development, Nuxt.js, Next.js, TypeScript, Kubernetes, DevOps, CI/CD, PostgreSQL, MongoDB, REST API'
+      name: "keywords",
+      content:
+        "Full Stack Developer, Vue.js Developer, React Developer, Node.js, Golang Developer, Flutter Developer, Mobile App Development, Web Development, Nuxt.js, Next.js, TypeScript, Kubernetes, DevOps, CI/CD, PostgreSQL, MongoDB, REST API",
     },
     {
-      name: 'author',
-      content: authorName
+      name: "author",
+      content: authorName,
     },
     {
-      name: 'robots',
-      content: 'index, follow'
+      name: "robots",
+      content: "index, follow",
     },
     {
-      name: 'googlebot',
-      content: 'index, follow'
+      name: "googlebot",
+      content: "index, follow",
     },
 
     // Open Graph / Facebook
     {
-      property: 'og:type',
-      content: 'website'
+      property: "og:type",
+      content: "website",
     },
     {
-      property: 'og:url',
-      content: siteUrl
+      property: "og:url",
+      content: siteUrl,
     },
     {
-      property: 'og:site_name',
-      content: siteName
+      property: "og:site_name",
+      content: siteName,
     },
     {
-      property: 'og:title',
-      content: 'Eka - Full Stack Developer | Vue.js, React, Node.js & Mobile Expert'
+      property: "og:title",
+      content:
+        "Eka - Full Stack Developer | Vue.js, React, Node.js & Mobile Expert",
     },
     {
-      property: 'og:description',
-      content: siteDescription
+      property: "og:description",
+      content: siteDescription,
     },
     {
-      property: 'og:image',
-      content: ogImage
+      property: "og:image",
+      content: ogImage,
     },
     {
-      property: 'og:image:width',
-      content: '1200'
+      property: "og:image:width",
+      content: "1200",
     },
     {
-      property: 'og:image:height',
-      content: '630'
+      property: "og:image:height",
+      content: "630",
     },
     {
-      property: 'og:locale',
-      content: 'en_US'
+      property: "og:locale",
+      content: "en_US",
     },
 
     // Twitter Card
     {
-      name: 'twitter:card',
-      content: 'summary_large_image'
+      name: "twitter:card",
+      content: "summary_large_image",
     },
     {
-      name: 'twitter:site',
-      content: '@ESyafrino' // TODO: Update with your Twitter handle
+      name: "twitter:site",
+      content: "@ESyafrino", // TODO: Update with your Twitter handle
     },
     {
-      name: 'twitter:creator',
-      content: '@ESyafrino' // TODO: Update with your Twitter handle
+      name: "twitter:creator",
+      content: "@ESyafrino", // TODO: Update with your Twitter handle
     },
     {
-      name: 'twitter:title',
-      content: 'Eka - Full Stack Developer | Vue.js, React, Node.js & Mobile Expert'
+      name: "twitter:title",
+      content:
+        "Eka - Full Stack Developer | Vue.js, React, Node.js & Mobile Expert",
     },
     {
-      name: 'twitter:description',
-      content: siteDescription
+      name: "twitter:description",
+      content: siteDescription,
     },
     {
-      name: 'twitter:image',
-      content: ogImage
+      name: "twitter:image",
+      content: ogImage,
     },
 
     // Additional SEO
     {
-      name: 'theme-color',
-      content: '#1e7fff'
+      name: "theme-color",
+      content: "#1e7fff",
     },
     {
-      name: 'msapplication-TileColor',
-      content: '#1e7fff'
+      name: "msapplication-TileColor",
+      content: "#1e7fff",
     },
     {
-      name: 'apple-mobile-web-app-capable',
-      content: 'yes'
+      name: "apple-mobile-web-app-capable",
+      content: "yes",
     },
     {
-      name: 'apple-mobile-web-app-status-bar-style',
-      content: 'black-translucent'
+      name: "apple-mobile-web-app-status-bar-style",
+      content: "black-translucent",
     },
   ],
   link: [
     {
-      rel: 'canonical',
-      href: siteUrl
+      rel: "canonical",
+      href: siteUrl,
     },
     {
-      rel: 'icon',
-      type: 'image/x-icon',
-      href: '/favicon.ico'
+      rel: "icon",
+      type: "image/x-icon",
+      href: "/favicon.ico",
     },
     {
-      rel: 'apple-touch-icon',
-      href: '/favicon.ico'
+      rel: "apple-touch-icon",
+      href: "/favicon.ico",
     },
     {
-      rel: 'preconnect',
-      href: 'https://fonts.googleapis.com'
+      rel: "preconnect",
+      href: "https://fonts.googleapis.com",
     },
     {
-      rel: 'dns-prefetch',
-      href: 'https://fonts.googleapis.com'
+      rel: "dns-prefetch",
+      href: "https://fonts.googleapis.com",
     },
   ],
   script: [
     {
-      type: 'application/ld+json',
+      type: "application/ld+json",
       innerHTML: JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'Person',
+        "@context": "https://schema.org",
+        "@type": "Person",
         name: authorName,
         url: siteUrl,
         image: ogImage,
-        jobTitle: 'Full Stack Developer',
+        jobTitle: "Full Stack Developer",
         description: siteDescription,
-        knowsAbout: skills.value.map(skill => skill.name),
-        sameAs: [
-          user.value?.github_profile,
-          user.value?.linkedin_profile,
-        ],
+        knowsAbout: skills.value.map((skill) => skill.name),
+        sameAs: [user.value?.github_profile, user.value?.linkedin_profile],
         worksFor: {
-          '@type': 'Organization',
-          name: 'Freelance Developer'
-        }
-      })
+          "@type": "Organization",
+          name: "Freelance Developer",
+        },
+      }),
     },
     {
-      type: 'application/ld+json',
+      type: "application/ld+json",
       innerHTML: JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'WebSite',
+        "@context": "https://schema.org",
+        "@type": "WebSite",
         name: siteName,
         url: siteUrl,
         description: siteDescription,
         author: {
-          '@type': 'Person',
-          name: authorName
+          "@type": "Person",
+          name: authorName,
         },
         potentialAction: {
-          '@type': 'SearchAction',
+          "@type": "SearchAction",
           target: `${siteUrl}/?s={search_term_string}`,
-          'query-input': 'required name=search_term_string'
-        }
-      })
+          "query-input": "required name=search_term_string",
+        },
+      }),
     },
     {
-      type: 'application/ld+json',
+      type: "application/ld+json",
       innerHTML: JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'ItemList',
+        "@context": "https://schema.org",
+        "@type": "ItemList",
         itemListElement: projects.value.slice(0, 6).map((project, index) => ({
-          '@type': 'ListItem',
+          "@type": "ListItem",
           position: index + 1,
           item: {
-            '@type': 'CreativeWork',
+            "@type": "CreativeWork",
             name: project.title,
             description: project.description,
             url: project.liveUrl || project.link,
-            image: project.image
-          }
-        }))
-      })
-    }
-  ]
-})
+            image: project.image,
+          },
+        })),
+      }),
+    },
+  ],
+});
 
 function diffInMonths(start: Date, end: Date): number {
   return (
-      (end.getFullYear() - start.getFullYear()) * 12 +
-      (end.getMonth() - start.getMonth())
-  )
+    (end.getFullYear() - start.getFullYear()) * 12 +
+    (end.getMonth() - start.getMonth())
+  );
 }
 
 const totalExperienceYears = computed(() => {
-  const journeys = journeysData.value?.data?.data ?? []
-  let totalMonths = 0
+  const journeys = journeysData.value?.data?.data ?? [];
+  let totalMonths = 0;
 
   journeys.forEach((journey) => {
-    if (!journey.start_date) return
+    if (!journey.start_date) return;
 
-    const start = new Date(journey.start_date)
+    const start = new Date(journey.start_date);
     const end = journey.is_current
-        ? new Date()
-        : journey.end_date
-            ? new Date(journey.end_date)
-            : new Date()
+      ? new Date()
+      : journey.end_date
+        ? new Date(journey.end_date)
+        : new Date();
 
-    totalMonths += diffInMonths(start, end)
-  })
+    totalMonths += diffInMonths(start, end);
+  });
 
   // convert ke tahun (1 angka desimal)
-  return parseInt((totalMonths / 12).toFixed(0))
-})
-
-
+  return parseInt((totalMonths / 12).toFixed(0));
+});
 </script>
 
 <template>
   <div class="text-white">
     <!-- Hero Section -->
     <main class="container mx-auto px-6 py-20 overflow-hidden">
-      <HeroSection :user="user"/>
+      <HeroSection :user="user" />
     </main>
 
     <!-- About Section -->
     <div class="overflow-hidden">
-      <AboutSection :user="user" :count_projects="projects.length" :count_experience="totalExperienceYears"/>
+      <AboutSection
+        :user="user"
+        :count_projects="projects.length"
+        :count_experience="totalExperienceYears"
+      />
     </div>
 
     <!-- Skills Section -->
     <div>
-      <SkillsSection :skills="skills"/>
+      <SkillsSection :skills="skills" />
     </div>
 
     <!-- Journey Section -->
     <div>
-      <JourneySection :experiences="experiences"/>
+      <JourneySection :experiences="experiences" />
     </div>
 
     <!-- Projects Section -->
     <div>
-      <ProjectsSection :projects="projects"/>
+      <ProjectsSection :projects="projects" />
     </div>
 
     <!-- Contact Section -->
     <div class="overflow-hidden">
-      <ContactSection :user="user"/>
+      <ContactSection :user="user" />
     </div>
 
     <!-- Footer Section -->
     <div class="overflow-hidden">
-      <FooterSection/>
+      <FooterSection />
     </div>
 
     <!-- AI Assistant Section -->
-    <AIAssistant/>
-
+    <AIAssistant />
   </div>
 </template>
 
@@ -428,4 +441,3 @@ const totalExperienceYears = computed(() => {
   transform: translateY(-2px);
 }
 </style>
-
