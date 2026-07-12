@@ -1,23 +1,125 @@
 import {GoogleGenAI} from "@google/genai";
 import {HttpError} from "~~/server/errors/HttpError";
 import {sendSuccess} from "~~/server/utils/response";
+import {query} from "~~/server/db/postgres";
 
-/**
- * Convert markdown-style text to HTML
- * Handles: **bold**, *italic*, ### headings, - lists
- */
 function markdownToHtml(markdown: string): string {
     return markdown
-        // Bold: **text** → <strong>text</strong>
         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-        // Italic: *text* → <em>text</em>
         .replace(/\*(.+?)\*/g, '<em>$1</em>')
-        // Headings: ### text → <h3>text</h3>
         .replace(/^### (.+)$/gm, '<h3 class="text-lg font-bold mt-4 mb-2">$1</h3>')
         .replace(/^## (.+)$/gm, '<h2 class="text-xl font-bold mt-6 mb-3">$1</h2>')
         .replace(/^# (.+)$/gm, '<h1 class="text-2xl font-bold mt-8 mb-4">$1</h1>')
-        // Line breaks
         .replace(/\n/g, '<br/>')
+}
+
+async function fetchPortfolioData(): Promise<{
+    settings: any;
+    skills: any[];
+    projects: any[];
+    journeys: any[];
+}> {
+    const settingsResult = await query(`
+        SELECT name, email, location, open_to_opportunities, github_profile, linkedin_profile, cv_url
+        FROM users LIMIT 1
+    `);
+
+    const skillsResult = await query(`
+        SELECT name FROM skills ORDER BY name ASC
+    `);
+
+    const projectsResult = await query(`
+        SELECT p.name, p.description, p.status, p.start_date, p.end_date,
+               p.features, p.live_url, p.repo_url,
+               ARRAY_AGG(s.name) AS technologies
+        FROM projects p
+        JOIN project_skills ps ON p.id = ps.project_id
+        JOIN skills s ON ps.skill_id = s.id
+        GROUP BY p.id
+        ORDER BY p.start_date DESC
+    `);
+
+    const journeysResult = await query(`
+        SELECT j.title, j.company, j.location, j.start_date, j.end_date,
+               j.key_responsibilities, j.description, j.is_current,
+               ARRAY_AGG(s.name) FILTER (WHERE s.name IS NOT NULL) AS skills
+        FROM journeys j
+        LEFT JOIN journey_skills js ON j.id = js.journey_id
+        LEFT JOIN skills s ON js.skill_id = s.id
+        GROUP BY j.id
+        ORDER BY j.start_date DESC
+    `);
+
+    return {
+        settings: settingsResult.rows[0] || null,
+        skills: skillsResult.rows,
+        projects: projectsResult.rows,
+        journeys: journeysResult.rows,
+    };
+}
+
+function buildPortfolioContext(data: {
+    settings: any;
+    skills: any[];
+    projects: any[];
+    journeys: any[];
+}): string {
+    let context = '';
+
+    if (data.settings) {
+        const s = data.settings;
+        context += `=== PROFILE ===\n`;
+        context += `Name: ${s.name}\n`;
+        context += `Role: Full-Stack Developer\n`;
+        context += `Location: ${s.location || 'Tegal, Central Java, Indonesia'}\n`;
+        context += `Status: ${s.open_to_opportunities ? 'Open to work opportunities' : 'Not currently open to work'}\n`;
+        context += `Email: ${s.email}\n`;
+        if (s.github_profile) context += `GitHub: ${s.github_profile}\n`;
+        if (s.linkedin_profile) context += `LinkedIn: ${s.linkedin_profile}\n`;
+        context += '\n';
+    }
+
+    if (data.skills.length > 0) {
+        context += `=== SKILLS ===\n`;
+        context += data.skills.map(s => `- ${s.name}`).join('\n');
+        context += '\n\n';
+    }
+
+    if (data.projects.length > 0) {
+        context += `=== PROJECTS ===\n`;
+        for (const p of data.projects) {
+            const features = p.features?.join(', ') || '';
+            const tech = p.technologies?.filter(Boolean)?.join(', ') || '';
+            context += `\n[${p.name}]`;
+            if (p.start_date) context += ` (${p.start_date?.split('-')[0] || ''})`;
+            context += `\n`;
+            if (p.description) context += `Description: ${p.description}\n`;
+            if (features) context += `Features: ${features}\n`;
+            if (tech) context += `Technologies: ${tech}\n`;
+            if (p.live_url) context += `Live URL: ${p.live_url}\n`;
+            if (p.repo_url) context += `Repository: ${p.repo_url}\n`;
+            context += `Status: ${p.status ? 'Published' : 'Draft'}\n`;
+        }
+        context += '\n';
+    }
+
+    if (data.journeys.length > 0) {
+        context += `=== EXPERIENCE ===\n`;
+        for (const j of data.journeys) {
+            const period = `${j.start_date || ''} - ${j.end_date || (j.is_current ? 'Present' : '')}`;
+            const responsibilities = j.key_responsibilities?.join(', ') || '';
+            const tech = j.skills?.filter(Boolean)?.join(', ') || '';
+            context += `\n[${j.title}] at ${j.company}\n`;
+            if (j.location) context += `Location: ${j.location}\n`;
+            context += `Period: ${period}\n`;
+            if (j.description) context += `Description: ${j.description}\n`;
+            if (responsibilities) context += `Key Responsibilities: ${responsibilities}\n`;
+            if (tech) context += `Technologies: ${tech}\n`;
+        }
+        context += '\n';
+    }
+
+    return context;
 }
 
 export default handleError(async (event) => {
@@ -42,158 +144,47 @@ export default handleError(async (event) => {
         )
     }
 
-    const contents = `
-    You are an AI Assistant for the personal portfolio website of 
+    let portfolioContext = '';
+    try {
+        const data = await fetchPortfolioData();
+        portfolioContext = buildPortfolioContext(data);
+    } catch (err) {
+        console.warn('[AI Chat] Failed to fetch portfolio data, proceeding without context:', err);
+    }
+
+    const systemPrompt = `You are an AI Assistant for the personal portfolio website of
 Moh. Eka Syafrino Nazhifan, a Full-Stack Developer based in Tegal, Central Java, Indonesia.
 
 Your responsibilities:
-- Answer visitor questions about Eka’s skills, experience, projects, and interests
-- Help recruiters or collaborators quickly understand Eka’s technical capabilities
+- Answer visitor questions about Eka's skills, experience, projects, and interests
+- Help recruiters or collaborators quickly understand Eka's technical capabilities
 - Respond professionally, clearly, concisely, and directly to the question context
 - Encourage visitors to contact Eka when discussing hiring, collaboration, or freelance opportunities
 
-=== ABOUT EKA ===
-Name: Moh. Eka Syafrino Nazhifan  
-Location: Tegal, Central Java, Indonesia  
-Role: Full-Stack Developer  
-Experience Level: Professional (Contract & Internship Experience)
-
-Open Positions:
-- Back-End Developer
-- Front-End Developer
-- Full-Stack Developer
-- Mobile Developer
-
-=== SUMMARY ===
-Eka is an enthusiastic Full-Stack Developer with hands-on experience in building scalable web
-and mobile applications. He has worked with high-performance systems using technologies such
-as Redis, BigQuery, BigTable, JWT, Pub/Sub, WebSocket, and microservice architectures.
-He has a strong foundation in the MERN stack, TypeScript, Golang, and backend system design,
-with additional experience in Flutter for mobile development.
-He is passionate about clean, maintainable code, performance optimization, problem-solving,
-and continuous learning.
-
-=== TECHNICAL SKILLS ===
-Frontend:
-- React.js, Next.js, Vue.js, Nuxt.js
-- HTML, CSS, JavaScript, TypeScript
-- Tailwind CSS, Bootstrap, Nuxt UI
-
-Backend:
-- Node.js, Express.js
-- Golang (Fiber)
-- Java (Spring Boot)
-- PHP (Laravel)
-- Python (Flask)
-- REST API, JWT Authentication
-- Redis Caching
-- Microservice Architecture
-
-Databases & Messaging:
-- MongoDB, Mongoose
-- PostgreSQL, MySQL
-- BigQuery, BigTable
-- RabbitMQ
-- Pub/Sub
-
-DevOps & Infrastructure:
-- Docker, CI/CD
-- Kong API Gateway
-- Kubernetes
-- SSE, WebSocket
-
-Mobile:
-- Flutter, Dart, GetX, Firebase Auth
-
-Other:
-- Redux Toolkit, Pinia
-- Git & GitHub
-- OOP, MVC Architecture
-
-=== WORK EXPERIENCE ===
-Full-Stack Developer (Contract) – PT Horus Technology, Yogyakarta  
-December 2024 – December 2026
-- Developed an operational company website using microservice architecture
-- Optimized query logic on BigTable and implemented parallel processing to reduce latency
-- Implemented JWT-based authentication with custom payloads for granular access control
-- Applied Redis caching to significantly improve response times
-- Implemented real-time data streaming using Pub/Sub and WebSocket across services
-
-Full-Stack Developer Intern – Eduwork Online  
-June 2024 – August 2024
-- Built backend features including user management and POS system using Express.js & MongoDB
-- Developed POS frontend using React.js & Tailwind CSS
-- Refactored application state management using Redux Toolkit
-- Created REST API documentation using Postman
-- Practiced UI slicing by cloning Hijja Indonesia website using Next.js
-
-=== PROJECTS ===
-1. Coffe Platform (2025)
-   - Coffee shop management platform with POS and e-wallet integration
-   - Features: Wallet top-up (Midtrans), ordering system, admin & barista dashboards
-   - Tech: Golang (Fiber), Java (Spring Boot), PostgreSQL, Kong, RabbitMQ, SSE
-   - Demo: https://coffe.eka-dev.cloud
-
-2. Eblog
-   - Personal blogging platform with authentication, comments, likes, and bookmarks
-   - Tech: Laravel, Vue.js, Tailwind CSS, MySQL
-   - Demo: https://e-blog.eka-dev.cloud
-
-3. Cyber Mobile
-   - Mobile e-commerce application
-   - Tech: Flutter, GetX
-
-4. Finance Tracker
-   - Finance tracking web app with Google authentication and Redis caching
-   - Tech: Nuxt.js, MongoDB, Redis, Pinia
-
-5. Cyber (Apple Store E-commerce)
-   - Full-stack e-commerce with Midtrans payment gateway
-   - Tech: Next.js (TypeScript), Express.js, MongoDB
-
-6. Exa Store
-   - Food & beverage e-commerce website
-   - Tech: React.js, Express.js, MongoDB
-
-7. Hijja Indonesia Clone
-   - UI slicing practice
-   - Tech: Next.js, Tailwind CSS
-
-8. Movie Landing Page
-   - Movie search and detail website
-   - Tech: Next.js, Tailwind CSS
-
 === COMMUNICATION RULES ===
-- Always answer based on the visitor’s question context
-- Do NOT repeat Eka’s full profile or resume unless explicitly requested
+- Always answer based on the visitor's question context
+- Prioritize the portfolio data below when answering
+- Do NOT repeat Eka's full profile or resume unless explicitly requested
 - Keep responses clear, direct, and professional
 - If the question is unclear, politely ask for clarification
 - If the topic is hiring, collaboration, or freelance work, encourage contacting Eka
-- Respond in English or Indonesian depending on the user’s language
+- Respond in English or Indonesian depending on the user's language
 
-=== CONTACT INFORMATION ===
-Email: ekaaa.jobs@gmail.com  
-WhatsApp: +62 823-2942-6612  
-GitHub: https://github.com/exa31  
-
-User question:
+${portfolioContext ? `${portfolioContext}\n` : ''}User question:
 "${prompt}"
 
-Answer professionally, clearly, and directly based on the question context.
-Do not restate Eka’s profile unless explicitly requested.
-Always represent Eka as a fast-learning, performance-oriented developer with strong problem-solving skills.
-
-    `
+Answer professionally, clearly, and directly based on the question context and portfolio data.
+Do not restate Eka's profile unless explicitly requested.
+Always represent Eka as a fast-learning, performance-oriented developer with strong problem-solving skills.`
 
     try {
-        // Initialize GoogleGenAI with API key
         console.info('[AI Chat] Initializing GoogleGenAI with API key...')
         const ai = new GoogleGenAI({apiKey});
 
         console.info('[AI Chat] Sending request to Gemini API...')
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
-            contents: contents
+            contents: systemPrompt
         })
         const text = response.text
 
@@ -208,7 +199,7 @@ Always represent Eka as a fast-learning, performance-oriented developer with str
 
         const htmlContent = markdownToHtml(text.trim())
 
-        console.info(`[AI Chat] ✅ Generated response (${text.length} chars) for prompt: "${prompt.substring(0, 50)}..."`)
+        console.info(`[AI Chat] Generated response (${text.length} chars) for prompt: "${prompt.substring(0, 50)}..."`)
 
         return sendSuccess(
             event,
@@ -218,14 +209,12 @@ Always represent Eka as a fast-learning, performance-oriented developer with str
             200
         )
     } catch (error) {
-        console.error('[AI Chat] ❌ Error:', error)
+        console.error('[AI Chat] Error:', error)
 
-        // Handle specific error types
         if (error instanceof HttpError) {
             throw error
         }
 
-        // Handle Google Auth errors
         if (error instanceof Error && error.message.includes('default credentials')) {
             console.error('[AI Chat] Google Auth error - API key might be invalid or not properly configured')
             throw new HttpError(
@@ -235,7 +224,6 @@ Always represent Eka as a fast-learning, performance-oriented developer with str
             )
         }
 
-        // Handle generic errors
         throw new HttpError(
             500,
             "INTERNAL_SERVER_ERROR",
@@ -243,4 +231,3 @@ Always represent Eka as a fast-learning, performance-oriented developer with str
         )
     }
 })
-
