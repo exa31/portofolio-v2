@@ -12,6 +12,8 @@ const navItems = [
   {name: 'Contact', href: '#contact'}
 ]
 
+const sectionOrder = ['#about', '#stack', '#work', '#project', '#contact']
+
 const toggleMobileMenu = () => {
   isMobileMenuOpen.value = !isMobileMenuOpen.value
 }
@@ -20,12 +22,10 @@ const closeMobileMenu = () => {
   isMobileMenuOpen.value = false
 }
 
-// Update active section based on scroll position
 const updateActiveSection = () => {
-  const sections = ['#about', '#work', '#project', '#stack', '#contact']
   let found = false
 
-  for (const sectionId of sections) {
+  for (const sectionId of sectionOrder) {
     const element = document.querySelector<HTMLElement>(sectionId)
     if (!element) continue
 
@@ -43,10 +43,8 @@ const updateActiveSection = () => {
   }
 }
 
-
 onMounted(() => {
-  window.addEventListener('scroll', updateActiveSection)
-  // Initial check
+  window.addEventListener('scroll', updateActiveSection, {passive: true})
   updateActiveSection()
 })
 
@@ -70,57 +68,90 @@ onUnmounted(() => {
         </NuxtLink>
 
         <!-- Desktop Navigation -->
-        <nav class="hidden md:flex items-center gap-8 text-sm text-white/70">
+        <nav class="hidden md:flex items-center gap-1 p-1 bg-white/[0.03] border border-white/[0.06] rounded-2xl">
           <NuxtLink
               v-for="item in navItems"
               :key="item.href"
               :to="item.href"
-              class="hover:text-white duration-300 transition-all relative group scroll-smooth"
-              :class="{'text-primary': activeSection === item.href}"
+              class="relative px-5 py-2.5 rounded-xl text-sm font-medium tracking-wide transition-all duration-300"
+              :class="activeSection === item.href
+                ? 'text-white bg-primary/20 shadow-sm shadow-primary/10'
+                : 'text-white/50 hover:text-white/90 hover:bg-white/[0.06]'"
           >
             {{ item.name }}
-            <span
-                class="absolute bottom-0 left-0 h-0.5 bg-primary transition-all duration-300"
-                :class="activeSection === item.href ? 'w-full' : 'w-0 group-hover:w-full'"
-            ></span>
           </NuxtLink>
         </nav>
 
-        <!-- Mobile Menu Button -->
+        <!-- Mobile Menu Button (animated) -->
         <button
             @click="toggleMobileMenu"
-            class="md:hidden text-white/70 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-lg"
+            class="md:hidden relative w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/5 transition-colors"
+            aria-label="Toggle menu"
         >
-          <Icon v-if="!isMobileMenuOpen" name="carbon:menu" size="24"/>
-          <Icon v-else name="carbon:close" size="24"/>
+          <span class="sr-only">Menu</span>
+          <div class="relative w-5 h-4">
+            <span
+                class="absolute left-0 block w-full h-0.5 bg-current rounded-full transition-all duration-300"
+                :class="isMobileMenuOpen ? 'top-1/2 -translate-y-1/2 rotate-45' : 'top-0'"
+            ></span>
+            <span
+                class="absolute left-0 block w-full h-0.5 bg-current rounded-full transition-all duration-300"
+                :class="isMobileMenuOpen ? 'opacity-0 translate-x-2' : 'top-1/2 -translate-y-1/2'"
+            ></span>
+            <span
+                class="absolute left-0 block w-full h-0.5 bg-current rounded-full transition-all duration-300"
+                :class="isMobileMenuOpen ? 'bottom-1/2 translate-y-1/2 -rotate-45' : 'bottom-0'"
+            ></span>
+          </div>
         </button>
       </div>
     </header>
 
-    <!-- Mobile Menu -->
+    <!-- Mobile Menu Backdrop -->
     <Transition
         enter-active-class="transition duration-300 ease-out"
-        enter-from-class="opacity-0 translate-y-4"
+        enter-from-class="opacity-0"
+        enter-to-class="opacity-100"
+        leave-active-class="transition duration-200 ease-in"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
+    >
+      <div
+          v-show="isMobileMenuOpen"
+          class="md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+          @click="closeMobileMenu"
+      ></div>
+    </Transition>
+
+    <!-- Mobile Menu (slide down) -->
+    <Transition
+        enter-active-class="transition duration-300 ease-out"
+        enter-from-class="opacity-0 -translate-y-4"
         enter-to-class="opacity-100 translate-y-0"
         leave-active-class="transition duration-200 ease-in"
         leave-from-class="opacity-100 translate-y-0"
-        leave-to-class="opacity-0 translate-y-4"
+        leave-to-class="opacity-0 -translate-y-4"
     >
       <nav
           v-show="isMobileMenuOpen"
-          class="md:hidden fixed top-20 left-0 right-0 bg-[#0f1520] border-b border-white/10 rounded-lg shadow-lg z-40 mx-4"
+          class="md:hidden fixed top-20 left-0 right-0 z-50 mx-4"
       >
-        <div class="flex flex-col p-4 space-y-2">
-          <NuxtLink
-              v-for="item in navItems"
-              :key="item.href"
-              :to="item.href"
-              @click="closeMobileMenu"
-              class="px-4 py-3 rounded-lg text-white/70 hover:text-white hover:bg-white/5 transition-all text-sm font-medium"
-              :class="activeSection === item.href ? 'bg-primary/20 text-primary border-l-2 border-primary' : ''"
-          >
-            {{ item.name }}
-          </NuxtLink>
+        <div class="bg-[#0f1520]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
+          <div class="flex flex-col p-3">
+            <NuxtLink
+                v-for="item in navItems"
+                :key="item.href"
+                :to="item.href"
+                @click="closeMobileMenu"
+                class="px-4 py-3.5 rounded-xl text-sm font-medium transition-all duration-300 flex items-center"
+                :class="activeSection === item.href
+                  ? 'bg-primary/15 text-primary pl-5'
+                  : 'text-white/70 hover:text-white hover:bg-white/5 pl-4'"
+            >
+              <span class="w-1.5 h-1.5 rounded-full transition-all duration-300 shrink-0" :class="activeSection === item.href ? 'bg-primary mr-3' : 'bg-transparent mr-2'"></span>
+              {{ item.name }}
+            </NuxtLink>
+          </div>
         </div>
       </nav>
     </Transition>
