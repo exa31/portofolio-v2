@@ -51,6 +51,7 @@ const menuItems = [
   {name: 'Work', icon: 'mdi:briefcase', href: '/dashboard/journeys'},
   {name: 'Skills', icon: 'carbon:skill-level', href: '/dashboard/skills'},
   {name: 'Messages', icon: 'carbon:email', href: '/dashboard/messages'},
+  {name: 'Apply', icon: 'carbon:send', href: '/dashboard/apply'},
   {name: 'Analytics', icon: 'carbon:chart-bar', href: '/dashboard/analytics'},
 ]
 
