@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger'
 import * as repository from "~~/server/repositories/application.repository";
 import {withTransaction} from "~~/server/db/postgres";
 import {HttpError} from "~~/server/errors/HttpError";
@@ -205,7 +206,7 @@ export const sendApplicationEmail = async (event: H3Event, applicationId: string
                     mimeType: 'application/pdf',
                 });
             } catch (err) {
-                console.warn('[Send] Failed to fetch CV:', err);
+                logger.warn({ err: err }, '[Send] Failed to fetch CV:');
             }
         }
 
@@ -220,7 +221,7 @@ export const sendApplicationEmail = async (event: H3Event, applicationId: string
                     mimeType: att.mime_type || 'application/octet-stream',
                 });
             } catch (err) {
-                console.warn(`[Send] Failed to fetch attachment ${att.file_name}:`, err);
+                logger.warn({ err: err }, `[Send] Failed to fetch attachment ${att.file_name}:`);
             }
         }
 
@@ -257,7 +258,7 @@ export const uploadAttachment = async (event: H3Event, applicationId: string) =>
         }
 
         const fileData = files[0];
-        if (!fileData.filename || !fileData.data) {
+        if (!fileData || !fileData.filename || !fileData.data) {
             throw new HttpError(400, 'INVALID_FILE', 'Invalid file data');
         }
 

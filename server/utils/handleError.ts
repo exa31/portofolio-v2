@@ -13,7 +13,7 @@ export const handleError = <T extends EventHandlerRequest, D>(
             }
             return await handler(event)
         } catch (err: any) {
-            console.error("[error]:", err)
+            logger.error({ err: err }, "[error]:")
             if (err instanceof HttpError) {
                 return sendError(
                     event, err.status, err.code, err.message, err.data

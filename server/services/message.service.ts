@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger'
 import * as repository from "~~/server/repositories/message.repository";
 import { H3Event } from "h3";
 import {
@@ -38,7 +39,7 @@ export const createMessage = async (
       body.subject,
       body.message,
     ).catch((err) =>
-      console.error("[Email] Failed to send notification:", err),
+      logger.error({ err: err }, "[Email] Failed to send notification:"),
     );
   }
 

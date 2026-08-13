@@ -18,7 +18,7 @@ export default handleError(async (event) => {
 
 
     if (!query.pagination) {
-        console.log('Fetching skills without pagination')
+        logger.info('Fetching skills without pagination')
         return await getSkillsNoPagination(event)
     }
 

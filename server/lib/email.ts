@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger'
 import { Resend } from "resend";
 
 export const sendContactNotification = async (
@@ -11,7 +12,7 @@ export const sendContactNotification = async (
 
   const apiKey = config.resendApiKey as string | undefined;
   if (!apiKey) {
-    console.warn("[Email] RESEND_API_KEY not configured, skipping email");
+    logger.warn("[Email] RESEND_API_KEY not configured, skipping email");
     return;
   }
 

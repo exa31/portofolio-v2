@@ -10,6 +10,7 @@ export const getUserSettings = async (
                email,
                location,
                open_to_opportunities,
+               job_notifications_enabled,
                github_profile,
                linkedin_profile,
                created_at,
@@ -31,12 +32,14 @@ export const updateProfileSettings = async (
         SET name                  = $1,
             location              = $2,
             open_to_opportunities = $3,
+            job_notifications_enabled = $4,
             updated_at            = CURRENT_TIMESTAMP
     `
     const values = [
         data.name,
         data.location || null,
         data.open_to_opportunities,
+        data.job_notifications_enabled,
     ]
 
     const result = await client.query(sql, values)

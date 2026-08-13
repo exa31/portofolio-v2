@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger'
 import {OAuth2Client} from "google-auth-library";
 import {useAppConfig} from '~~/server/utils/config';
 import {withTransaction} from "~~/server/db/postgres";
@@ -28,7 +29,7 @@ const getRedirectUriFromRequest = (event: H3Event): string => {
 
     // Ensure we have proper format
     const redirectUri = `${proto}://${host}`;
-    console.log('[OAuth2] Detected redirectUri from request:', redirectUri);
+    logger.info({ err: redirectUri }, '[OAuth2] Detected redirectUri from request:');
     return redirectUri;
 };
 

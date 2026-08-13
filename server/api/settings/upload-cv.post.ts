@@ -59,14 +59,14 @@ export default withAuth(async (event) => {
 
                     return sendSuccess(event, {url}, 'CV uploaded successfully', 'cv_uploaded')
                 } catch (minioError) {
-                    console.error('MinIO upload error:', minioError)
+                    logger.error({ err: minioError }, 'MinIO upload error:')
                     throw new HttpError(500, 'UPLOAD_ERROR', 'Failed to upload file to storage')
                 }
             } catch (error) {
                 if (error instanceof HttpError) {
                     throw error
                 }
-                console.error('CV upload error:', error)
+                logger.error({ err: error }, 'CV upload error:')
                 throw new HttpError(500, 'UPLOAD_ERROR', 'Failed to upload CV')
             }
         }

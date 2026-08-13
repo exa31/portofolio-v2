@@ -3,7 +3,7 @@ import {UNIQUE_CONSTRAINT_FIELD_MAP} from '~~/server/constants/pgConstraints'
 
 export function formatPgError(err: any): never {
     // UNIQUE VIOLATION
-    console.error('Database error:', err);
+    logger.error({ err: err }, 'Database error:');
     if (err?.code === '23505') {
         const field =
             UNIQUE_CONSTRAINT_FIELD_MAP[err.constraint] ?? null

@@ -14,7 +14,7 @@ export const withAuth = <T extends EventHandlerRequest, D>(
 
             if (!authHeader) {
                 token = getCookie(event, 'token') || ''
-                console.log('No Authorization header, trying cookie:', token)
+                logger.info({ err: token }, 'No Authorization header, trying cookie:')
             }
 
             if (authHeader.startsWith('Bearer ')) {
@@ -56,7 +56,7 @@ export const withAuth = <T extends EventHandlerRequest, D>(
                 )
             }
         } catch (err: any) {
-            console.error("[error]:", err)
+            logger.error({ err: err }, "[error]:")
             if (err instanceof HttpError) {
                 return sendError(event, err.status, err.code, err.message, err.data)
             }

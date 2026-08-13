@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger'
 import { Pool, type PoolClient, type QueryResult, type QueryResultRow } from 'pg';
 import { useAppConfig } from '~~/server/utils/config';
 import { formatPgError } from "~~/server/utils/pgError";
@@ -80,7 +81,7 @@ export async function initPostgres(cfg?: Partial<PostgresConfig>, options?: {
             // Log an unexpected error on an idle client
             // Avoid printing credentials
             // eslint-disable-next-line no-console
-            console.error('[postgres] unexpected error on idle client', { message: err.message });
+            logger.error({ message: err.message }, '[postgres] unexpected error on idle client');
         });
 
         const retries = options?.retries ?? 5;
@@ -95,14 +96,14 @@ export async function initPostgres(cfg?: Partial<PostgresConfig>, options?: {
                 const client = await pool.connect();
                 client.release();
                 // eslint-disable-next-line no-console
-                console.info(`[postgres] connected to ${poolConfig.host}:${poolConfig.port}/${poolConfig.database}`);
+                logger.info(`[postgres] connected to ${poolConfig.host}:${poolConfig.port}/${poolConfig.database}`);
                 return;
             } catch (err: any) {
                 lastErr = err;
                 attempt += 1;
                 const wait = initialDelayMs * Math.pow(factor, attempt - 1);
                 // eslint-disable-next-line no-console
-                console.warn(`[postgres] connect attempt ${attempt} failed (${err?.message}). retrying in ${wait}ms`);
+                logger.warn(`[postgres] connect attempt ${attempt} failed (${err?.message}). retrying in ${wait}ms`);
                 await delay(wait);
             }
         }
@@ -161,7 +162,7 @@ export async function withTransaction<T>(fn: (client: PoolClient) => Promise<T>)
             await client.query('ROLLBACK');
         } catch (rollbackErr) {
             // eslint-disable-next-line no-console
-            console.error('[postgres] rollback failed', rollbackErr);
+            logger.error({ err: rollbackErr }, '[postgres] rollback failed');
         }
         if (err instanceof HttpError) {
             throw err;
@@ -195,7 +196,7 @@ export async function shutdownPostgres(timeoutMs = 5000): Promise<void> {
         }
     } finally {
         // eslint-disable-next-line no-console
-        console.info('[postgres] pool shut down');
+        logger.info('[postgres] pool shut down');
     }
 }
 

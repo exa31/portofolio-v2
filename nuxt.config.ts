@@ -119,6 +119,9 @@ export default defineNuxtConfig({
 
   // ========== NITRO ==========
   nitro: {
+    experimental: {
+      asyncContext: true,
+    },
     compressPublicAssets: {
       gzip: true,
       brotli: true,
@@ -176,6 +179,8 @@ export default defineNuxtConfig({
 
     geminiApiKey: process.env.NUXT_GEMINI_API_KEY,
     resendApiKey: process.env.NUXT_RESEND_API_KEY,
+    jobWorkerSecret: process.env.NUXT_JOB_WORKER_SECRET,
+    jobWorkerUrl: process.env.NUXT_JOB_WORKER_URL || "http://localhost:9090",
 
     public: {
       googleClientId:

@@ -6,6 +6,7 @@ export const userSettingsModel = z.object({
     email: z.email(),
     location: z.string().max(255).nullable().optional(),
     open_to_opportunities: z.boolean(),
+    job_notifications_enabled: z.boolean(),
     github_profile: z.string().max(255).nullable().optional(),
     linkedin_profile: z.string().max(255).nullable().optional(),
     created_at: z.string(),
@@ -19,6 +20,7 @@ export const updateProfileSettingsSchema = z.object({
     name: z.string().min(1).max(255),
     location: z.string().max(255).optional().nullable(),
     open_to_opportunities: z.boolean(),
+    job_notifications_enabled: z.boolean(),
 });
 
 export type UpdateProfileSettingsInput = z.infer<typeof updateProfileSettingsSchema>;

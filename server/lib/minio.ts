@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger'
 import * as Minio from 'minio'
 
 /**
@@ -94,10 +95,10 @@ class MinioClientWrapper {
             const exists = await this.client.bucketExists(bucketName)
             if (!exists) {
                 await this.client.makeBucket(bucketName, region)
-                console.log(`Bucket "${bucketName}" created successfully`)
+                logger.info(`Bucket "${bucketName}" created successfully`)
             }
         } catch (error) {
-            console.error(`Error ensuring bucket "${bucketName}":`, error)
+            logger.error({ err: error }, `Error ensuring bucket "${bucketName}":`)
             throw error
         }
     }
@@ -122,7 +123,7 @@ class MinioClientWrapper {
      *   'image/jpeg',
      *   { userId: '123' }
      * )
-     * console.log('File uploaded:', url)
+     * logger.info({ err: url }, 'File uploaded:')
      * ```
      */
     async uploadFile(
@@ -147,7 +148,7 @@ class MinioClientWrapper {
             // Return public URL
             return this.getPublicUrl(bucketName, objectName)
         } catch (error) {
-            console.error(`Error uploading file to "${bucketName}/${objectName}":`, error)
+            logger.error({ err: error }, `Error uploading file to "${bucketName}/${objectName}":`)
             throw error
         }
     }
@@ -195,7 +196,7 @@ class MinioClientWrapper {
             await this.client.putObject(bucketName, objectName, stream, size, metaData)
             return this.getPublicUrl(bucketName, objectName)
         } catch (error) {
-            console.error(`Error uploading stream to "${bucketName}/${objectName}":`, error)
+            logger.error({ err: error }, `Error uploading stream to "${bucketName}/${objectName}":`)
             throw error
         }
     }
@@ -224,7 +225,7 @@ class MinioClientWrapper {
                 stream.on('error', reject)
             })
         } catch (error) {
-            console.error(`Error downloading file "${bucketName}/${objectName}":`, error)
+            logger.error({ err: error }, `Error downloading file "${bucketName}/${objectName}":`)
             throw error
         }
     }
@@ -239,14 +240,14 @@ class MinioClientWrapper {
      * @example
      * ```typescript
      * await minioClient.deleteFile('images', 'user/profile.jpg')
-     * console.log('File deleted successfully')
+     * logger.info('File deleted successfully')
      * ```
      */
     async deleteFile(bucketName: string, objectName: string): Promise<void> {
         try {
             await this.client.removeObject(bucketName, objectName)
         } catch (error) {
-            console.error(`Error deleting file "${bucketName}/${objectName}":`, error)
+            logger.error({ err: error }, `Error deleting file "${bucketName}/${objectName}":`)
             throw error
         }
     }
@@ -270,7 +271,7 @@ class MinioClientWrapper {
         try {
             await this.client.removeObjects(bucketName, objectNames)
         } catch (error) {
-            console.error(`Error deleting files from "${bucketName}":`, error)
+            logger.error({ err: error }, `Error deleting files from "${bucketName}":`)
             throw error
         }
     }
@@ -286,7 +287,7 @@ class MinioClientWrapper {
      * ```typescript
      * const exists = await minioClient.fileExists('images', 'user/profile.jpg')
      * if (exists) {
-     *   console.log('File exists')
+     *   logger.info('File exists')
      * }
      * ```
      */
@@ -312,16 +313,16 @@ class MinioClientWrapper {
      * @example
      * ```typescript
      * const stats = await minioClient.getFileStats('images', 'user/profile.jpg')
-     * console.log('Size:', stats.size)
-     * console.log('Last Modified:', stats.lastModified)
-     * console.log('Content-Type:', stats.metaData['content-type'])
+     * logger.info('Size:', stats.size)
+     * logger.info('Last Modified:', stats.lastModified)
+     * logger.info('Content-Type:', stats.metaData['content-type'])
      * ```
      */
     async getFileStats(bucketName: string, objectName: string): Promise<Minio.BucketItemStat> {
         try {
             return await this.client.statObject(bucketName, objectName)
         } catch (error) {
-            console.error(`Error getting stats for "${bucketName}/${objectName}":`, error)
+            logger.error({ err: error }, `Error getting stats for "${bucketName}/${objectName}":`)
             throw error
         }
     }
@@ -338,14 +339,14 @@ class MinioClientWrapper {
      * ```typescript
      * // Generate URL valid for 1 hour
      * const url = await minioClient.getPresignedUrl('images', 'user/profile.jpg', 3600)
-     * console.log('Download link:', url)
+     * logger.info({ err: url }, 'Download link:')
      * ```
      */
     async getPresignedUrl(bucketName: string, objectName: string, expiry: number = 7200): Promise<string> {
         try {
             return await this.client.presignedGetObject(bucketName, objectName, expiry)
         } catch (error) {
-            console.error(`Error generating presigned URL for "${bucketName}/${objectName}":`, error)
+            logger.error({ err: error }, `Error generating presigned URL for "${bucketName}/${objectName}":`)
             throw error
         }
     }
@@ -375,7 +376,7 @@ class MinioClientWrapper {
 
             return await this.client.presignedPostPolicy(policy)
         } catch (error) {
-            console.error(`Error generating presigned POST policy:`, error)
+            logger.error({ err: error }, `Error generating presigned POST policy:`)
             throw error
         }
     }
@@ -397,7 +398,7 @@ class MinioClientWrapper {
      * const userFiles = await minioClient.listFiles('images', 'user/')
      *
      * files.forEach(file => {
-     *   console.log('File:', file.name, 'Size:', file.size)
+     *   logger.info('File:', file.name, 'Size:', file.size)
      * })
      * ```
      */
@@ -412,7 +413,7 @@ class MinioClientWrapper {
                 stream.on('error', reject)
             })
         } catch (error) {
-            console.error(`Error listing files in "${bucketName}":`, error)
+            logger.error({ err: error }, `Error listing files in "${bucketName}":`)
             throw error
         }
     }
@@ -442,7 +443,7 @@ class MinioClientWrapper {
             const conds = new Minio.CopyConditions()
             await this.client.copyObject(destBucket, destObject, `/${sourceBucket}/${sourceObject}`, conds)
         } catch (error) {
-            console.error(`Error copying file:`, error)
+            logger.error({ err: error }, `Error copying file:`)
             throw error
         }
     }
@@ -457,7 +458,7 @@ class MinioClientWrapper {
      * @example
      * ```typescript
      * const url = minioClient.getPublicUrl('images', 'user/profile.jpg')
-     * console.log('Public URL:', url)
+     * logger.info({ err: url }, 'Public URL:')
      * ```
      */
     getPublicUrl(bucketName: string, objectName: string): string {
@@ -490,7 +491,7 @@ class MinioClientWrapper {
         try {
             await this.client.setBucketPolicy(bucketName, policy)
         } catch (error) {
-            console.error(`Error setting bucket policy for "${bucketName}":`, error)
+            logger.error({ err: error }, `Error setting bucket policy for "${bucketName}":`)
             throw error
         }
     }

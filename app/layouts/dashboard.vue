@@ -52,6 +52,7 @@ const menuItems = [
   {name: 'Skills', icon: 'carbon:skill-level', href: '/dashboard/skills'},
   {name: 'Messages', icon: 'carbon:email', href: '/dashboard/messages'},
   {name: 'Apply', icon: 'carbon:send', href: '/dashboard/apply'},
+  {name: 'Lowongan', icon: 'carbon:search', href: '/dashboard/jobs'},
   {name: 'Analytics', icon: 'carbon:chart-bar', href: '/dashboard/analytics'},
 ]
 

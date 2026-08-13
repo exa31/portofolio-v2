@@ -136,7 +136,7 @@ export default handleError(async (event) => {
     const apiKey = config.geminiApiKey
 
     if (!apiKey || apiKey.trim() === '') {
-        console.error('[AI Chat] GEMINI_API_KEY not configured')
+        logger.error('[AI Chat] GEMINI_API_KEY not configured')
         throw new HttpError(
             500,
             'AI_NOT_CONFIGURED',
@@ -149,7 +149,7 @@ export default handleError(async (event) => {
         const data = await fetchPortfolioData();
         portfolioContext = buildPortfolioContext(data);
     } catch (err) {
-        console.warn('[AI Chat] Failed to fetch portfolio data, proceeding without context:', err);
+        logger.warn({ err: err }, '[AI Chat] Failed to fetch portfolio data, proceeding without context:');
     }
 
     const systemPrompt = `You are an AI Assistant for the personal portfolio website of
@@ -178,10 +178,10 @@ Do not restate Eka's profile unless explicitly requested.
 Always represent Eka as a fast-learning, performance-oriented developer with strong problem-solving skills.`
 
     try {
-        console.info('[AI Chat] Initializing GoogleGenAI with API key...')
+        logger.info('[AI Chat] Initializing GoogleGenAI with API key...')
         const ai = new GoogleGenAI({apiKey});
 
-        console.info('[AI Chat] Sending request to Gemini API...')
+        logger.info('[AI Chat] Sending request to Gemini API...')
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
             contents: systemPrompt
@@ -189,7 +189,7 @@ Always represent Eka as a fast-learning, performance-oriented developer with str
         const text = response.text
 
         if (!text || !text.trim()) {
-            console.warn('[AI Chat] Empty response from Gemini')
+            logger.warn('[AI Chat] Empty response from Gemini')
             throw new HttpError(
                 500,
                 "EMPTY_AI_RESPONSE",
@@ -199,7 +199,7 @@ Always represent Eka as a fast-learning, performance-oriented developer with str
 
         const htmlContent = markdownToHtml(text.trim())
 
-        console.info(`[AI Chat] Generated response (${text.length} chars) for prompt: "${prompt.substring(0, 50)}..."`)
+        logger.info(`[AI Chat] Generated response (${text.length} chars) for prompt: "${prompt.substring(0, 50)}..."`)
 
         return sendSuccess(
             event,
@@ -209,14 +209,14 @@ Always represent Eka as a fast-learning, performance-oriented developer with str
             200
         )
     } catch (error) {
-        console.error('[AI Chat] Error:', error)
+        logger.error({ err: error }, '[AI Chat] Error:')
 
         if (error instanceof HttpError) {
             throw error
         }
 
         if (error instanceof Error && error.message.includes('default credentials')) {
-            console.error('[AI Chat] Google Auth error - API key might be invalid or not properly configured')
+            logger.error('[AI Chat] Google Auth error - API key might be invalid or not properly configured')
             throw new HttpError(
                 500,
                 "GEMINI_AUTH_ERROR",

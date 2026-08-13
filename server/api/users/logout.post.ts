@@ -57,7 +57,7 @@ export default handleError(async (event) => {
         if (error instanceof HttpError) {
             throw error
         }
-        console.error('Logout error:', error)
+        logger.error({ err: error }, 'Logout error:')
         return sendError(event, 500, 'LOGOUT_ERROR', 'An error occurred during logout')
     }
 })
