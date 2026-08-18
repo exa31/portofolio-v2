@@ -116,7 +116,7 @@ const getScoreColor = (score: number) => {
   return "text-orange-400 bg-orange-400/10 border-orange-400/20";
 };
 
-watch([page, search, selectedSource, selectedStatus], () => {
+watch([search, selectedSource, selectedStatus], () => {
   if (page.value !== 1) page.value = 1;
   else fetchJobs();
 });
