@@ -18,12 +18,14 @@ defineProps<{
   projects: Project[]
 }>()
 
-const selectedProject = ref<any>(null)
+const selectedProject = ref<Project | null>(null)
 const isModalOpen = ref(false)
+const copied = ref(false)
 
-const openProjectModal = (project: any) => {
+const openProjectModal = (project: Project) => {
   selectedProject.value = project
   isModalOpen.value = true
+  copied.value = false
 }
 
 const closeModal = () => {
@@ -31,311 +33,304 @@ const closeModal = () => {
   selectedProject.value = null
 }
 
-const copyToClipboard = (text: string | undefined) => {
+const copyToClipboard = (text?: string) => {
   if (text) {
     navigator.clipboard.writeText(text)
+    copied.value = true
+    setTimeout(() => {
+      copied.value = false
+    }, 2000)
   }
 }
 </script>
 
 <template>
-  <section id="project" class="py-20" aria-labelledby="projects-heading">
-    <div class="container mx-auto px-6">
-      <!-- Header -->
+  <section id="project" class="py-24 relative overflow-hidden" aria-labelledby="projects-heading">
+    <!-- Ambient glow -->
+    <div class="absolute top-1/2 right-10 w-[600px] h-[600px] bg-indigo-600/5 blur-[160px] rounded-full pointer-events-none"></div>
+
+    <div class="container mx-auto px-4 sm:px-6">
+      
+      <!-- Section Header -->
       <Motion
-          :initial="{ opacity: 0, y: 30 }"
-          :while-in-view="{ opacity: 1, y: 0 }"
-          :viewport="{ once: true, amount: 0.3 }"
-          :transition="{ duration: 0.8, ease: 'easeOut' }"
-          class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-12 gap-6"
+        :initial="{ opacity: 0, y: 30 }"
+        :while-in-view="{ opacity: 1, y: 0 }"
+        :viewport="{ once: true, amount: 0.2 }"
+        :transition="{ duration: 0.7, ease: 'easeOut' }"
+        class="text-center max-w-3xl mx-auto mb-16"
       >
-        <div>
-          <h2 id="projects-heading" class="text-5xl lg:text-6xl font-black mb-3 leading-tight">
-            Featured
-            <span class="text-primary">Projects</span>
-          </h2>
-          <p class="text-lg text-white/50 leading-relaxed">
-            A collection of applications demonstrating my technical abilities and problem-solving skills.
-          </p>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-mono mb-4">
+          <Icon name="carbon:application-web" size="14" />
+          <span>PORTFOLIO SHOWCASE</span>
         </div>
+        <h2 id="projects-heading" class="text-3xl sm:text-4xl lg:text-5xl font-heading font-black text-white tracking-tight mb-4">
+          Featured <span class="text-gradient-primary">Engineering Projects</span>
+        </h2>
+        <p class="text-slate-400 text-base sm:text-lg font-light leading-relaxed">
+          A showcase of full-stack web applications, scalable backend microservices, and mobile products engineered for real-world reliability.
+        </p>
       </Motion>
 
       <!-- Projects Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12 projects-grid">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
         <Motion
-            v-for="(project, index) in projects"
-            :key="project.id"
-            :initial="{ opacity: 0, y: 30 }"
-            :while-in-view="{ opacity: 1, y: 0 }"
-            :viewport="{ once: true, amount: 0.1 }"
-            :transition="{ 
-              duration: 0.6, 
-              delay: (index % 3) * 0.15, 
-              ease: 'easeOut' 
-            }"
-            @click="openProjectModal(project)"
-            class="group relative overflow-hidden rounded-2xl bg-[#1a2332] border border-white/5 cursor-pointer transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 project-card"
+          v-for="(project, index) in projects"
+          :key="project.id ?? index"
+          :initial="{ opacity: 0, y: 30 }"
+          :while-in-view="{ opacity: 1, y: 0 }"
+          :viewport="{ once: true, amount: 0.1 }"
+          :transition="{
+            duration: 0.6,
+            delay: (index % 3) * 0.12,
+            ease: 'easeOut'
+          }"
+          @click="openProjectModal(project)"
+          class="group rounded-3xl bg-[#090e1a]/80 border border-white/10 overflow-hidden cursor-pointer backdrop-blur-xl transition-all duration-300 hover:border-blue-500/40 hover:shadow-2xl hover:shadow-blue-500/10 flex flex-col justify-between"
         >
-          <!-- Image -->
-          <div class="relative h-56 bg-linear-to-b from-white/5 to-transparent overflow-hidden">
+          <!-- Project Banner Image -->
+          <div class="relative h-56 w-full overflow-hidden bg-slate-900">
             <NuxtImg
-                :src="project.image"
-                :alt="project.title"
-                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              :src="project.image || '/images/project-preview.webp'"
+              :alt="project.title"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+              loading="lazy"
             />
-            <!-- Overlay -->
-            <div class="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-[#090e1a] via-[#090e1a]/30 to-transparent"></div>
+
+            <!-- Top Live / Status Badge -->
+            <div class="absolute top-4 left-4 right-4 flex items-center justify-between">
+              <span
+                v-if="project.liveUrl"
+                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/30 text-emerald-400 text-xs font-mono backdrop-blur-md"
+              >
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>Live App</span>
+              </span>
+              <span
+                v-else
+                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900/80 border border-white/10 text-slate-300 text-xs font-mono backdrop-blur-md"
+              >
+                <span>Case Study</span>
+              </span>
+
+              <!-- Hover explore icon -->
+              <div class="w-8 h-8 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300">
+                <Icon name="carbon:arrow-up-right" size="16" />
+              </div>
+            </div>
           </div>
 
-          <!-- Content -->
-          <div class="p-6">
-            <!-- Title and link -->
-            <div class="flex items-start justify-between mb-3">
-              <h3 class="text-xl font-bold text-white group-hover:text-primary transition-colors">
+          <!-- Project Details Container -->
+          <div class="p-6 flex-1 flex flex-col justify-between">
+            <div>
+              <h3 class="text-xl font-heading font-bold text-white group-hover:text-blue-400 transition-colors mb-2">
                 {{ project.title }}
               </h3>
-              <Icon name="tabler:external-link" size="20"
-                    class="text-white/50 group-hover:text-primary transition-colors opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0"/>
+
+              <p class="text-slate-400 text-sm leading-relaxed mb-6 line-clamp-2 font-light">
+                {{ project.shortDesc || project.description }}
+              </p>
             </div>
 
-            <!-- Description -->
-            <p class="text-sm text-white/60 mb-4 line-clamp-2">{{ project.shortDesc }}</p>
-
-            <!-- Tech badges -->
-            <div class="flex flex-wrap gap-2">
+            <!-- Technology Chips -->
+            <div class="pt-4 border-t border-white/[0.06] flex flex-wrap gap-1.5">
               <span
-                  v-for="tech in project.technologies"
-                  :key="tech"
-                  class="inline-block px-2 py-1 text-xs font-medium text-white/60 bg-white/5 border border-white/10 rounded-md group-hover:bg-primary/10 group-hover:border-primary/30 group-hover:text-primary transition-all"
+                v-for="tech in project.technologies.slice(0, 4)"
+                :key="tech"
+                class="px-2.5 py-1 rounded-md text-[11px] font-mono font-medium bg-white/[0.03] text-slate-300 border border-white/[0.08] group-hover:border-blue-500/20 group-hover:bg-blue-500/5 transition-colors"
               >
                 {{ tech }}
+              </span>
+              <span
+                v-if="project.technologies.length > 4"
+                class="px-2 py-1 rounded-md text-[11px] font-mono text-slate-500 bg-white/[0.02]"
+              >
+                +{{ project.technologies.length - 4 }}
               </span>
             </div>
           </div>
         </Motion>
       </div>
+
     </div>
-  </section>
 
-  <!-- Project Modal -->
-  <UModal v-model:open="isModalOpen"
-          :ui="{content:'w-full max-w-5xl',header:'px-6 sm:px-12 py-4 sm:py-8',body:'p-0',footer:'p-0'}">
-    <template #title>
-      <h2 class="text-2xl sm:text-3xl font-black text-white mb-1 sm:mb-2 wrap-break-word">{{
-          selectedProject?.title
-        }}</h2>
-    </template>
-    <template #description>
-      <p class="text-xs sm:text-sm text-white/50">Featured Project</p>
-    </template>
+    <!-- Project Details Modal -->
+    <UModal
+      v-model:open="isModalOpen"
+      :ui="{
+        content: 'w-full max-w-4xl bg-[#090e1a] border border-white/15 shadow-2xl rounded-3xl overflow-hidden',
+        header: 'p-6 sm:p-8 bg-[#0c1424] border-b border-white/10',
+        body: 'p-6 sm:p-8 max-h-[70vh] overflow-y-auto',
+        footer: 'p-4 sm:p-6 bg-[#0c1424] border-t border-white/10'
+      }"
+    >
+      <template #title>
+        <div class="flex flex-col gap-1">
+          <span class="text-xs font-mono text-blue-400 uppercase tracking-wider">PROJECT DEEP DIVE</span>
+          <h2 class="text-2xl sm:text-3xl font-heading font-black text-white">
+            {{ selectedProject?.title }}
+          </h2>
+        </div>
+      </template>
 
-    <template #body>
-      <!-- Content Area -->
-      <div class="overflow-y-auto flex-1">
-        <div class="mx-auto px-4 sm:px-8 py-8 sm:py-16">
-          <!-- Project Details -->
-          <div class="space-y-12 sm:space-y-20">
-            <!-- Image with Decorative Elements -->
-            <div class="relative group">
-              <div
-                  class="absolute -inset-2 bg-linear-to-r from-primary/30 via-primary/10 to-primary/30 rounded-3xl blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-              <div
-                  class="relative h-64 sm:h-96 md:h-112.5 bg-linear-to-br from-[#1a2a3a] via-[#0f1a28] to-[#050f18] rounded-3xl overflow-hidden shadow-2xl border border-white/15">
-                <NuxtImg
-                    :src="selectedProject?.image"
-                    :alt="selectedProject?.title"
-                    class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                />
-                <div class="absolute inset-0 bg-linear-to-t from-black/70 via-black/30 to-transparent"></div>
-                <div
-                    class="absolute inset-0 bg-linear-to-r from-black/50 via-transparent to-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+      <template #body>
+        <div class="space-y-8">
+          <!-- Featured Image Display -->
+          <div class="relative rounded-2xl overflow-hidden border border-white/10 bg-slate-900">
+            <NuxtImg
+              :src="selectedProject?.image || '/images/project-preview.webp'"
+              :alt="selectedProject?.title"
+              class="w-full h-64 sm:h-80 object-cover"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-[#090e1a] via-transparent to-transparent"></div>
+          </div>
+
+          <!-- Quick Metrics Bar -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="p-4 rounded-xl bg-white/[0.03] border border-white/10 flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0">
+                <Icon name="carbon:code" size="20" />
+              </div>
+              <div>
+                <p class="text-[10px] font-mono uppercase text-slate-400">Stack</p>
+                <p class="text-xs sm:text-sm font-semibold text-white">{{ selectedProject?.technologies.length || 0 }} Technologies</p>
               </div>
             </div>
 
-            <!-- Quick Info Bar -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-              <div
-                  class="group bg-linear-to-br from-white/10 to-white/5 border border-white/15 rounded-2xl p-4 sm:p-6 hover:border-primary/50 hover:from-primary/20 hover:to-primary/10 transition-all duration-300">
-                <div class="flex items-center justify-between mb-3">
-                  <p class="text-xs text-white/60 uppercase font-bold tracking-widest">Technologies</p>
-                  <Icon name="tabler:code" size="18"
-                        class="sm:w-5 sm:h-5 text-primary/60 group-hover:text-primary transition-colors"/>
-                </div>
-                <p class="text-2xl sm:text-3xl text-primary font-black">{{ selectedProject?.technologies.length }}</p>
-                <p class="text-xs text-white/40 mt-2">Tools & Technologies</p>
+            <div class="p-4 rounded-xl bg-white/[0.03] border border-white/10 flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 shrink-0">
+                <Icon name="carbon:star" size="20" />
               </div>
-              <div
-                  class="group bg-linear-to-br from-white/10 to-white/5 border border-white/15 rounded-2xl p-4 sm:p-6 hover:border-primary/50 hover:from-primary/20 hover:to-primary/10 transition-all duration-300">
-                <div class="flex items-center justify-between mb-3">
-                  <p class="text-xs text-white/60 uppercase font-bold tracking-widest">Features</p>
-                  <Icon name="tabler:sparkles" size="18"
-                        class="sm:w-5 sm:h-5 text-primary/60 group-hover:text-primary transition-colors"/>
-                </div>
-                <p class="text-2xl sm:text-3xl text-primary font-black">{{ selectedProject?.features.length }}</p>
-                <p class="text-xs text-white/40 mt-2">Key Features</p>
-              </div>
-              <div
-                  class="group bg-linear-to-br from-white/10 to-white/5 border border-white/15 rounded-2xl p-4 sm:p-6 hover:border-green-500/50 hover:from-green-500/20 hover:to-green-500/10 transition-all duration-300">
-                <div class="flex items-center justify-between mb-3">
-                  <p class="text-xs text-white/60 uppercase font-bold tracking-widest">Status</p>
-                  <Icon name="tabler:circle-check-filled" size="18" class="sm:w-5 sm:h-5"
-                        :class="selectedProject?.liveUrl ? 'text-green-400' : 'text-yellow-400'"/>
-                </div>
-                <p class="text-2xl sm:text-3xl font-black"
-                   :class="selectedProject?.liveUrl ? 'text-green-400' : 'text-yellow-400'">
-                  {{ selectedProject?.liveUrl ? 'Published' : 'Draft' }}</p>
-                <p class="text-xs text-white/40 mt-2">{{
-                    selectedProject?.liveUrl ? 'Online & Running' : 'In Portfolio'
-                  }}</p>
+              <div>
+                <p class="text-[10px] font-mono uppercase text-slate-400">Features</p>
+                <p class="text-xs sm:text-sm font-semibold text-white">{{ selectedProject?.features.length || 0 }} Key Features</p>
               </div>
             </div>
 
-            <!-- Tech Stack -->
-            <div>
-              <div class="flex items-center gap-3 mb-4 sm:mb-6">
-                <div class="w-2 h-8 bg-linear-to-b from-primary to-primary/50 rounded-full"></div>
-                <h3 class="text-xl sm:text-2xl font-black text-white">Technology Stack</h3>
+            <div class="p-4 rounded-xl bg-white/[0.03] border border-white/10 flex items-center gap-3">
+              <div 
+                class="w-10 h-10 rounded-lg border flex items-center justify-center shrink-0"
+                :class="selectedProject?.liveUrl ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-slate-500/10 border-slate-500/20 text-slate-400'"
+              >
+                <Icon :name="selectedProject?.liveUrl ? 'carbon:network-4' : 'carbon:document'" size="20" />
               </div>
-              <div
-                  class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4 p-4 sm:p-6 md:p-8 bg-linear-to-br from-white/10 to-white/5 border border-white/15 rounded-2xl">
-                <span
-                    v-for="tech in selectedProject?.technologies"
-                    :key="tech"
-                    class="px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm font-bold text-primary bg-primary/15 border border-primary/40 rounded-lg hover:bg-primary/30 hover:border-primary/70 hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 text-center cursor-default group hover:scale-105 truncate"
-                >
-                  {{ tech }}
-                </span>
+              <div>
+                <p class="text-[10px] font-mono uppercase text-slate-400">Status</p>
+                <p class="text-xs sm:text-sm font-semibold text-white">{{ selectedProject?.liveUrl ? 'Live Production' : 'Completed Project' }}</p>
               </div>
-            </div>
-
-            <!-- Overview -->
-            <div>
-              <div class="flex items-center gap-3 mb-4 sm:mb-6">
-                <div class="w-2 h-8 bg-linear-to-b from-primary to-primary/50 rounded-full"></div>
-                <h3 class="text-xl sm:text-2xl font-black text-white">Project Overview</h3>
-              </div>
-              <div class="bg-linear-to-br from-white/10 to-white/5 border border-white/15 rounded-2xl p-4 sm:p-10">
-                <p class="text-white/85 leading-relaxed text-sm sm:text-lg">{{ selectedProject?.details }}</p>
-              </div>
-            </div>
-
-            <!-- Key Features -->
-            <div>
-              <div class="flex items-center gap-3 mb-4 sm:mb-6">
-                <div class="w-2 h-8 bg-linear-to-b from-primary to-primary/50 rounded-full"></div>
-                <h3 class="text-xl sm:text-2xl font-black text-white">Key Features</h3>
-              </div>
-              <ul class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-5">
-                <li
-                    v-for="feature in selectedProject?.features"
-                    :key="feature"
-                    class="flex items-start gap-3 sm:gap-4 p-3 sm:p-6 rounded-xl bg-linear-to-r from-white/10 via-white/5 to-transparent border border-white/15 hover:border-primary/50 hover:from-primary/20 hover:via-primary/10 transition-all duration-300 group cursor-default"
-                >
-                  <Icon name="tdesign:check-circle-filled" size="20"
-                        class="sm:w-6 sm:h-6 text-primary shrink-0  group-hover:scale-125 transition-transform"/>
-                  <span class="text-white/85 group-hover:text-white transition-colors text-sm sm:text-base">{{
-                      feature
-                    }}</span>
-                </li>
-              </ul>
-            </div>
-
-            <!-- Live Preview Section -->
-            <div v-if="selectedProject?.liveUrl" class="border-t border-white/10 pt-12 sm:pt-20">
-              <div class="flex items-center gap-3 mb-4 sm:mb-6">
-                <div class="w-2 h-8 bg-linear-to-b from-blue-500 to-blue-500/50 rounded-full"></div>
-                <h3 class="text-xl sm:text-2xl font-black text-white">Live Preview</h3>
-              </div>
-              <div class="space-y-4 sm:space-y-6">
-                <!-- Preview Info -->
-                <div
-                    class="bg-linear-to-r from-blue-500/20 via-blue-500/10 to-blue-500/5 border border-blue-500/40 rounded-2xl p-4 sm:p-7 flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 hover:border-blue-500/70 hover:from-blue-500/30 transition-all duration-300">
-                  <Icon name="tabler:info-circle-filled" size="20" class="sm:w-6 sm:h-6 text-blue-300 shrink-0 mt-1"/>
-                  <p class="text-xs sm:text-base text-blue-200 font-medium leading-relaxed">
-                    Klik tombol di bawah untuk membuka aplikasi live di tab baru. Aplikasi ini siap untuk digunakan dan
-                    menunjukkan hasil kerja terbaik saya.
-                  </p>
-                </div>
-
-                <!-- URL Display with Copy -->
-                <div
-                    class="bg-linear-to-br from-white/10 to-white/5 border border-white/15 rounded-2xl p-3 sm:p-7 hover:border-white/30 transition-all duration-300 group">
-                  <div class="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-4">
-                    <Icon name="tabler:link-check" size="20"
-                          class="sm:w-7 sm:h-7 text-primary shrink-0 group-hover:scale-110 transition-transform"/>
-                    <div class="flex-1 min-w-0">
-                      <p class="text-xs text-white/50 uppercase mb-2 font-bold tracking-widest">Live URL</p>
-                      <p class="text-xs sm:text-sm text-white/70 break-all font-mono bg-black/40 rounded-lg px-3 py-2">
-                        {{ selectedProject?.liveUrl }}</p>
-                    </div>
-                    <UButton
-                        color="neutral"
-                        variant="ghost"
-                        icon="i-heroicons-clipboard-document"
-                        size="lg"
-                        class="text-white/50 hover:text-white hover:bg-white/10 shrink-0 transition-all w-full sm:w-auto"
-                        @click="copyToClipboard(selectedProject?.liveUrl)"
-                    />
-                  </div>
-                </div>
-
-                <!-- Open Button -->
-                <UButton
-                    :to="selectedProject?.liveUrl"
-                    target="_blank"
-                    external
-                    block
-                    color="primary"
-                    size="xl"
-                    class="bg-linear-to-r from-primary text-white via-blue-600 to-primary hover:shadow-2xl hover:shadow-primary/30 w-full font-bold py-3 sm:py-4 text-sm sm:text-base"
-                >
-                  <template #leading>
-                    <Icon name="tabler:external-link" size="18" class="sm:w-6 sm:h-6"/>
-                  </template>
-                  Buka Aplikasi Live
-                </UButton>
-              </div>
-            </div>
-
-            <!-- No Preview Available -->
-            <div v-else class="border-t border-white/10 pt-12 sm:pt-20 text-center">
-              <Icon name="tabler:world-off" size="48" class="sm:w-16 sm:h-16 text-white/20 mx-auto mb-4 sm:mb-6"/>
-              <p class="text-white/60 font-semibold text-base sm:text-lg">Live preview belum tersedia untuk project
-                ini</p>
-              <p class="text-white/40 text-xs sm:text-sm mt-2">Namun Anda masih dapat melihat kode di GitHub</p>
             </div>
           </div>
-        </div>
-      </div>
-    </template>
 
-    <template #footer>
-      <div class="px-4 sm:px-8 py-4 sm:py-6 flex w-full justify-end gap-2 sm:gap-3">
-        <UButton
-            :to="selectedProject?.link"
-            target="_blank"
-            external
+          <!-- Project Overview Description -->
+          <div>
+            <h3 class="text-sm font-mono uppercase text-slate-400 tracking-wider mb-2 flex items-center gap-2">
+              <Icon name="carbon:align-box-top-left" size="16" class="text-blue-400" />
+              <span>Project Architecture & Overview</span>
+            </h3>
+            <div class="p-5 rounded-2xl bg-white/[0.02] border border-white/10">
+              <p class="text-slate-200 text-sm sm:text-base leading-relaxed font-light">
+                {{ selectedProject?.details || selectedProject?.description }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Key Features Checklist -->
+          <div v-if="selectedProject?.features?.length">
+            <h3 class="text-sm font-mono uppercase text-slate-400 tracking-wider mb-3 flex items-center gap-2">
+              <Icon name="carbon:checkbox-checked" size="16" class="text-emerald-400" />
+              <span>Key Features & Functional Highlights</span>
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div
+                v-for="(feature, idx) in selectedProject?.features"
+                :key="idx"
+                class="flex items-start gap-3 p-3.5 rounded-xl bg-white/[0.02] border border-white/10"
+              >
+                <Icon name="carbon:checkmark-filled" size="18" class="text-emerald-400 shrink-0 mt-0.5" />
+                <span class="text-xs sm:text-sm text-slate-200 leading-relaxed">{{ feature }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tech Stack Badges -->
+          <div v-if="selectedProject?.technologies?.length">
+            <h3 class="text-sm font-mono uppercase text-slate-400 tracking-wider mb-3 flex items-center gap-2">
+              <Icon name="carbon:terminal" size="16" class="text-cyan-400" />
+              <span>Built With</span>
+            </h3>
+            <div class="flex flex-wrap gap-2 p-4 rounded-2xl bg-white/[0.02] border border-white/10">
+              <span
+                v-for="tech in selectedProject?.technologies"
+                :key="tech"
+                class="px-3 py-1.5 rounded-lg text-xs font-mono font-medium bg-blue-500/10 text-blue-300 border border-blue-500/30"
+              >
+                {{ tech }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Live Preview Link Bar -->
+          <div v-if="selectedProject?.liveUrl" class="p-4 rounded-2xl bg-blue-500/5 border border-blue-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0">
+                <Icon name="carbon:link" size="20" />
+              </div>
+              <div class="min-w-0">
+                <p class="text-[10px] font-mono uppercase text-blue-300">Live URL</p>
+                <p class="text-xs font-mono text-slate-300 truncate max-w-xs sm:max-w-md">{{ selectedProject.liveUrl }}</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button
+                @click="copyToClipboard(selectedProject?.liveUrl)"
+                class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-xs font-mono text-slate-300 flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <Icon :name="copied ? 'carbon:checkmark' : 'carbon:copy'" size="14" :class="copied ? 'text-emerald-400' : 'text-slate-400'" />
+                <span>{{ copied ? 'Copied!' : 'Copy' }}</span>
+              </button>
+
+              <a
+                :href="selectedProject.liveUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn-shimmer-primary px-4 py-2 rounded-xl text-xs font-semibold text-white flex items-center gap-1.5 cursor-pointer"
+              >
+                <span>Launch Live</span>
+                <Icon name="carbon:arrow-up-right" size="14" />
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </template>
+
+      <template #footer>
+        <div class="flex items-center justify-between w-full">
+          <a
             v-if="selectedProject?.link"
-            color="primary"
-            size="lg"
-            class="bg-primary text-white hover:brightness-110 font-bold rounded-lg text-sm sm:text-base"
-        >
-          <template #leading>
-            <Icon name="tabler:brand-github" size="18" class="sm:w-5 sm:h-5"/>
-          </template>
-          View on GitHub
-        </UButton>
-        <UButton
+            :href="selectedProject.link"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn-glass-secondary px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-white flex items-center gap-2"
+          >
+            <Icon name="line-md:github" size="18" />
+            <span>View Source Code</span>
+          </a>
+          <span v-else></span>
+
+          <UButton
             color="neutral"
             variant="outline"
-            size="lg"
+            size="md"
             @click="closeModal"
-            class="shrink-0 hover:bg-white/10 cursor-pointer font-semibold rounded-lg px-4 sm:px-6 text-sm sm:text-base"
-        >
-          Close
-        </UButton>
-      </div>
-    </template>
-  </UModal>
-</template>
+            class="rounded-xl px-5 cursor-pointer text-slate-300 hover:text-white"
+          >
+            Close
+          </UButton>
+        </div>
+      </template>
+    </UModal>
 
+  </section>
+</template>

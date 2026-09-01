@@ -2,24 +2,186 @@
 @import "@nuxt/ui";
 
 @theme {
-    /* Light mode */
-    --color-primary: #135bec;
-    --color-primary-dark: #101c35;
-    --color-secondary: #f5f5f5;
-    --color-tertiary: #F6D0B1;
-    --color-text-primary: #135bec;
-    --color-text-secondary: #424141;
-    --color-warn: #F9F5BD;
-    --color-danger: #DC4747;
-    --color-text-warn: #F9F5BD;
-    --color-text-danger: #DC4747;
+    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-display: 'Space Grotesk', 'Plus Jakarta Sans', sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+    /* Theme Palette */
+    --color-primary: #3b82f6;
+    --color-primary-dark: #1d4ed8;
+    --color-secondary: #0f172a;
+    --color-tertiary: #38bdf8;
+    --color-text-primary: #60a5fa;
+    --color-text-secondary: #94a3b8;
+    --color-warn: #fbbf24;
+    --color-danger: #f87171;
+    --color-accent-cyan: #06b6d4;
+    --color-accent-violet: #8b5cf6;
+    --color-accent-emerald: #10b981;
 }
 
-* {
-    font-family: sans-serif;
-
+:root {
+    font-family: var(--font-sans);
+    color-scheme: dark;
 }
 
 html {
     scroll-behavior: smooth;
+    background-color: #030712;
+}
+
+body {
+    background-color: #030712;
+    color: #f8fafc;
+    overflow-x: hidden;
+    font-family: var(--font-sans);
+}
+
+h1, h2, h3, .font-heading {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+}
+
+code, pre, .font-code {
+    font-family: var(--font-mono);
+}
+
+/* ========== CYBER GRID & AMBIENT TEXTURES ========== */
+.cyber-grid-pattern {
+    background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(ellipse 60% 50% at 50% 0%, #000 70%, transparent 100%);
+    -webkit-mask-image: radial-gradient(ellipse 60% 50% at 50% 0%, #000 70%, transparent 100%);
+}
+
+.dot-pattern {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: 24px 24px;
+}
+
+/* ========== GLASSMORPHISM & BORDERS ========== */
+.glass-panel {
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-panel-interactive {
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-panel-interactive:hover {
+    background: rgba(30, 41, 59, 0.7);
+    border-color: rgba(96, 165, 250, 0.35);
+    box-shadow: 0 10px 30px -10px rgba(59, 130, 246, 0.2);
+    transform: translateY(-2px);
+}
+
+/* ========== TEXT GRADIENTS ========== */
+.text-gradient-primary {
+    background: linear-gradient(135deg, #ffffff 20%, #93c5fd 60%, #3b82f6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-cyan {
+    background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-sunset {
+    background: linear-gradient(135deg, #fb923c 0%, #f43f5e 50%, #ec4899 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* ========== SHIMMER & GLOW BUTTONS ========== */
+.btn-shimmer-primary {
+    position: relative;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    box-shadow: 0 0 20px rgba(37, 99, 235, 0.35);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.btn-shimmer-primary::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        60deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    transform: rotate(30deg) translateY(-100%);
+    transition: transform 0.75s ease;
+}
+
+.btn-shimmer-primary:hover {
+    box-shadow: 0 0 30px rgba(37, 99, 235, 0.55);
+    transform: translateY(-2px);
+}
+
+.btn-shimmer-primary:hover::before {
+    transform: rotate(30deg) translateY(100%);
+}
+
+.btn-glass-secondary {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(12px);
+    transition: all 0.3s ease;
+}
+
+.btn-glass-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+}
+
+/* ========== RADAR PULSE ANIMATION ========== */
+@keyframes radar-ripple {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.9;
+    }
+    100% {
+        transform: scale(2.4);
+        opacity: 0;
+    }
+}
+
+.radar-ping {
+    animation: radar-ripple 2s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+}
+
+/* ========== CUSTOM SCROLLBAR ========== */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #030712;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(59, 130, 246, 0.4);
 }

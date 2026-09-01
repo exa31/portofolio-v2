@@ -76,7 +76,7 @@ const projects = computed(() => {
     title: p.name,
     shortDesc: p.description || "",
     description: p.description || "",
-    image: p.preview_image || "/images/hero.webp",
+    image: p.preview_image || "/images/project-preview.webp",
     technologies: p.technologies || [],
     link: p.repo_url,
     liveUrl: p.live_url,
@@ -112,7 +112,7 @@ const experiences = computed(() => {
     attachment: journey.attachments || null,
   }));
 });
-console.log(useRuntimeConfig().public);
+
 useHead({
   title: "Eka - Full Stack Developer | Vue.js, React, Node.js & Mobile Expert",
   htmlAttrs: {
@@ -343,14 +343,19 @@ const totalExperienceYears = computed(() => {
 </script>
 
 <template>
-  <div class="text-white">
+  <div class="relative">
     <!-- Hero Section -->
-    <main class="container mx-auto px-6 py-20 overflow-hidden">
+    <div class="relative overflow-hidden">
       <HeroSection :user="user" />
-    </main>
+    </div>
+
+    <!-- Section Divider Line -->
+    <div class="container mx-auto px-6">
+      <div class="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+    </div>
 
     <!-- About Section -->
-    <div class="overflow-hidden">
+    <div class="relative overflow-hidden">
       <AboutSection
         :user="user"
         :count_projects="projects.length"
@@ -358,86 +363,52 @@ const totalExperienceYears = computed(() => {
       />
     </div>
 
+    <!-- Section Divider Line -->
+    <div class="container mx-auto px-6">
+      <div class="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+    </div>
+
     <!-- Skills Section -->
-    <div>
+    <div class="relative overflow-hidden">
       <SkillsSection :skills="skills" />
     </div>
 
+    <!-- Section Divider Line -->
+    <div class="container mx-auto px-6">
+      <div class="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+    </div>
+
     <!-- Journey Section -->
-    <div>
+    <div class="relative overflow-hidden">
       <JourneySection :experiences="experiences" />
     </div>
 
+    <!-- Section Divider Line -->
+    <div class="container mx-auto px-6">
+      <div class="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+    </div>
+
     <!-- Projects Section -->
-    <div>
+    <div class="relative overflow-hidden">
       <ProjectsSection :projects="projects" />
     </div>
 
+    <!-- Section Divider Line -->
+    <div class="container mx-auto px-6">
+      <div class="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+    </div>
+
     <!-- Contact Section -->
-    <div class="overflow-hidden">
+    <div class="relative overflow-hidden">
       <ContactSection :user="user" />
     </div>
 
     <!-- Footer Section -->
-    <div class="overflow-hidden">
+    <div class="relative overflow-hidden">
       <FooterSection />
     </div>
 
-    <!-- AI Assistant Section -->
+    <!-- AI Assistant Widget -->
     <AIAssistant />
   </div>
 </template>
-
-<style scoped>
-/* ========== ANIMATIONS ========== */
-@keyframes scroll-dot {
-  0% {
-    transform: translateY(0);
-    opacity: 0;
-  }
-  30% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(12px);
-    opacity: 0;
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* ========== UTILITY CLASSES ========== */
-.animate-scroll-dot {
-  animation: scroll-dot 1.8s infinite;
-}
-
-/* ========== BUTTON STYLES ========== */
-.primary-cta-btn {
-  background: linear-gradient(135deg, #1e7fff 0%, #2196f3 50%, #0d47a1 100%);
-  box-shadow: 0 10px 35px rgba(30, 127, 255, 0.3);
-  transition: all 0.3s ease;
-}
-
-.primary-cta-btn:hover {
-  box-shadow: 0 15px 45px rgba(30, 127, 255, 0.4);
-  transform: translateY(-2px);
-}
-</style>

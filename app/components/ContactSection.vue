@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import type {UserSettingsModel} from "~/types/settings";
+import type { UserSettingsModel } from "~/types/settings";
 import { ref } from 'vue'
 
-defineProps<
-    {
-      user?: UserSettingsModel | null
-    }
->()
+const props = defineProps<{
+  user?: UserSettingsModel | null;
+}>()
 
 const formData = ref({
   name: '',
@@ -15,7 +13,19 @@ const formData = ref({
   message: ''
 })
 
-const {createMessage, isSaving} = useMessage()
+const emailCopied = ref(false)
+const submitSuccess = ref(false)
+
+const { createMessage, isSaving } = useMessage()
+
+const copyEmail = () => {
+  const email = props.user?.email || 'contact@eka-dev.cloud'
+  navigator.clipboard.writeText(email)
+  emailCopied.value = true
+  setTimeout(() => {
+    emailCopied.value = false
+  }, 2000)
+}
 
 const submitForm = async () => {
   try {
@@ -27,8 +37,11 @@ const submitForm = async () => {
     })
 
     if (success) {
-      // Reset form after successful submission
-      formData.value = {name: '', email: '', subject: '', message: ''}
+      formData.value = { name: '', email: '', subject: '', message: '' }
+      submitSuccess.value = true
+      setTimeout(() => {
+        submitSuccess.value = false
+      }, 5000)
     }
   } catch (error) {
     console.error('Failed to send message:', error)
@@ -37,169 +50,192 @@ const submitForm = async () => {
 </script>
 
 <template>
-  <section id="contact" class=" bg-linear-to-b min-h-196.25 py-24 from-[#071026] to-[#071023]"
-           aria-labelledby="contact-heading">
-    <div class="container mx-auto px-6">
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-        <!-- Left Column -->
+  <section id="contact" class="py-24 relative overflow-hidden" aria-labelledby="contact-heading">
+    <!-- Ambient background aura -->
+    <div class="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-blue-600/5 blur-[160px] rounded-full pointer-events-none"></div>
+
+    <div class="container mx-auto px-4 sm:px-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start max-w-6xl mx-auto">
+        
+        <!-- Left Column: Contact Channels & Info (5 cols) -->
         <Motion
-            :initial="{ opacity: 0, x: -50 }"
-            :while-in-view="{ opacity: 1, x: 0 }"
-            :viewport="{ once: true, amount: 0.3 }"
-            :transition="{ duration: 0.8, ease: 'easeOut' }"
-            class="space-y-8 contact-info-reveal"
+          :initial="{ opacity: 0, x: -30 }"
+          :while-in-view="{ opacity: 1, x: 0 }"
+          :viewport="{ once: true, amount: 0.2 }"
+          :transition="{ duration: 0.8, ease: 'easeOut' }"
+          class="lg:col-span-5 space-y-6"
         >
-          <header>
-            <p class="text-primary text-sm font-semibold mb-2 flex items-center gap-2">
-              <Icon name="carbon:email" size="16"/>
-              GET IN TOUCH
+          <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-mono mb-4">
+              <Icon name="carbon:chat" size="14" />
+              <span>GET IN TOUCH</span>
+            </div>
+            
+            <h2 id="contact-heading" class="text-3xl sm:text-4xl font-heading font-black text-white tracking-tight mb-4">
+              Let's Build Something <span class="text-gradient-cyan">Remarkable</span>.
+            </h2>
+            
+            <p class="text-slate-400 text-sm sm:text-base font-light leading-relaxed">
+              Have an ambitious project, an engineering challenge, or a full-time role? I'm always open to discussing new opportunities and strategic collaborations.
             </p>
-            <h2 id="contact-heading" class="text-4xl md:text-5xl font-bold text-white mb-4">Let's build something
-              together.</h2>
-            <p class="text-white/60 text-lg leading-relaxed">
-              Have a project in mind, looking to hire, or just want to chat about the latest tech? I'm currently open to
-              new opportunities and collaborations.
-            </p>
-          </header>
+          </div>
 
-          <!-- Contact Info Cards -->
-          <address class="space-y-4 not-italic">
+          <!-- Contact Cards -->
+          <div class="space-y-3.5">
             <!-- Email Card -->
-            <div
-                class="group bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-6 hover:border-primary/50 transition-all duration-300">
+            <div class="glass-panel-interactive rounded-2xl p-5 group flex items-start justify-between gap-4">
               <div class="flex items-start gap-4">
-                <div
-                    class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
-                  <Icon name="carbon:email" size="24" class="text-primary"/>
+                <div class="w-11 h-11 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0 group-hover:scale-105 transition-transform">
+                  <Icon name="carbon:email" size="22" />
                 </div>
-                <div class="flex-1">
-                  <p class="text-xs text-white/50 font-semibold mb-1">MAIL ME AT</p>
-                  <a :href="`mailto:${user?.email || ''}`"
-                     class="text-white font-medium hover:text-primary transition-colors">{{
-                      user?.email || ''
-                    }}</a>
-                  <button
-                      class="text-primary text-sm hover:text-primary/80 transition-colors mt-2 flex items-center gap-1"
-                      aria-label="Copy email to clipboard">
-                    <Icon name="carbon:copy" size="14"/>
-                    Copy
-                  </button>
+                <div class="min-w-0">
+                  <p class="text-[10px] font-mono uppercase text-slate-400">Direct Email</p>
+                  <a
+                    :href="`mailto:${user?.email || 'contact@eka-dev.cloud'}`"
+                    class="text-sm font-semibold text-white hover:text-blue-400 transition-colors truncate block"
+                  >
+                    {{ user?.email || 'contact@eka-dev.cloud' }}
+                  </a>
+                  <p class="text-[11px] text-slate-500 mt-0.5">Quick response guaranteed</p>
+                </div>
+              </div>
+
+              <button
+                @click="copyEmail"
+                class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 text-xs font-mono text-slate-300 flex items-center gap-1 transition-colors cursor-pointer shrink-0"
+                aria-label="Copy email"
+              >
+                <Icon :name="emailCopied ? 'carbon:checkmark' : 'carbon:copy'" size="13" :class="emailCopied ? 'text-emerald-400' : 'text-slate-400'" />
+                <span>{{ emailCopied ? 'Copied' : 'Copy' }}</span>
+              </button>
+            </div>
+
+            <!-- Location & Availability Card -->
+            <div class="glass-panel-interactive rounded-2xl p-5 flex items-start gap-4">
+              <div class="w-11 h-11 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 shrink-0">
+                <Icon name="carbon:location" size="22" />
+              </div>
+              <div>
+                <p class="text-[10px] font-mono uppercase text-slate-400">Location & Timezone</p>
+                <p class="text-sm font-semibold text-white">{{ user?.location || 'Indonesia (GMT+7)' }}</p>
+                <div class="flex items-center gap-2 mt-1.5">
+                  <span class="relative flex h-2 w-2">
+                    <span class="radar-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                  <span class="text-xs text-slate-400 font-mono">Available for Remote Worldwide</span>
                 </div>
               </div>
             </div>
 
-            <!-- Location Card -->
-            <div
-                class="group bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-6 hover:border-primary/50 transition-all duration-300">
-              <div class="flex items-start gap-4">
-                <div
-                    class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
-                  <Icon name="carbon:location" size="24" class="text-primary"/>
-                </div>
-                <div class="flex-1">
-                  <p class="text-xs text-white/50 font-semibold mb-1">BASED IN</p>
-                  <p class="text-white font-medium">{{
-                      user?.location
-                    }}</p>
-                  <div class="flex items-center gap-2 mt-2">
-                    <template v-if="user?.open_to_opportunities">
-
-                      <div class="w-2 h-2 rounded-full bg-green-500" aria-hidden="true"></div>
-                      <span class="text-xs text-white/50">Currently Available</span>
-                    </template>
-                    <template v-else>
-                      <div class="w-2 h-2 rounded-full bg-red-500" aria-hidden="true"></div>
-                      <span class="text-xs text-white/50">Not Available</span>
-                    </template>
-                  </div>
-                </div>
-              </div>
+            <!-- Response Guarantee Badge -->
+            <div class="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.06] flex items-center gap-3">
+              <Icon name="carbon:flash" size="20" class="text-amber-400 shrink-0" />
+              <p class="text-xs text-slate-400">
+                Typically responds within <strong class="text-slate-200">24 hours</strong>.
+              </p>
             </div>
-          </address>
+          </div>
         </Motion>
 
+        <!-- Right Column: Interactive Contact Form (7 cols) -->
         <Motion
-            :initial="{ opacity: 0, x: 50 }"
-            :while-in-view="{ opacity: 1, x: 0 }"
-            :viewport="{ once: true, amount: 0.3 }"
-            :transition="{ duration: 0.8, ease: 'easeOut' }"
-            class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 hover:border-white/20 transition-all duration-300 contact-form-reveal"
+          :initial="{ opacity: 0, x: 30 }"
+          :while-in-view="{ opacity: 1, x: 0 }"
+          :viewport="{ once: true, amount: 0.2 }"
+          :transition="{ duration: 0.8, ease: 'easeOut' }"
+          class="lg:col-span-7"
         >
-          <form @submit.prevent="submitForm" class="space-y-6" aria-label="Contact form">
-            <!-- Name & Email Row -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label for="contact-name" class="block text-sm text-white/70 font-medium mb-2">Name</label>
-                <input
+          <div class="rounded-3xl bg-[#090e1a]/90 border border-white/10 p-6 sm:p-8 backdrop-blur-2xl shadow-2xl relative">
+            
+            <!-- Success Message Toast Banner -->
+            <div
+              v-if="submitSuccess"
+              class="mb-6 p-4 rounded-xl bg-emerald-950/80 border border-emerald-500/40 flex items-center gap-3 text-emerald-300 text-sm animate-fadeIn"
+            >
+              <Icon name="carbon:checkmark-filled" size="20" class="text-emerald-400 shrink-0" />
+              <span>Thank you! Your message has been sent successfully. I'll get back to you soon.</span>
+            </div>
+
+            <form @submit.prevent="submitForm" class="space-y-4" aria-label="Contact submission form">
+              
+              <!-- Name & Email Row -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label for="contact-name" class="block text-xs font-mono uppercase text-slate-400 mb-1.5">
+                    Your Name <span class="text-blue-400">*</span>
+                  </label>
+                  <input
                     id="contact-name"
                     v-model="formData.name"
                     type="text"
-                    placeholder="Jane Doe"
+                    placeholder="e.g. Alex Morgan"
                     required
-                    aria-required="true"
-                    class="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-primary/50 focus:bg-white/15 transition-all"
-                />
-              </div>
-              <div>
-                <label for="contact-email" class="block text-sm text-white/70 font-medium mb-2">Email</label>
-                <input
+                    class="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-white placeholder:text-slate-500 text-sm focus:outline-none focus:border-blue-500/60 focus:bg-white/[0.06] transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label for="contact-email" class="block text-xs font-mono uppercase text-slate-400 mb-1.5">
+                    Email Address <span class="text-blue-400">*</span>
+                  </label>
+                  <input
                     id="contact-email"
                     v-model="formData.email"
                     type="email"
-                    placeholder="jane@example.com"
+                    placeholder="alex@company.com"
                     required
-                    aria-required="true"
-                    class="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-primary/50 focus:bg-white/15 transition-all"
-                />
+                    class="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-white placeholder:text-slate-500 text-sm focus:outline-none focus:border-blue-500/60 focus:bg-white/[0.06] transition-all"
+                  />
+                </div>
               </div>
-            </div>
 
-            <!-- Subject -->
-            <div>
-              <label for="contact-subject" class="block text-sm text-white/70 font-medium mb-2">Subject</label>
-              <input
+              <!-- Subject -->
+              <div>
+                <label for="contact-subject" class="block text-xs font-mono uppercase text-slate-400 mb-1.5">
+                  Subject / Inquiry Type <span class="text-blue-400">*</span>
+                </label>
+                <input
                   id="contact-subject"
                   v-model="formData.subject"
                   type="text"
-                  placeholder="What is this regarding?"
+                  placeholder="e.g. Full-Time Opportunity / Project Consultation"
                   required
-                  aria-required="true"
-                  class="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-primary/50 focus:bg-white/15 transition-all"
-              />
-            </div>
+                  class="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-white placeholder:text-slate-500 text-sm focus:outline-none focus:border-blue-500/60 focus:bg-white/[0.06] transition-all"
+                />
+              </div>
 
-            <!-- Message -->
-            <div>
-              <label for="contact-message" class="block text-sm text-white/70 font-medium mb-2">Message</label>
-              <textarea
+              <!-- Message -->
+              <div>
+                <label for="contact-message" class="block text-xs font-mono uppercase text-slate-400 mb-1.5">
+                  Message <span class="text-blue-400">*</span>
+                </label>
+                <textarea
                   id="contact-message"
                   v-model="formData.message"
-                  rows="6"
-                  placeholder="Tell me about your project or inquiry..."
+                  rows="5"
+                  placeholder="Describe your vision, timeline, or job opportunity..."
                   required
-                  aria-required="true"
-                  class="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-primary/50 focus:bg-white/15 transition-all resize-none"
-              ></textarea>
-            </div>
+                  class="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-white placeholder:text-slate-500 text-sm focus:outline-none focus:border-blue-500/60 focus:bg-white/[0.06] transition-all resize-none"
+                ></textarea>
+              </div>
 
-            <!-- Submit Button -->
-            <button
+              <!-- Submit Action Button -->
+              <button
                 type="submit"
                 :disabled="isSaving"
-                :aria-busy="isSaving"
-                class="w-full px-6 py-4 rounded-lg bg-linear-to-r from-primary via-blue-600 to-primary text-white font-bold text-lg hover:shadow-lg hover:shadow-primary/30 hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              <Icon v-if="!isSaving" name="carbon:send-filled" size="20" aria-hidden="true"/>
-              <span v-if="isSaving">Sending...</span>
-              <span v-else>Send Message</span>
-            </button>
-          </form>
+                class="btn-shimmer-primary w-full py-4 rounded-xl font-semibold text-sm tracking-wide text-white flex items-center justify-center gap-2 group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-xl"
+              >
+                <Icon v-if="isSaving" name="icon-park-outline:loading-four" size="18" class="animate-spin" />
+                <Icon v-else name="carbon:send-alt" size="18" class="group-hover:translate-x-1 group-hover:-translate-y-0.5 transition-transform" />
+                <span>{{ isSaving ? 'Sending Message...' : 'Send Message' }}</span>
+              </button>
+
+            </form>
+          </div>
         </Motion>
+
       </div>
     </div>
   </section>
 </template>
-
-<style scoped>
-</style>
-

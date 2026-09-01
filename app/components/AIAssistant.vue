@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {onMounted, ref} from 'vue'
+import { onMounted, ref } from 'vue'
 
 interface Message {
   id: string
@@ -15,7 +15,7 @@ const messages = ref<Message[]>([
   {
     id: '1',
     type: 'assistant',
-    content: 'Hi there! 👋 I\'m an AI assistant for this portfolio. Ask me anything about the stack, experience, or projects!',
+    content: "Hello! 👋 I'm Eka's AI Assistant. Ask me anything about engineering experience, tech stack, or projects!",
     timestamp: new Date()
   }
 ])
@@ -23,16 +23,15 @@ const messages = ref<Message[]>([
 const userInput = ref('')
 const isLoading = ref(false)
 const messagesContainer = ref<HTMLElement>()
-const {sendMessage: callAI, loadChatHistory} = useAIChat()
+const { sendMessage: callAI, loadChatHistory } = useAIChat()
 
 const predefinedQuestions = [
-  'What\'s your tech stack?',
-  'Are you open to work?',
-  'Can you show me a recent project?'
+  'What is your core tech stack?',
+  'Are you open for new roles?',
+  'Show me your featured projects'
 ]
 
 onMounted(() => {
-  // Load chat history from localStorage if available
   if (import.meta.client) {
     const history = loadChatHistory()
     if (history.length > 0) {
@@ -57,7 +56,6 @@ onMounted(() => {
 const sendMessage = async () => {
   if (!userInput.value.trim()) return
 
-  // Add user message
   const userMessage: Message = {
     id: Date.now().toString(),
     type: 'user',
@@ -70,7 +68,6 @@ const sendMessage = async () => {
   userInput.value = ''
   isLoading.value = true
 
-  // Scroll to bottom
   setTimeout(() => {
     if (messagesContainer.value) {
       messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
@@ -78,13 +75,12 @@ const sendMessage = async () => {
   }, 0)
 
   try {
-    // Call Gemini API via composable
     const response = await callAI(prompt)
 
     const assistantMessage: Message = {
       id: (Date.now() + 1).toString(),
       type: 'assistant',
-      content: response || 'Sorry, I couldn\'t generate a response. Please try again.',
+      content: response || "Sorry, I couldn't generate a response. Please try again.",
       isHtml: true,
       timestamp: new Date()
     }
@@ -93,7 +89,7 @@ const sendMessage = async () => {
     const assistantMessage: Message = {
       id: (Date.now() + 1).toString(),
       type: 'assistant',
-      content: 'Sorry, I encountered an error. Please try again later.',
+      content: 'Sorry, I encountered an issue connecting to the AI service. Please try again later.',
       timestamp: new Date()
     }
     messages.value.push(assistantMessage)
@@ -126,213 +122,161 @@ const toggleMinimize = () => {
 </script>
 
 <template>
-  <!-- AI Assistant Button -->
-  <div class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-1000 flex flex-col items-end gap-4">
+  <!-- AI Assistant Dock Container -->
+  <div class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex flex-col items-end gap-3">
+    
     <!-- Chat Window -->
     <Transition
-        enter-active-class="transition duration-300 ease-out"
-        enter-from-class="opacity-0 scale-95 translate-y-4"
-        enter-to-class="opacity-100 scale-100 translate-y-0"
-        leave-active-class="transition duration-200 ease-in"
-        leave-from-class="opacity-100 scale-100 translate-y-0"
-        leave-to-class="opacity-0 scale-95 translate-y-4"
+      enter-active-class="transition duration-300 cubic-bezier(0.16, 1, 0.3, 1)"
+      enter-from-class="opacity-0 scale-95 translate-y-4"
+      enter-to-class="opacity-100 scale-100 translate-y-0"
+      leave-active-class="transition duration-200 ease-in"
+      leave-from-class="opacity-100 scale-100 translate-y-0"
+      leave-to-class="opacity-0 scale-95 translate-y-4"
     >
       <div
-          v-show="isOpen && !isMinimized"
-          class="mb-4 w-[calc(100vw-2rem)] sm:w-96 max-w-96 bg-linear-to-br from-[#0f1520] to-[#071026] border border-white/10 rounded-2xl shadow-2xl shadow-primary/20 overflow-hidden flex flex-col"
-          style="max-height: calc(100vh - 8rem); height: min(600px, calc(100vh - 8rem))"
+        v-show="isOpen && !isMinimized"
+        class="w-[calc(100vw-2rem)] sm:w-[380px] bg-[#090e1a]/95 backdrop-blur-2xl border border-white/15 rounded-3xl shadow-2xl shadow-blue-500/20 overflow-hidden flex flex-col"
+        style="max-height: calc(100vh - 7rem); height: min(560px, calc(100vh - 7rem))"
       >
         <!-- Header -->
-        <div class="bg-linear-to-r from-primary via-blue-600 to-primary p-4 flex items-center justify-between">
+        <div class="px-5 py-4 bg-[#0c1424] border-b border-white/10 flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center border border-white/30">
-              <Icon name="carbon:asleep-filled" size="20" class="text-white"/>
+            <div class="relative w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 p-[1px] shadow-lg shadow-blue-500/30">
+              <div class="w-full h-full bg-[#080d19] rounded-[11px] flex items-center justify-center">
+                <Icon name="carbon:bot" size="18" class="text-blue-400" />
+              </div>
             </div>
             <div>
-              <p class="text-white font-bold text-sm">AI Assistant</p>
-              <p class="text-white/80 text-xs">Eka's Portfolio</p>
+              <p class="text-sm font-heading font-bold text-white flex items-center gap-2">
+                Portfolio Copilot
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              </p>
+              <p class="text-[10px] font-mono text-slate-400">Powered by Gemini AI</p>
             </div>
           </div>
-          <div class="flex items-center gap-2">
+
+          <div class="flex items-center gap-1">
             <button
-                @click="toggleMinimize"
-                class="p-1.5 rounded-lg hover:bg-white/20 transition-colors text-white/80 hover:text-white"
+              @click="toggleMinimize"
+              class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+              aria-label="Minimize AI Assistant"
             >
-              <Icon name="carbon:subtract" size="18"/>
+              <Icon name="carbon:subtract" size="16" />
             </button>
             <button
-                @click="toggleChat"
-                class="p-1.5 rounded-lg hover:bg-white/20 transition-colors text-white/80 hover:text-white"
+              @click="toggleChat"
+              class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+              aria-label="Close AI Assistant"
             >
-              <Icon name="carbon:close" size="18"/>
+              <Icon name="carbon:close" size="16" />
             </button>
           </div>
         </div>
 
-        <!-- Messages -->
+        <!-- Messages Area -->
         <div
-            ref="messagesContainer"
-            class="flex-1 overflow-y-auto p-4 space-y-4 bg-[#0f1520]"
+          ref="messagesContainer"
+          class="flex-1 overflow-y-auto p-4 space-y-3.5 bg-[#050914]"
         >
           <div
-              v-for="message in messages"
-              :key="message.id"
-              :class="[
-                'flex gap-3 animate-fadeIn',
-                message.type === 'user' ? 'justify-end' : 'justify-start'
-              ]"
+            v-for="message in messages"
+            :key="message.id"
+            :class="[
+              'flex gap-2.5',
+              message.type === 'user' ? 'justify-end' : 'justify-start'
+            ]"
           >
-            <!-- Assistant Message -->
-            <div v-if="message.type === 'assistant'" class="flex gap-3 max-w-[85%] sm:max-w-xs">
-              <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                <Icon name="carbon:asleep-filled" size="16" class="text-primary"/>
+            <!-- Assistant Bubble -->
+            <div v-if="message.type === 'assistant'" class="flex gap-2.5 max-w-[88%]">
+              <div class="w-7 h-7 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                <Icon name="carbon:bot" size="14" class="text-blue-400" />
               </div>
-              <div v-if="message.isHtml"
-                   class="bg-white/10 border border-white/20 rounded-lg p-3 text-white/90 text-sm leading-relaxed prose prose-invert max-w-none"
-                   v-html="message.content"></div>
-              <div v-else
-                   class="bg-white/10 border border-white/20 rounded-lg p-3 text-white/90 text-sm leading-relaxed">
+              <div
+                v-if="message.isHtml"
+                class="p-3 rounded-2xl rounded-tl-none bg-white/[0.04] border border-white/10 text-slate-200 text-xs sm:text-sm leading-relaxed prose prose-invert max-w-none"
+                v-html="message.content"
+              ></div>
+              <div
+                v-else
+                class="p-3 rounded-2xl rounded-tl-none bg-white/[0.04] border border-white/10 text-slate-200 text-xs sm:text-sm leading-relaxed"
+              >
                 {{ message.content }}
               </div>
             </div>
 
-            <!-- User Message -->
-            <div v-else class="flex gap-3 max-w-[85%] sm:max-w-xs justify-end">
-              <div class="bg-primary text-white rounded-lg p-3 text-sm leading-relaxed">
+            <!-- User Bubble -->
+            <div v-else class="flex gap-2.5 max-w-[85%] justify-end">
+              <div class="p-3 rounded-2xl rounded-tr-none bg-blue-600 text-white text-xs sm:text-sm leading-relaxed font-medium shadow-md">
                 {{ message.content }}
-              </div>
-              <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                <Icon name="carbon:user" size="16" class="text-primary"/>
               </div>
             </div>
           </div>
 
-          <!-- Loading Indicator -->
-          <div v-if="isLoading" class="flex gap-3">
-            <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-              <Icon name="carbon:asleep-filled" size="16" class="text-primary"/>
+          <!-- Loading Dots Indicator -->
+          <div v-if="isLoading" class="flex gap-2.5 items-center">
+            <div class="w-7 h-7 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
+              <Icon name="carbon:bot" size="14" class="text-blue-400" />
             </div>
-            <div class="bg-white/10 border border-white/20 rounded-lg p-3 flex gap-1">
-              <div class="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style="animation-delay: 0s"></div>
-              <div class="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style="animation-delay: 0.2s"></div>
-              <div class="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style="animation-delay: 0.4s"></div>
+            <div class="p-3 rounded-2xl rounded-tl-none bg-white/[0.04] border border-white/10 flex items-center gap-1.5">
+              <div class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style="animation-delay: 0s"></div>
+              <div class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style="animation-delay: 0.2s"></div>
+              <div class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style="animation-delay: 0.4s"></div>
             </div>
           </div>
         </div>
 
-        <!-- Suggested Questions (show only if few messages) -->
-        <div v-if="messages.length <= 1 && !isLoading"
-             class="px-4 py-3 border-t border-white/10 space-y-2 bg-[#0a0f1a]">
-          <p class="text-xs text-white/50 px-2">Quick questions:</p>
-          <div class="flex flex-col sm:flex-row sm:flex-wrap gap-2">
+        <!-- Predefined Quick Question Chips -->
+        <div v-if="messages.length <= 1 && !isLoading" class="p-3 border-t border-white/10 bg-[#070d1a] space-y-1.5">
+          <p class="text-[10px] font-mono uppercase text-slate-400 px-1">Suggested prompts:</p>
+          <div class="flex flex-col gap-1.5">
             <button
-                v-for="(question, idx) in predefinedQuestions"
-                :key="idx"
-                @click="askQuestion(question)"
-                class="w-full sm:flex-1 sm:min-w-fit px-3 py-2 text-xs rounded-lg bg-white/10 border border-white/20 text-white/70 hover:bg-primary/20 hover:border-primary/50 hover:text-primary transition-all"
+              v-for="(q, idx) in predefinedQuestions"
+              :key="idx"
+              @click="askQuestion(q)"
+              class="text-left px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/10 hover:border-blue-500/40 hover:bg-blue-500/10 text-xs text-slate-300 hover:text-white transition-all"
             >
-              {{ question }}
+              {{ q }}
             </button>
           </div>
         </div>
 
-        <!-- Input Area -->
-        <div class="p-3 sm:p-4 border-t border-white/10 bg-[#0a0f1a]">
+        <!-- Input Bar -->
+        <div class="p-3 border-t border-white/10 bg-[#070d1a]">
           <form @submit.prevent="sendMessage" class="flex gap-2">
             <input
-                v-model="userInput"
-                type="text"
-                placeholder="Ask a follow-up question..."
-                class="flex-1 px-3 sm:px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-primary/50 focus:bg-white/15 transition-all text-sm"
+              v-model="userInput"
+              type="text"
+              placeholder="Ask me anything..."
+              class="flex-1 px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/10 text-xs sm:text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500/50 transition-all"
             />
             <button
-                type="submit"
-                :disabled="isLoading"
-                class="px-3 sm:px-4 py-2 rounded-lg bg-primary text-white hover:brightness-110 disabled:opacity-50 transition-all"
+              type="submit"
+              :disabled="isLoading || !userInput.trim()"
+              class="btn-shimmer-primary px-4 py-2.5 rounded-xl text-white disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer"
+              aria-label="Send message"
             >
-              <Icon name="carbon:send-filled" size="18"/>
+              <Icon name="carbon:send-alt" size="16" />
             </button>
           </form>
         </div>
       </div>
     </Transition>
 
-    <!-- Minimized Header -->
-    <Transition
-        enter-active-class="transition duration-300 ease-out"
-        enter-from-class="opacity-0 scale-95"
-        enter-to-class="opacity-100 scale-100"
-        leave-active-class="transition duration-200 ease-in"
-        leave-from-class="opacity-100 scale-100"
-        leave-to-class="opacity-0 scale-95"
-    >
-      <div
-          v-show="isOpen && isMinimized"
-          class="mb-4 w-[calc(100vw-2rem)] sm:w-80 max-w-80 bg-linear-to-r from-primary via-blue-600 to-primary border border-white/10 rounded-xl shadow-lg shadow-primary/20 p-4 cursor-pointer hover:shadow-xl hover:shadow-primary/30 transition-all"
-          @click="toggleMinimize"
-      >
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center border border-white/30">
-              <Icon name="carbon:asleep-filled" size="20" class="text-white"/>
-            </div>
-            <div>
-              <p class="text-white font-bold text-sm">AI Assistant</p>
-              <p class="text-white/80 text-xs">Click to expand</p>
-            </div>
-          </div>
-          <Icon name="carbon:chevron-up" size="20" class="text-white"/>
-        </div>
-      </div>
-    </Transition>
-
-    <!-- Main Chat Button -->
+    <!-- Main Floating Trigger Button -->
     <button
-        @click="toggleChat"
-        :aria-label="isOpen ? 'Close AI Assistant chat' : 'Open AI Assistant chat'"
-        :class="[
-          'w-12 h-12 sm:w-14 sm:h-14 rounded-full cursor-pointer shadow-lg transition-all duration-300 flex items-center justify-center text-white font-bold text-2xl hover:scale-110',
-          'bg-linear-to-br from-primary via-blue-600 to-primary hover:shadow-xl hover:shadow-primary/40'
-        ]"
+      @click="toggleChat"
+      :aria-label="isOpen ? 'Close AI Assistant' : 'Open AI Assistant'"
+      class="group relative w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 p-[1px] shadow-2xl shadow-blue-500/30 hover:scale-105 transition-all duration-300 cursor-pointer"
     >
-      <Icon v-if="!isOpen" name="material-symbols:smart-toy" size="24"/>
-      <Icon v-else name="material-symbols:keyboard-arrow-down" size="24"/>
+      <!-- Background pulse glow -->
+      <span class="absolute -inset-1 rounded-2xl bg-blue-500/40 blur-md opacity-75 group-hover:opacity-100 transition-opacity"></span>
+
+      <div class="relative w-full h-full bg-[#070d1a] rounded-[15px] flex items-center justify-center text-white">
+        <Icon v-if="!isOpen" name="carbon:bot" size="26" class="text-blue-400 group-hover:scale-110 transition-transform" />
+        <Icon v-else name="carbon:close" size="24" class="text-slate-200" />
+      </div>
     </button>
+
   </div>
 </template>
-
-<style scoped>
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fadeIn {
-  animation: fadeIn 0.3s ease-out;
-}
-
-/* Custom scrollbar untuk messages */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(30, 127, 255, 0.3);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(30, 127, 255, 0.5);
-}
-</style>
-

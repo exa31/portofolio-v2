@@ -112,6 +112,11 @@ export default defineNuxtConfig({
         { rel: "icon", href: "/favicon.ico" },
         { rel: "canonical", href: "https://eka-dev.cloud" },
         { rel: "preconnect", href: "https://fonts.googleapis.com" },
+        { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" },
+        {
+          rel: "stylesheet",
+          href: "https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400..700;1,400..700&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&family=Space+Grotesk:wght@400..700&display=swap",
+        },
         { rel: "dns-prefetch", href: "https://fonts.googleapis.com" },
       ],
     },

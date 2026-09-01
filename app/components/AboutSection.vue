@@ -1,244 +1,223 @@
 <script setup lang="ts">
-import type {UserSettingsModel} from "~/types/settings";
+import type { UserSettingsModel } from "~/types/settings";
 
 defineProps<{
-  user?: UserSettingsModel | null
-  count_projects?: number
-  count_experience?: number
-}>()
+  user?: UserSettingsModel | null;
+  count_projects?: number;
+  count_experience?: number;
+}>();
+
+const competencies = [
+  { label: 'Frontend Architecture', icon: 'carbon:application-web', color: 'text-cyan-400', bg: 'bg-cyan-500/10 border-cyan-500/20' },
+  { label: 'Backend & Microservices', icon: 'carbon:data-base', color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
+  { label: 'Mobile Engineering', icon: 'carbon:devices', color: 'text-pink-400', bg: 'bg-pink-500/10 border-pink-500/20' },
+  { label: 'DevOps & Kubernetes', icon: 'carbon:cloud-app', color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20' },
+  { label: 'CI/CD Automation', icon: 'carbon:delivery-parcel', color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20' },
+  { label: 'High Performance & Security', icon: 'carbon:security', color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/20' },
+];
 </script>
 
 <template>
-  <section id="about" class="py-20" aria-labelledby="about-heading">
-    <div class="container mx-auto px-6">
+  <section id="about" class="py-24 relative overflow-hidden" aria-labelledby="about-heading">
+    <!-- Ambient section glow -->
+    <div class="absolute top-1/2 left-0 w-96 h-96 bg-blue-600/5 blur-[120px] rounded-full pointer-events-none"></div>
+
+    <div class="container mx-auto px-4 sm:px-6">
+      
+      <!-- Section Header -->
       <Motion
-          :initial="{ opacity: 0, y: 30 }"
-          :while-in-view="{ opacity: 1, y: 0 }"
-          :viewport="{ once: true, amount: 0.3 }"
-          :transition="{ duration: 0.8, ease: 'easeOut' }"
-          class="mb-12"
+        :initial="{ opacity: 0, y: 30 }"
+        :while-in-view="{ opacity: 1, y: 0 }"
+        :viewport="{ once: true, amount: 0.2 }"
+        :transition="{ duration: 0.7, ease: 'easeOut' }"
+        class="text-center max-w-3xl mx-auto mb-16"
       >
-        <h2 id="about-heading" class="text-5xl lg:text-6xl font-black mb-3 leading-tight">About Me</h2>
-        <p class="text-lg text-white/50 mb-6 leading-relaxed max-w-lg">
-          Architecting the future of web and mobile applications with scalable, cloud-native solutions.
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-mono mb-4">
+          <Icon name="carbon:identification" size="14" />
+          <span>ABOUT ME</span>
+        </div>
+        <h2 id="about-heading" class="text-3xl sm:text-4xl lg:text-5xl font-heading font-black text-white tracking-tight mb-4">
+          Bridging <span class="text-gradient-cyan">Backend Logic</span> with <span class="text-gradient-primary">Frontend Magic</span>.
+        </h2>
+        <p class="text-slate-400 text-base sm:text-lg font-light leading-relaxed">
+          Architecting resilient digital ecosystems that blend clean code, high scalability, and seamless user experiences.
         </p>
       </Motion>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
-        <!-- Left: Image Card -->
+      <!-- Bento-style Grid Layout -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- Left: Profile & Status Card (5 cols) -->
         <Motion
-            :initial="{ opacity: 0, x: -50 }"
-            :while-in-view="{ opacity: 1, x: 0 }"
-            :viewport="{ once: true, amount: 0.3 }"
-            :transition="{ duration: 1, ease: 'easeOut' }"
-            class="relative flex justify-center lg:justify-start order-2 lg:order-1 about-image"
+          :initial="{ opacity: 0, x: -30 }"
+          :while-in-view="{ opacity: 1, x: 0 }"
+          :viewport="{ once: true, amount: 0.2 }"
+          :transition="{ duration: 0.8, ease: 'easeOut' }"
+          class="lg:col-span-5"
         >
-          <div class="relative w-full max-w-sm">
-            <!-- Card -->
-            <NuxtImg src="/images/about.webp" alt="Profile" class="h-full rounded-xl w-full"/>
+          <div class="relative rounded-3xl bg-[#090e1a]/80 border border-white/10 p-4 sm:p-6 backdrop-blur-xl shadow-2xl overflow-hidden group">
+            
+            <!-- Glow effect on hover -->
+            <div class="absolute -inset-1 bg-gradient-to-b from-blue-500/20 to-transparent rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
-            <!-- Status Badge -->
-            <template v-if="user?.open_to_opportunities">
-              <div class="absolute -top-4 right-2 z-20">
-                <div
-                    class="inline-flex items-center gap-2 bg-gray-800 border border-white/10 text-white px-5 py-3 rounded-lg shadow-lg">
-                  <div class="relative">
-                    <!-- Glow ring -->
-                    <span class="absolute inset-0 rounded-full bg-green-500/70 blur-md animate-ping"></span>
-                    <!-- Icon -->
-                    <div class="relative bg-green-900 p-1 w-8 h-8 rounded-full">
-                      <Icon name="weui:done2-filled" size="24" class="text-green-400"/>
+            <!-- Profile Image Container -->
+            <div class="relative rounded-2xl overflow-hidden border border-white/10 mb-6 bg-slate-900">
+              <NuxtImg
+                src="/images/about.webp"
+                alt="Eka Developer Profile"
+                class="w-full h-80 sm:h-96 object-cover object-center group-hover:scale-105 transition-transform duration-700"
+                loading="lazy"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-[#090e1a] via-transparent to-transparent opacity-80"></div>
+
+              <!-- Status Badge on Image -->
+              <div class="absolute bottom-4 left-4 right-4">
+                <div class="flex items-center justify-between p-3 rounded-xl bg-[#0b1329]/90 border border-white/15 backdrop-blur-md">
+                  <div class="flex items-center gap-3">
+                    <div class="relative flex h-3 w-3">
+                      <span 
+                        v-if="user?.open_to_opportunities" 
+                        class="radar-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"
+                      ></span>
+                      <span 
+                        class="relative inline-flex rounded-full h-3 w-3"
+                        :class="user?.open_to_opportunities ? 'bg-emerald-500' : 'bg-amber-500'"
+                      ></span>
+                    </div>
+                    <div>
+                      <p class="text-[10px] font-mono uppercase text-slate-400 tracking-wider">Current Status</p>
+                      <p class="text-xs font-semibold text-white">
+                        {{ user?.open_to_opportunities ? 'Open to New Opportunities' : 'Currently Engaged' }}
+                      </p>
                     </div>
                   </div>
-                  <div>
-                    <div class="text-white/50 text-xs uppercase">Status</div>
-                    <div class="text-white text-md font-medium">Open to Work</div>
-                  </div>
+                  <span class="text-xs font-mono text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-md border border-blue-500/20">
+                    {{ user?.location || 'Indonesia' }}
+                  </span>
                 </div>
               </div>
-            </template>
-            <template v-else>
-              <div class="absolute -top-4 right-2 z-20">
-                <div
-                    class="inline-flex items-center gap-2 bg-gray-800 border border-white/10 text-white px-5 py-3 rounded-lg shadow-lg">
-                  <div class="relative">
-                    <!-- Glow ring -->
-                    <span class="absolute inset-0 rounded-full bg-red-500/70 blur-md animate-ping"></span>
-                    <!-- Icon -->
-                    <div class="relative bg-red-900 p-1 w-8 h-8 rounded-full">
-                      <Icon name="mdi:lock" size="24" class="text-red-400"/>
-                    </div>
-                  </div>
-                  <div>
-                    <div class="text-white/50 text-xs uppercase">Status</div>
-                    <div class="text-white text-md font-medium">Not Available</div>
-                  </div>
-                </div>
-              </div>
-            </template>
+            </div>
+
+            <!-- Download CV / Direct Link Action -->
+            <div class="flex flex-col sm:flex-row gap-3">
+              <a
+                v-if="user?.cv_url"
+                :href="user.cv_url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn-shimmer-primary w-full py-3 px-4 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2 group cursor-pointer"
+              >
+                <span>Download Resume</span>
+                <Icon name="carbon:document-download" size="18" class="group-hover:translate-y-0.5 transition-transform" />
+              </a>
+
+              <a
+                href="#contact"
+                class="btn-glass-secondary w-full py-3 px-4 rounded-xl text-sm font-semibold text-slate-200 hover:text-white flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <span>Let's Discuss</span>
+                <Icon name="carbon:arrow-up-right" size="16" class="text-blue-400" />
+              </a>
+            </div>
+
           </div>
         </Motion>
 
-        <!-- Right: Content -->
-        <div class="text-white order-1 lg:order-2 pt-8 lg:pt-0 about-content">
-          <!-- Badge -->
+        <!-- Right: Story, Stats & Competencies (7 cols) -->
+        <div class="lg:col-span-7 flex flex-col gap-6">
+          
+          <!-- Story Glass Card -->
           <Motion
-              :initial="{ opacity: 0, y: 20 }"
-              :while-in-view="{ opacity: 1, y: 0 }"
-              :viewport="{ once: true }"
-              :transition="{ duration: 0.5, delay: 0.1 }"
-              class="inline-flex items-center gap-2 bg-[#0b2a35] text-sky-300 px-3 py-1 rounded-full text-[10px] uppercase mb-6 font-medium"
+            :initial="{ opacity: 0, y: 20 }"
+            :while-in-view="{ opacity: 1, y: 0 }"
+            :viewport="{ once: true, amount: 0.2 }"
+            :transition="{ duration: 0.7, ease: 'easeOut', delay: 0.1 }"
+            class="rounded-3xl bg-[#090e1a]/80 border border-white/10 p-6 sm:p-8 backdrop-blur-xl shadow-2xl relative"
           >
-            <Icon name="material-symbols-light:stars" size="24" class="text-sky-400"/>
-            PROBLEM SOLVER
-          </Motion>
+            <div class="flex items-center gap-2 text-xs font-mono text-blue-400 uppercase tracking-wider mb-4">
+              <Icon name="carbon:terminal" size="16" />
+              <span>Engineering Philosophy</span>
+            </div>
 
-          <!-- Main Heading -->
-          <Motion
-              :initial="{ opacity: 0, y: 20 }"
-              :while-in-view="{ opacity: 1, y: 0 }"
-              :viewport="{ once: true }"
-              :transition="{ duration: 0.5, delay: 0.2 }"
-          >
-            <h3 class="text-4xl lg:text-5xl font-black leading-tight mb-8 max-w-2xl">
-              Bridging <span
-                class="text-transparent bg-clip-text bg-linear-to-r from-blue-400 to-blue-600">Backend Logic</span>
-              with <span
-                class="text-transparent bg-clip-text bg-linear-to-r from-cyan-400 to-blue-400">Frontend Magic.</span>
+            <h3 class="text-xl sm:text-2xl font-heading font-bold text-white mb-4 leading-snug">
+              Crafting robust solutions with relentless attention to speed, scalability, and code cleanliness.
             </h3>
-          </Motion>
 
-          <!-- Description -->
-          <Motion
-              :initial="{ opacity: 0, y: 20 }"
-              :while-in-view="{ opacity: 1, y: 0 }"
-              :viewport="{ once: true }"
-              :transition="{ duration: 0.5, delay: 0.3 }"
-          >
-            <p class="text-white/60 text-sm leading-relaxed mb-6 max-w-lg">
-              I don't just write code; I engineer resilient ecosystems. As a seasoned Full Stack developer, I
-              seamlessly navigate between creating intuitive mobile and web interfaces and architecting powerful
-              backend systems.
+            <p class="text-slate-300 text-sm sm:text-base leading-relaxed mb-4 font-light">
+              I specialize in building full-stack applications that solve real-world problems. From designing resilient microservices with Go and Node.js to constructing modern, fluid user interfaces with Vue.js, React, and Flutter, I engineer software that stands the test of high traffic and complex workflows.
+            </p>
+
+            <p class="text-slate-400 text-sm sm:text-base leading-relaxed font-light">
+              Beyond standard web development, my toolkit includes DevOps automation, container orchestration with Kubernetes, and continuous delivery pipelines to ensure maximum reliability and 99.9% uptime.
             </p>
           </Motion>
 
+          <!-- Metric Stats Grid -->
           <Motion
-              :initial="{ opacity: 0, y: 20 }"
-              :while-in-view="{ opacity: 1, y: 0 }"
-              :viewport="{ once: true }"
-              :transition="{ duration: 0.5, delay: 0.4 }"
+            :initial="{ opacity: 0, y: 20 }"
+            :while-in-view="{ opacity: 1, y: 0 }"
+            :viewport="{ once: true, amount: 0.2 }"
+            :transition="{ duration: 0.7, ease: 'easeOut', delay: 0.25 }"
+            class="grid grid-cols-1 sm:grid-cols-2 gap-4"
           >
-            <p class="text-white/60 text-sm leading-relaxed mb-8 max-w-lg">
-              My expertise extends to DevOps, where I leverage Kubernetes and CI/CD pipelines to automate deployments
-              and ensure 99.9% uptime. Whether it's optimization, scalability, or user experience, I deliver solutions
-              that drive growth.
-            </p>
-          </Motion>
-
-          <!-- Stats Row -->
-          <Motion
-              :initial="{ opacity: 0, y: 20 }"
-              :while-in-view="{ opacity: 1, y: 0 }"
-              :viewport="{ once: true }"
-              :transition="{ duration: 0.5, delay: 0.5 }"
-              class="flex sm:flex-row flex-col gap-6 mb-8"
-          >
-            <div class="flex items-center bg-[#1e2430] p-5 rounded-2xl gap-3">
+            <!-- Stat 1: Years Experience -->
+            <div class="glass-panel-interactive rounded-2xl p-5 flex items-center justify-between">
               <div>
-                <div class="text-4xl font-black text-white">{{ count_experience || 0 }}+</div>
-                <div class="text-xs text-white/50 uppercase font-medium mt-4">Years Experience</div>
+                <p class="text-3xl sm:text-4xl font-heading font-black text-white mb-1">
+                  {{ count_experience || 0 }}<span class="text-blue-500">+</span>
+                </p>
+                <p class="text-xs font-mono uppercase tracking-wider text-slate-400">Years Experience</p>
               </div>
-              <div
-                  class="w-10 h-10 rounded-full bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
-                <Icon name="ic:baseline-access-time-filled" size="20" class="text-blue-400"/>
+              <div class="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+                <Icon name="carbon:time" size="24" />
               </div>
             </div>
 
-            <div class="flex items-center bg-[#1e2430] p-5 rounded-2xl gap-3">
+            <!-- Stat 2: Projects Delivered -->
+            <div class="glass-panel-interactive rounded-2xl p-5 flex items-center justify-between">
               <div>
-                <div class="text-4xl font-black text-white">{{ count_projects || 0 }}+</div>
-                <div class="text-xs text-white/50 uppercase mt-4 font-medium">Projects Shipped</div>
+                <p class="text-3xl sm:text-4xl font-heading font-black text-white mb-1">
+                  {{ count_projects || 0 }}<span class="text-cyan-400">+</span>
+                </p>
+                <p class="text-xs font-mono uppercase tracking-wider text-slate-400">Projects Shipped</p>
               </div>
+              <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+                <Icon name="carbon:rocket" size="24" />
+              </div>
+            </div>
+          </Motion>
+
+          <!-- Core Competencies Badges -->
+          <Motion
+            :initial="{ opacity: 0, y: 20 }"
+            :while-in-view="{ opacity: 1, y: 0 }"
+            :viewport="{ once: true, amount: 0.2 }"
+            :transition="{ duration: 0.7, ease: 'easeOut', delay: 0.35 }"
+            class="rounded-3xl bg-[#090e1a]/80 border border-white/10 p-6 backdrop-blur-xl"
+          >
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-mono uppercase tracking-wider text-slate-400">Core Disciplines</span>
+              <span class="text-[11px] font-mono text-blue-400">Production-Tested</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               <div
-                  class="w-10 h-10 rounded-full bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
-                <Icon name="material-symbols:rocket-launch-rounded" size="20" class="text-blue-400"/>
+                v-for="comp in competencies"
+                :key="comp.label"
+                class="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.05] transition-colors"
+              >
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center border" :class="comp.bg">
+                  <Icon :name="comp.icon" size="16" :class="comp.color" />
+                </div>
+                <span class="text-xs font-medium text-slate-200">{{ comp.label }}</span>
               </div>
             </div>
           </Motion>
 
-          <!-- Core Competencies -->
-          <Motion
-              :initial="{ opacity: 0, y: 20 }"
-              :while-in-view="{ opacity: 1, y: 0 }"
-              :viewport="{ once: true }"
-              :transition="{ duration: 0.5, delay: 0.6 }"
-              class="mb-8"
-          >
-            <div class="text-xs uppercase text-white/50 font-bold mb-3 tracking-wide">Core Competencies</div>
-            <div class="flex flex-wrap gap-3">
-              <span
-                  class="inline-flex items-center gap-2 px-3 py-2 bg-[#0b2348]/60 border border-white/5 rounded-full text-xs font-medium text-white/80">
-                <Icon name="mdi:cellphone" size="12" class="text-pink-400"/>
-                Mobile Dev
-              </span>
-              <span
-                  class="inline-flex items-center gap-2 px-3 py-2 bg-[#0b2348]/60 border border-white/5 rounded-full text-xs font-medium text-white/80">
-                <Icon name="mdi:web" size="12" class="text-cyan-400"/>
-                Frontend
-              </span>
-              <span
-                  class="inline-flex items-center gap-2 px-3 py-2 bg-[#0b2348]/60 border border-white/5 rounded-full text-xs font-medium text-white/80">
-                <Icon name="mdi:server" size="12" class="text-green-400"/>
-                Backend
-              </span>
-              <span
-                  class="inline-flex items-center gap-2 px-3 py-2 bg-[#0b2348]/60 border border-white/5 rounded-full text-xs font-medium text-white/80">
-                <Icon name="mdi:gitlab" size="12" class="text-orange-400"/>
-                CI/CD
-              </span>
-              <span
-                  class="inline-flex items-center gap-2 px-3 py-2 bg-[#0b2348]/60 border border-white/5 rounded-full text-xs font-medium text-white/80">
-                <Icon name="carbon:kubernetes-pod" size="12" class="text-blue-400"/>
-                Kubernetes
-              </span>
-            </div>
-          </Motion>
-
-          <!-- CTA Buttons -->
-          <Motion
-              :initial="{ opacity: 0, y: 20 }"
-              :while-in-view="{ opacity: 1, y: 0 }"
-              :viewport="{ once: true }"
-              :transition="{ duration: 0.5, delay: 0.7 }"
-              class="flex sm:flex-row flex-col gap-3 pt-4"
-          >
-            <a :href="user?.cv_url"
-               target="_blank"
-               class="primary-cta-btn inline-flex items-center gap-2 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition">
-              <span>Download CV</span>
-              <Icon name="material-symbols:download" size="20"/>
-            </a>
-            <NuxtLink to="#contact"
-                      class="inline-flex items-center gap-2 text-white/70 hover:text-white font-medium px-6 py-3 rounded-lg transition">
-              <span>Get in Touch</span>
-              <Icon name="material-symbols:arrow-forward-ios" size="16"/>
-            </NuxtLink>
-          </Motion>
         </div>
+
       </div>
+
     </div>
   </section>
 </template>
-
-<style scoped>
-.primary-cta-btn {
-  background: linear-gradient(135deg, #1e7fff 0%, #2196f3 50%, #0d47a1 100%);
-  box-shadow: 0 10px 35px rgba(30, 127, 255, 0.3);
-  transition: all 0.3s ease;
-}
-
-.primary-cta-btn:hover {
-  box-shadow: 0 15px 45px rgba(30, 127, 255, 0.4);
-  transform: translateY(-2px);
-}
-</style>

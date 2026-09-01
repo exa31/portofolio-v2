@@ -27,94 +27,108 @@ const openModal = (experience: Experience) => {
 </script>
 
 <template>
-  <section id="work" class="py-24 bg-linear-to-b from-[#071026] to-[#071023]" aria-labelledby="journey-heading">
-    <div class="container mx-auto px-6">
-      <!-- Header -->
+  <section id="work" class="py-24 relative overflow-hidden" aria-labelledby="journey-heading">
+    <!-- Ambient background aura -->
+    <div class="absolute top-1/2 left-1/4 w-[600px] h-[600px] bg-blue-600/5 blur-[160px] rounded-full pointer-events-none"></div>
+
+    <div class="container mx-auto px-4 sm:px-6">
+      
+      <!-- Section Header -->
       <Motion
-          :initial="{ opacity: 0, y: 30 }"
-          :while-in-view="{ opacity: 1, y: 0 }"
-          :viewport="{ once: true, amount: 0.3 }"
-          :transition="{ duration: 0.8, ease: 'easeOut' }"
-          class="text-center mb-16"
+        :initial="{ opacity: 0, y: 30 }"
+        :while-in-view="{ opacity: 1, y: 0 }"
+        :viewport="{ once: true, amount: 0.2 }"
+        :transition="{ duration: 0.7, ease: 'easeOut' }"
+        class="text-center max-w-3xl mx-auto mb-16"
       >
-        <p class="text-primary text-sm font-semibold mb-2 flex items-center justify-center gap-2">
-          <Icon name="material-symbols:timeline" size="16"/>
-          MY JOURNEY BEGINS HERE
-        </p>
-        <h2 id="journey-heading" class="text-4xl md:text-5xl font-bold text-white mb-4">Professional Journey</h2>
-        <p class="text-white/60 max-w-2xl mx-auto">
-          A timeline of building scalable solutions, solving complex problems, and continuous professional growth in the
-          tech industry.
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-mono mb-4">
+          <Icon name="carbon:milestone" size="14" />
+          <span>CAREER TIMELINE</span>
+        </div>
+        <h2 id="journey-heading" class="text-3xl sm:text-4xl lg:text-5xl font-heading font-black text-white tracking-tight mb-4">
+          Professional <span class="text-gradient-primary">Journey</span>
+        </h2>
+        <p class="text-slate-400 text-base sm:text-lg font-light leading-relaxed">
+          A track record of architecting scalable products, driving technical milestones, and solving high-impact challenges.
         </p>
       </Motion>
 
-      <!-- Timeline -->
-      <div class="max-w-4xl mx-auto px-0 sm:px-4">
+      <!-- Timeline Structure -->
+      <div class="max-w-4xl mx-auto">
         <div class="relative">
-          <!-- Timeline line -->
-          <div
-              class="absolute left-8 sm:left-8 top-0 bottom-0 w-0.5 bg-linear-to-b from-primary via-primary/50 to-transparent"/>
+          <!-- Continuous Vertical Gradient Line -->
+          <div class="absolute left-6 sm:left-8 top-4 bottom-4 w-0.5 bg-gradient-to-b from-blue-500 via-cyan-500/50 to-transparent"></div>
 
-          <!-- Timeline items -->
-          <div class="space-y-6 sm:space-y-8 journey-timeline">
+          <!-- Timeline Items List -->
+          <div class="space-y-8 sm:space-y-10">
             <Motion
-                v-for="(experience, index) in experiences"
-                :key="experience.id"
-                :initial="{ opacity: 0, x: -30 }"
-                :while-in-view="{ opacity: 1, x: 0 }"
-                :viewport="{ once: true, amount: 0.2 }"
-                :transition="{ duration: 0.6, delay: index * 0.15, ease: 'easeOut' }"
-                class="relative pl-20 sm:pl-24 journey-item"
+              v-for="(experience, index) in experiences"
+              :key="experience.id ?? index"
+              :initial="{ opacity: 0, x: -30 }"
+              :while-in-view="{ opacity: 1, x: 0 }"
+              :viewport="{ once: true, amount: 0.15 }"
+              :transition="{ duration: 0.6, delay: index * 0.1, ease: 'easeOut' }"
+              class="relative pl-16 sm:pl-20"
             >
-              <!-- Timeline dot -->
-              <div class="absolute left-0 w-16 h-16 flex items-center justify-center">
-                <div
-                    class="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-linear-to-br from-primary/20 to-primary/5 border border-primary/30 flex items-center justify-center backdrop-blur-sm">
-                  <Icon name="carbon:star" size="18" class="sm:hidden text-primary"/>
-                  <Icon name="carbon:star" size="24" class="hidden sm:block text-primary"/>
+              <!-- Glowing Checkpoint Node -->
+              <div class="absolute left-0 top-1 w-12 sm:w-16 h-12 sm:h-16 flex items-center justify-center">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-[#090e1a] border border-blue-500/40 shadow-lg shadow-blue-500/20 flex items-center justify-center">
+                  <Icon name="carbon:badge" size="20" class="text-blue-400" />
                 </div>
               </div>
 
-              <!-- Card -->
+              <!-- Experience Interactive Card -->
               <div
-                  class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-4 sm:p-6 hover:border-primary/50 transition-all duration-300 cursor-pointer group"
-                  @click="openModal(experience)"
+                class="glass-panel-interactive rounded-2xl p-5 sm:p-7 cursor-pointer group"
+                @click="openModal(experience)"
               >
-                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4 mb-4">
-                  <div class="flex-1 min-w-0">
-                    <h3 class="text-lg sm:text-xl font-bold text-white group-hover:text-primary transition-colors">
+                <!-- Card Header -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                  <div>
+                    <h3 class="text-lg sm:text-xl font-heading font-bold text-white group-hover:text-blue-400 transition-colors">
                       {{ experience.position }}
                     </h3>
-                    <p class="text-primary text-xs sm:text-sm font-medium mt-1">{{ experience.company }}</p>
+                    <p class="text-sm font-medium text-cyan-400 mt-0.5 flex items-center gap-1.5">
+                      <Icon name="carbon:building" size="14" />
+                      {{ experience.company }}
+                    </p>
                   </div>
-                  <span class="text-xs sm:text-sm text-white/50 shrink-0">{{ experience.period }}</span>
+                  
+                  <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-xs font-mono text-slate-300 shrink-0 self-start sm:self-center">
+                    <Icon name="carbon:calendar" size="13" class="text-blue-400" />
+                    <span>{{ experience.period }}</span>
+                  </div>
                 </div>
 
-                <p class="text-white/70 mb-4">{{ experience.description }}</p>
+                <!-- Short Description -->
+                <p class="text-slate-300 text-sm leading-relaxed mb-4 line-clamp-2 font-light">
+                  {{ experience.description }}
+                </p>
 
-                <!-- Technologies -->
-                <div class="flex flex-wrap gap-2">
-                  <span
-                      v-for="tech in experience.technologies.slice(0, 3)"
+                <!-- Technologies & Modal Prompt Footer -->
+                <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-white/[0.06]">
+                  <div class="flex flex-wrap gap-1.5">
+                    <span
+                      v-for="tech in experience.technologies.slice(0, 4)"
                       :key="tech"
-                      class="px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20"
-                  >
-                    {{ tech }}
-                  </span>
-                  <span
-                      v-if="experience.technologies.length > 3"
-                      class="px-3 py-1 rounded-full text-xs font-medium text-white/50"
-                  >
-                    +{{ experience.technologies.length - 3 }} more
-                  </span>
+                      class="px-2.5 py-1 rounded-md text-[11px] font-mono font-medium bg-blue-500/10 text-blue-300 border border-blue-500/20"
+                    >
+                      {{ tech }}
+                    </span>
+                    <span
+                      v-if="experience.technologies.length > 4"
+                      class="px-2 py-1 rounded-md text-[11px] font-mono text-slate-400 bg-white/[0.03]"
+                    >
+                      +{{ experience.technologies.length - 4 }}
+                    </span>
+                  </div>
+
+                  <div class="flex items-center gap-1 text-xs font-semibold text-blue-400 group-hover:translate-x-1 transition-transform">
+                    <span>View Role Breakdown</span>
+                    <Icon name="carbon:arrow-right" size="14" />
+                  </div>
                 </div>
 
-                <!-- Click indicator -->
-                <div
-                    class="flex items-center gap-2 mt-4 text-primary text-sm opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span>View Details</span>
-                  <Icon name="carbon:arrow-right" size="16"/>
-                </div>
               </div>
             </Motion>
           </div>
@@ -123,135 +137,129 @@ const openModal = (experience: Experience) => {
     </div>
 
     <!-- Experience Details Modal -->
-    <UModal v-model:open="isOpen"
-            :ui="{content:'w-full max-w-5xl',header:'px-6 sm:px-12 py-4 sm:py-8',body:'p-0',footer:'p-0'}">
+    <UModal 
+      v-model:open="isOpen"
+      :ui="{
+        content: 'w-full max-w-4xl bg-[#090e1a] border border-white/15 shadow-2xl rounded-3xl overflow-hidden',
+        header: 'p-6 sm:p-8 bg-[#0c1424] border-b border-white/10',
+        body: 'p-6 sm:p-8 max-h-[70vh] overflow-y-auto',
+        footer: 'p-4 sm:p-6 bg-[#0c1424] border-t border-white/10'
+      }"
+    >
       <template #title>
-        <h2 class="text-2xl sm:text-4xl font-black text-white mb-1 sm:mb-2 wrap-break-word">
-          {{ selectedExperience?.position }}</h2>
+        <div class="flex flex-col gap-1">
+          <span class="text-xs font-mono text-cyan-400 uppercase tracking-wider">{{ selectedExperience?.company }}</span>
+          <h2 class="text-2xl sm:text-3xl font-heading font-black text-white">
+            {{ selectedExperience?.position }}
+          </h2>
+        </div>
       </template>
-      <template #description>
-        <p class="text-xs sm:text-sm text-white/50">{{ selectedExperience?.company }}</p>
-      </template>
-      <!-- Body -->
+
       <template #body>
-        <div class="overflow-y-auto flex-1">
-          <div class="mx-auto px-4 sm:px-8 py-8 sm:py-16">
-            <div class="space-y-12 sm:space-y-16">
-              <!-- Company Info Box -->
-              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-                <div
-                    class="group bg-linear-to-br from-white/10 to-white/5 border border-white/15 rounded-2xl p-4 sm:p-6 hover:border-primary/50 hover:from-primary/20 hover:to-primary/10 transition-all duration-300">
-                  <div class="flex items-center justify-between mb-3">
-                    <p class="text-xs text-white/60 uppercase font-bold tracking-widest">Duration</p>
-                    <Icon name="carbon:calendar" size="18"
-                          class="sm:w-5 sm:h-5 text-primary/60 group-hover:text-primary transition-colors"/>
-                  </div>
-                  <p class="text-lg sm:text-xl text-primary font-black">{{ selectedExperience?.period }}</p>
-                  <p class="text-xs text-white/40 mt-2">Employment Period</p>
-                </div>
-                <div
-                    class="group bg-linear-to-br from-white/10 to-white/5 border border-white/15 rounded-2xl p-4 sm:p-6 hover:border-primary/50 hover:from-primary/20 hover:to-primary/10 transition-all duration-300">
-                  <div class="flex items-center justify-between mb-3">
-                    <p class="text-xs text-white/60 uppercase font-bold tracking-widest">Responsibilities</p>
-                    <Icon name="carbon:task-approved" size="18"
-                          class="sm:w-5 sm:h-5 text-primary/60 group-hover:text-primary transition-colors"/>
-                  </div>
-                  <p class="text-2xl sm:text-3xl text-primary font-black">{{
-                      selectedExperience?.responsibilities.length
-                    }}</p>
-                  <p class="text-xs text-white/40 mt-2">Key Tasks</p>
-                </div>
-                <div
-                    class="group bg-linear-to-br from-white/10 to-white/5 border border-white/15 rounded-2xl p-4 sm:p-6 hover:border-primary/50 hover:from-primary/20 hover:to-primary/10 transition-all duration-300">
-                  <div class="flex items-center justify-between mb-3">
-                    <p class="text-xs text-white/60 uppercase font-bold tracking-widest">Technologies</p>
-                    <Icon name="carbon:code" size="18"
-                          class="sm:w-5 sm:h-5 text-primary/60 group-hover:text-primary transition-colors"/>
-                  </div>
-                  <p class="text-2xl sm:text-3xl text-primary font-black">{{
-                      selectedExperience?.technologies.length
-                    }}</p>
-                  <p class="text-xs text-white/40 mt-2">Tools Used</p>
-                </div>
+        <div class="space-y-8">
+          <!-- Metric Badges Row -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="p-4 rounded-xl bg-white/[0.03] border border-white/10 flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0">
+                <Icon name="carbon:calendar" size="20" />
               </div>
-
-              <!-- Description -->
               <div>
-                <div class="flex items-center gap-3 mb-4 sm:mb-6">
-                  <div class="w-2 h-8 bg-linear-to-b from-primary to-primary/50 rounded-full"></div>
-                  <h3 class="text-xl sm:text-2xl font-black text-white">About This Role</h3>
-                </div>
-                <div class="bg-linear-to-br from-white/10 to-white/5 border border-white/15 rounded-2xl p-4 sm:p-10">
-                  <p class="text-white/85 leading-relaxed text-sm sm:text-lg">{{ selectedExperience?.description }}</p>
-                </div>
+                <p class="text-[10px] font-mono uppercase text-slate-400">Tenure</p>
+                <p class="text-xs sm:text-sm font-semibold text-white">{{ selectedExperience?.period }}</p>
               </div>
+            </div>
 
-              <!-- Key Responsibilities -->
-              <div>
-                <div class="flex items-center gap-3 mb-4 sm:mb-6">
-                  <div class="w-2 h-8 bg-linear-to-b from-primary to-primary/50 rounded-full"></div>
-                  <h3 class="text-xl sm:text-2xl font-black text-white">Key Responsibilities</h3>
-                </div>
-                <ul class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-5">
-                  <li
-                      v-for="(responsibility, idx) in selectedExperience?.responsibilities"
-                      :key="idx"
-                      class="flex items-start gap-3 sm:gap-4 p-3 sm:p-6 rounded-xl bg-linear-to-r from-white/10 via-white/5 to-transparent border border-white/15 hover:border-primary/50 hover:from-primary/20 hover:via-primary/10 transition-all duration-300 group cursor-default"
-                  >
-                    <Icon name="carbon:checkmark-filled" size="20"
-                          class="sm:w-6 sm:h-6 text-primary shrink-0 mt-0.5 sm:mt-1 group-hover:scale-125 transition-transform"/>
-                    <span class="text-white/85 group-hover:text-white transition-colors text-sm sm:text-base">{{
-                        responsibility
-                      }}</span>
-                  </li>
-                </ul>
+            <div class="p-4 rounded-xl bg-white/[0.03] border border-white/10 flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 shrink-0">
+                <Icon name="carbon:task-complete" size="20" />
               </div>
+              <div>
+                <p class="text-[10px] font-mono uppercase text-slate-400">Key Tasks</p>
+                <p class="text-xs sm:text-sm font-semibold text-white">{{ selectedExperience?.responsibilities.length || 0 }} Deliverables</p>
+              </div>
+            </div>
 
-              <!-- Technologies -->
-              <div>
-                <div class="flex items-center gap-3 mb-4 sm:mb-6">
-                  <div class="w-2 h-8 bg-linear-to-b from-primary to-primary/50 rounded-full"></div>
-                  <h3 class="text-xl sm:text-2xl font-black text-white">Technology Stack</h3>
-                </div>
-                <div
-                    class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-4 p-4 sm:p-8 bg-linear-to-br from-white/10 to-white/5 border border-white/15 rounded-2xl">
-                  <span
-                      v-for="tech in selectedExperience?.technologies"
-                      :key="tech"
-                      class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-bold text-primary bg-primary/15 border border-primary/40 rounded-lg hover:bg-primary/30 hover:border-primary/70 hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 text-center cursor-default group hover:scale-105 truncate"
-                  >
-                    {{ tech }}
-                  </span>
-                </div>
+            <div class="p-4 rounded-xl bg-white/[0.03] border border-white/10 flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+                <Icon name="carbon:tools" size="20" />
               </div>
+              <div>
+                <p class="text-[10px] font-mono uppercase text-slate-400">Tech Stack</p>
+                <p class="text-xs sm:text-sm font-semibold text-white">{{ selectedExperience?.technologies.length || 0 }} Technologies</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Role Summary -->
+          <div>
+            <h3 class="text-sm font-mono uppercase text-slate-400 tracking-wider mb-2 flex items-center gap-2">
+              <Icon name="carbon:information" size="16" class="text-blue-400" />
+              <span>Role Overview</span>
+            </h3>
+            <div class="p-5 rounded-2xl bg-white/[0.02] border border-white/10">
+              <p class="text-slate-200 text-sm sm:text-base leading-relaxed font-light">
+                {{ selectedExperience?.description }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Key Responsibilities Checklist -->
+          <div v-if="selectedExperience?.responsibilities?.length">
+            <h3 class="text-sm font-mono uppercase text-slate-400 tracking-wider mb-3 flex items-center gap-2">
+              <Icon name="carbon:checkmark-outline" size="16" class="text-emerald-400" />
+              <span>Key Responsibilities & Achievements</span>
+            </h3>
+            <div class="space-y-2.5">
+              <div
+                v-for="(resp, idx) in selectedExperience?.responsibilities"
+                :key="idx"
+                class="flex items-start gap-3 p-3.5 rounded-xl bg-white/[0.02] border border-white/10"
+              >
+                <Icon name="carbon:checkmark-filled" size="18" class="text-emerald-400 shrink-0 mt-0.5" />
+                <span class="text-xs sm:text-sm text-slate-200 leading-relaxed">{{ resp }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Technology Badges -->
+          <div v-if="selectedExperience?.technologies?.length">
+            <h3 class="text-sm font-mono uppercase text-slate-400 tracking-wider mb-3 flex items-center gap-2">
+              <Icon name="carbon:code" size="16" class="text-cyan-400" />
+              <span>Technologies Utilized</span>
+            </h3>
+            <div class="flex flex-wrap gap-2 p-4 rounded-2xl bg-white/[0.02] border border-white/10">
+              <span
+                v-for="tech in selectedExperience?.technologies"
+                :key="tech"
+                class="px-3 py-1.5 rounded-lg text-xs font-mono font-medium bg-blue-500/10 text-blue-300 border border-blue-500/30"
+              >
+                {{ tech }}
+              </span>
             </div>
           </div>
         </div>
       </template>
 
-      <!-- Footer -->
       <template #footer>
-        <div class="px-4 sm:px-8 py-4 sm:py-6 flex w-full justify-end gap-2 sm:gap-3">
-          <UButton
-              v-if="selectedExperience?.attachment"
-              :to="selectedExperience?.attachment"
-              target="_blank"
-              external
-              color="primary"
-              size="lg"
-              class="bg-primary text-white hover:brightness-110 font-bold rounded-lg text-sm sm:text-base"
+        <div class="flex items-center justify-between w-full">
+          <a
+            v-if="selectedExperience?.attachment"
+            :href="selectedExperience.attachment"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn-shimmer-primary px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-white flex items-center gap-2"
           >
-            <template #leading>
-              <Icon name="carbon:document-download" size="18" class="sm:w-5 sm:h-5"/>
-            </template>
-            Download Certificate
-          </UButton>
+            <Icon name="carbon:document-download" size="16" />
+            <span>Download Certificate</span>
+          </a>
+          <span v-else></span>
+
           <UButton
-              color="neutral"
-              variant="outline"
-              size="lg"
-              @click="isOpen = false"
-              class="shrink-0 hover:bg-white/10 cursor-pointer font-semibold rounded-lg px-4 sm:px-6 text-sm sm:text-base"
+            color="neutral"
+            variant="outline"
+            size="md"
+            @click="isOpen = false"
+            class="rounded-xl px-5 cursor-pointer text-slate-300 hover:text-white"
           >
             Close
           </UButton>
@@ -260,11 +268,3 @@ const openModal = (experience: Experience) => {
     </UModal>
   </section>
 </template>
-
-<style scoped>
-/* Smooth animations */
-.group {
-  @apply transition-all duration-300;
-}
-</style>
-
