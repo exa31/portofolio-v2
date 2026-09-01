@@ -57,13 +57,13 @@ onUnmounted(() => {
 <template>
   <div class="min-h-screen bg-[#030712] text-slate-100 relative overflow-x-hidden selection:bg-blue-500/30 selection:text-blue-200">
     <!-- Ambient Background Lighting Orbs -->
-    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden gpu-layer">
       <!-- Top blue/indigo aurora -->
-      <div class="absolute -top-[20%] left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-gradient-to-b from-blue-600/15 via-indigo-500/10 to-transparent blur-[120px] rounded-full"></div>
+      <div class="absolute -top-[20%] left-1/2 -translate-x-1/2 w-[350px] sm:w-[800px] h-[300px] sm:h-[500px] bg-gradient-to-b from-blue-600/15 via-indigo-500/10 to-transparent blur-[60px] sm:blur-[120px] rounded-full gpu-layer"></div>
       <!-- Right cyan glow -->
-      <div class="absolute top-[30%] -right-[150px] w-[500px] h-[500px] bg-cyan-500/8 blur-[140px] rounded-full"></div>
+      <div class="absolute top-[30%] -right-[150px] w-[250px] sm:w-[500px] h-[250px] sm:h-[500px] bg-cyan-500/8 blur-[60px] sm:blur-[140px] rounded-full gpu-layer"></div>
       <!-- Left violet glow -->
-      <div class="absolute top-[60%] -left-[150px] w-[500px] h-[500px] bg-purple-600/8 blur-[140px] rounded-full"></div>
+      <div class="absolute top-[60%] -left-[150px] w-[250px] sm:w-[500px] h-[250px] sm:h-[500px] bg-purple-600/8 blur-[60px] sm:blur-[140px] rounded-full gpu-layer"></div>
       <!-- Cyber grid overlay -->
       <div class="absolute inset-0 cyber-grid-pattern opacity-40"></div>
     </div>
