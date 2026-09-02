@@ -27,19 +27,16 @@ const openModal = (experience: Experience) => {
 </script>
 
 <template>
-  <section id="work" class="py-24 relative overflow-hidden" aria-labelledby="journey-heading">
-    <!-- Ambient background aura -->
-    <div class="absolute top-1/2 left-1/4 w-[600px] h-[600px] bg-blue-600/5 blur-[160px] rounded-full pointer-events-none"></div>
-
+  <section id="work" class="py-20 sm:py-24 relative overflow-hidden" aria-labelledby="journey-heading">
     <div class="container mx-auto px-4 sm:px-6">
       
       <!-- Section Header -->
       <Motion
-        :initial="{ opacity: 0, y: 30 }"
+        :initial="{ opacity: 0, y: 20 }"
         :while-in-view="{ opacity: 1, y: 0 }"
-        :viewport="{ once: true, amount: 0.2 }"
-        :transition="{ duration: 0.7, ease: 'easeOut' }"
-        class="text-center max-w-3xl mx-auto mb-16"
+        :viewport="{ once: true, amount: 0.15 }"
+        :transition="{ duration: 0.45, ease: 'easeOut' }"
+        class="text-center max-w-3xl mx-auto mb-14 sm:mb-16"
       >
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-mono mb-4">
           <Icon name="carbon:milestone" size="14" />
@@ -48,7 +45,7 @@ const openModal = (experience: Experience) => {
         <h2 id="journey-heading" class="text-3xl sm:text-4xl lg:text-5xl font-heading font-black text-white tracking-tight mb-4">
           Professional <span class="text-gradient-primary">Journey</span>
         </h2>
-        <p class="text-slate-400 text-base sm:text-lg font-light leading-relaxed">
+        <p class="text-slate-300 text-base sm:text-lg font-normal leading-relaxed">
           A track record of architecting scalable products, driving technical milestones, and solving high-impact challenges.
         </p>
       </Motion>
@@ -57,33 +54,33 @@ const openModal = (experience: Experience) => {
       <div class="max-w-4xl mx-auto">
         <div class="relative">
           <!-- Continuous Vertical Gradient Line -->
-          <div class="absolute left-6 sm:left-8 top-4 bottom-4 w-0.5 bg-gradient-to-b from-blue-500 via-cyan-500/50 to-transparent"></div>
+          <div class="absolute left-6 sm:left-8 top-4 bottom-4 w-0.5 bg-gradient-to-b from-blue-500 via-cyan-500/40 to-transparent"></div>
 
           <!-- Timeline Items List -->
-          <div class="space-y-8 sm:space-y-10">
+          <div class="space-y-6 sm:space-y-8">
             <Motion
               v-for="(experience, index) in experiences"
               :key="experience.id ?? index"
-              :initial="{ opacity: 0, x: -30 }"
+              :initial="{ opacity: 0, x: -20 }"
               :while-in-view="{ opacity: 1, x: 0 }"
-              :viewport="{ once: true, amount: 0.15 }"
-              :transition="{ duration: 0.6, delay: index * 0.1, ease: 'easeOut' }"
-              class="relative pl-16 sm:pl-20"
+              :viewport="{ once: true, amount: 0.1 }"
+              :transition="{ duration: 0.45, delay: index * 0.08, ease: 'easeOut' }"
+              class="relative pl-14 sm:pl-20"
             >
-              <!-- Glowing Checkpoint Node -->
+              <!-- Checkpoint Node -->
               <div class="absolute left-0 top-1 w-12 sm:w-16 h-12 sm:h-16 flex items-center justify-center">
-                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-[#090e1a] border border-blue-500/40 shadow-lg shadow-blue-500/20 flex items-center justify-center">
-                  <Icon name="carbon:badge" size="20" class="text-blue-400" />
+                <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-[#090e1a] border border-blue-500/40 shadow-md shadow-blue-500/15 flex items-center justify-center">
+                  <Icon name="carbon:badge" size="18" class="text-blue-400" />
                 </div>
               </div>
 
               <!-- Experience Interactive Card -->
               <div
-                class="glass-panel-interactive rounded-2xl p-5 sm:p-7 cursor-pointer group"
+                class="card-interactive rounded-2xl p-5 sm:p-6 cursor-pointer group"
                 @click="openModal(experience)"
               >
                 <!-- Card Header -->
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2.5">
                   <div>
                     <h3 class="text-lg sm:text-xl font-heading font-bold text-white group-hover:text-blue-400 transition-colors">
                       {{ experience.position }}
@@ -101,7 +98,7 @@ const openModal = (experience: Experience) => {
                 </div>
 
                 <!-- Short Description -->
-                <p class="text-slate-300 text-sm leading-relaxed mb-4 line-clamp-2 font-light">
+                <p class="text-slate-300 text-sm leading-relaxed mb-4 line-clamp-2 font-normal">
                   {{ experience.description }}
                 </p>
 
@@ -111,13 +108,13 @@ const openModal = (experience: Experience) => {
                     <span
                       v-for="tech in experience.technologies.slice(0, 4)"
                       :key="tech"
-                      class="px-2.5 py-1 rounded-md text-[11px] font-mono font-medium bg-blue-500/10 text-blue-300 border border-blue-500/20"
+                      class="px-2.5 py-0.5 rounded-md text-[11px] font-mono font-medium bg-blue-500/10 text-blue-300 border border-blue-500/20"
                     >
                       {{ tech }}
                     </span>
                     <span
                       v-if="experience.technologies.length > 4"
-                      class="px-2 py-1 rounded-md text-[11px] font-mono text-slate-400 bg-white/[0.03]"
+                      class="px-2 py-0.5 rounded-md text-[11px] font-mono text-slate-400 bg-white/[0.03]"
                     >
                       +{{ experience.technologies.length - 4 }}
                     </span>
@@ -197,7 +194,7 @@ const openModal = (experience: Experience) => {
               <span>Role Overview</span>
             </h3>
             <div class="p-5 rounded-2xl bg-white/[0.02] border border-white/10">
-              <p class="text-slate-200 text-sm sm:text-base leading-relaxed font-light">
+              <p class="text-slate-200 text-sm sm:text-base leading-relaxed font-normal">
                 {{ selectedExperience?.description }}
               </p>
             </div>
@@ -247,7 +244,7 @@ const openModal = (experience: Experience) => {
             :href="selectedExperience.attachment"
             target="_blank"
             rel="noopener noreferrer"
-            class="btn-shimmer-primary px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-white flex items-center gap-2"
+            class="btn-primary-gradient px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-white flex items-center gap-2 cursor-pointer"
           >
             <Icon name="carbon:document-download" size="16" />
             <span>Download Certificate</span>

@@ -6,17 +6,17 @@
     --font-display: 'Space Grotesk', 'Plus Jakarta Sans', sans-serif;
     --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-    /* Theme Palette */
+    /* Refined, Eye-Pleasing Modern Palette */
     --color-primary: #3b82f6;
     --color-primary-dark: #1d4ed8;
-    --color-secondary: #0f172a;
+    --color-secondary: #0b0f19;
     --color-tertiary: #38bdf8;
     --color-text-primary: #60a5fa;
     --color-text-secondary: #94a3b8;
     --color-warn: #fbbf24;
     --color-danger: #f87171;
     --color-accent-cyan: #06b6d4;
-    --color-accent-violet: #8b5cf6;
+    --color-accent-violet: #818cf8;
     --color-accent-emerald: #10b981;
 }
 
@@ -27,96 +27,123 @@
 
 html {
     scroll-behavior: smooth;
-    background-color: #030712;
+    background-color: #070b14;
 }
 
 body {
-    background-color: #030712;
-    color: #f8fafc;
+    background-color: #070b14;
+    color: #f1f5f9;
     overflow-x: hidden;
     font-family: var(--font-sans);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 h1, h2, h3, .font-heading {
     font-family: var(--font-display);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.025em;
 }
 
 code, pre, .font-code {
     font-family: var(--font-mono);
 }
 
-/* ========== CYBER GRID & AMBIENT TEXTURES ========== */
-.cyber-grid-pattern {
+/* ========== ULTRA-LIGHTWEIGHT AMBIENT BACKGROUND ========== */
+/* Uses pure CSS radial-gradients rendered in a single pass without expensive blur filters */
+.ambient-canvas {
+    background-image:
+        radial-gradient(ellipse 70% 40% at 50% -10%, rgba(37, 99, 235, 0.14), transparent 70%),
+        radial-gradient(circle 500px at 85% 30%, rgba(6, 182, 212, 0.06), transparent 70%),
+        radial-gradient(circle 500px at 15% 65%, rgba(129, 140, 248, 0.05), transparent 70%),
+        radial-gradient(ellipse 60% 30% at 50% 100%, rgba(37, 99, 235, 0.06), transparent 70%);
+    background-repeat: no-repeat;
+}
+
+.subtle-grid {
     background-image: 
-        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    mask-image: radial-gradient(ellipse 60% 50% at 50% 0%, #000 70%, transparent 100%);
-    -webkit-mask-image: radial-gradient(ellipse 60% 50% at 50% 0%, #000 70%, transparent 100%);
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 48px 48px;
 }
 
-.dot-pattern {
-    background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
-    background-size: 24px 24px;
-}
-
-/* ========== iOS & HARDWARE ACCELERATION OPTIMIZATIONS ========== */
-* {
-    -webkit-tap-highlight-color: transparent;
-}
-
-.gpu-layer,
-.glass-panel,
-.glass-panel-interactive,
-.btn-shimmer-primary,
-.btn-glass-secondary {
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-    will-change: transform;
-}
-
-/* Glassmorphism Optimization for Mobile / iOS */
+/* ========== HIGH PERFORMANCE CARDS & SURFACES ========== */
+/* Zero layer-thrashing: avoids will-change on idle elements for maximum FPS */
+.card-elevated,
 .glass-panel {
-    background: rgba(15, 23, 42, 0.75);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: rgba(13, 20, 36, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 4px 20px -2px rgba(0, 0, 0, 0.4);
 }
 
+.card-interactive,
 .glass-panel-interactive {
-    background: rgba(15, 23, 42, 0.65);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+    background-color: rgba(13, 20, 36, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 4px 16px -2px rgba(0, 0, 0, 0.3);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), 
+                border-color 0.25s ease, 
+                box-shadow 0.25s ease, 
+                background-color 0.25s ease;
 }
 
-@media (max-width: 768px) {
-    .glass-panel {
-        background: rgba(15, 23, 42, 0.85);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-    }
-    .glass-panel-interactive {
-        background: rgba(15, 23, 42, 0.85);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-    }
-}
-
+.card-interactive:hover,
 .glass-panel-interactive:hover {
-    background: rgba(30, 41, 59, 0.75);
-    border-color: rgba(96, 165, 250, 0.35);
-    box-shadow: 0 10px 30px -10px rgba(59, 130, 246, 0.2);
+    background-color: rgba(19, 29, 53, 0.85);
+    border-color: rgba(96, 165, 250, 0.3);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 14px 30px -10px rgba(37, 99, 235, 0.18);
     transform: translateY(-2px);
 }
 
-/* ========== TEXT GRADIENTS ========== */
+/* ========== LINEAR-STYLE SPOTLIGHT CARD GLOW ========== */
+.spotlight-card {
+    position: relative;
+    background-color: rgba(13, 20, 36, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.25s ease,
+                box-shadow 0.25s ease;
+}
+
+.spotlight-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+        450px circle at var(--mouse-x, -500px) var(--mouse-y, -500px),
+        rgba(56, 189, 248, 0.15),
+        transparent 65%
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.spotlight-card:hover {
+    border-color: rgba(56, 189, 248, 0.35);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 12px 30px -10px rgba(37, 99, 235, 0.2);
+    transform: translateY(-2px);
+}
+
+.spotlight-card:hover::before {
+    opacity: 1;
+}
+
+/* ========== SELECTIVE FROSTED GLASS (HEADER & MODALS ONLY) ========== */
+.frosted-nav {
+    background: rgba(11, 17, 32, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.5);
+}
+
+/* ========== TEXT GRADIENTS (SOOTHING & BALANCED) ========== */
 .text-gradient-primary {
-    background: linear-gradient(135deg, #ffffff 20%, #93c5fd 60%, #3b82f6 100%);
+    background: linear-gradient(135deg, #ffffff 30%, #93c5fd 75%, #3b82f6 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
@@ -127,91 +154,85 @@ code, pre, .font-code {
     -webkit-text-fill-color: transparent;
 }
 
-.text-gradient-sunset {
-    background: linear-gradient(135deg, #fb923c 0%, #f43f5e 50%, #ec4899 100%);
+.text-gradient-emerald {
+    background: linear-gradient(135deg, #34d399 0%, #38bdf8 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
-/* ========== SHIMMER & GLOW BUTTONS ========== */
+/* ========== BUTTONS (HIGH FPS & BUTTERY SMOOTH) ========== */
+.btn-primary-gradient,
 .btn-shimmer-primary {
     position: relative;
     background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-    box-shadow: 0 0 20px rgba(37, 99, 235, 0.35);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.35);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), 
+                box-shadow 0.2s ease, 
+                filter 0.2s ease;
     overflow: hidden;
 }
 
-.btn-shimmer-primary::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: linear-gradient(
-        60deg,
-        transparent,
-        rgba(255, 255, 255, 0.2),
-        transparent
-    );
-    transform: rotate(30deg) translateY(-100%);
-    transition: transform 0.75s ease;
-}
-
+.btn-primary-gradient:hover,
 .btn-shimmer-primary:hover {
-    box-shadow: 0 0 30px rgba(37, 99, 235, 0.55);
-    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(37, 99, 235, 0.5);
+    transform: translateY(-1px);
 }
 
-.btn-shimmer-primary:hover::before {
-    transform: rotate(30deg) translateY(100%);
+.btn-primary-gradient:active,
+.btn-shimmer-primary:active {
+    transform: translateY(0);
 }
 
+.btn-secondary-subtle,
 .btn-glass-secondary {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    transition: transform 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), 
+                background-color 0.2s ease, 
+                border-color 0.2s ease;
 }
 
+.btn-secondary-subtle:hover,
 .btn-glass-secondary:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.25);
-    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
 }
 
-/* ========== RADAR PULSE ANIMATION ========== */
+.btn-secondary-subtle:active,
+.btn-glass-secondary:active {
+    transform: translateY(0);
+}
+
+/* ========== RADAR PULSE (LOW OVERHEAD) ========== */
 @keyframes radar-ripple {
     0% {
-        transform: scale(0.8);
-        opacity: 0.9;
+        transform: scale(0.9);
+        opacity: 0.8;
     }
     100% {
-        transform: scale(2.4);
+        transform: scale(2.2);
         opacity: 0;
     }
 }
 
 .radar-ping {
-    animation: radar-ripple 2s cubic-bezier(0, 0.2, 0.8, 1) infinite;
-    will-change: transform, opacity;
+    animation: radar-ripple 2.2s cubic-bezier(0, 0.2, 0.8, 1) infinite;
 }
 
-/* ========== CUSTOM SCROLLBAR ========== */
+/* ========== MINIMAL CUSTOM SCROLLBAR ========== */
 ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-    background: #030712;
+    background: #070b14;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {

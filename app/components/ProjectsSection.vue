@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 interface Project {
   id?: number;
@@ -14,13 +14,16 @@ interface Project {
   features: string[];
 }
 
-defineProps<{
+const props = defineProps<{
   projects: Project[]
 }>()
+
+const { onMouseMove } = useSpotlight()
 
 const selectedProject = ref<Project | null>(null)
 const isModalOpen = ref(false)
 const copied = ref(false)
+const activeFilter = ref('All')
 
 const openProjectModal = (project: Project) => {
   selectedProject.value = project
@@ -42,22 +45,35 @@ const copyToClipboard = (text?: string) => {
     }, 2000)
   }
 }
+
+// Project category inference
+const getProjectCategory = (p: Project): string => {
+  const t = (p.technologies || []).map(x => x.toLowerCase()).join(' ')
+  const desc = (p.description || '').toLowerCase()
+  if (t.includes('flutter') || t.includes('dart') || desc.includes('mobile')) return 'Mobile Apps'
+  if (t.includes('k8s') || t.includes('docker') || t.includes('go') || desc.includes('microservice') || desc.includes('backend')) return 'Backend & Cloud'
+  return 'Full-Stack'
+}
+
+const categories = ['All', 'Full-Stack', 'Backend & Cloud', 'Mobile Apps']
+
+const filteredProjects = computed(() => {
+  if (activeFilter.value === 'All') return props.projects
+  return props.projects.filter(p => getProjectCategory(p) === activeFilter.value)
+})
 </script>
 
 <template>
-  <section id="project" class="py-24 relative overflow-hidden" aria-labelledby="projects-heading">
-    <!-- Ambient glow -->
-    <div class="absolute top-1/2 right-10 w-[600px] h-[600px] bg-indigo-600/5 blur-[160px] rounded-full pointer-events-none"></div>
-
+  <section id="project" class="py-20 sm:py-24 relative overflow-hidden" aria-labelledby="projects-heading">
     <div class="container mx-auto px-4 sm:px-6">
       
       <!-- Section Header -->
       <Motion
-        :initial="{ opacity: 0, y: 30 }"
+        :initial="{ opacity: 0, y: 20 }"
         :while-in-view="{ opacity: 1, y: 0 }"
-        :viewport="{ once: true, amount: 0.2 }"
-        :transition="{ duration: 0.7, ease: 'easeOut' }"
-        class="text-center max-w-3xl mx-auto mb-16"
+        :viewport="{ once: true, amount: 0.15 }"
+        :transition="{ duration: 0.45, ease: 'easeOut' }"
+        class="text-center max-w-3xl mx-auto mb-10 sm:mb-12"
       >
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-mono mb-4">
           <Icon name="carbon:application-web" size="14" />
@@ -66,86 +82,124 @@ const copyToClipboard = (text?: string) => {
         <h2 id="projects-heading" class="text-3xl sm:text-4xl lg:text-5xl font-heading font-black text-white tracking-tight mb-4">
           Featured <span class="text-gradient-primary">Engineering Projects</span>
         </h2>
-        <p class="text-slate-400 text-base sm:text-lg font-light leading-relaxed">
+        <p class="text-slate-300 text-base sm:text-lg font-normal leading-relaxed">
           A showcase of full-stack web applications, scalable backend microservices, and mobile products engineered for real-world reliability.
         </p>
       </Motion>
 
-      <!-- Projects Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+      <!-- Category Filter Pills Bar -->
+      <div class="flex flex-wrap items-center justify-center gap-2 mb-10 max-w-2xl mx-auto">
+        <button
+          v-for="cat in categories"
+          :key="cat"
+          @click="activeFilter = cat"
+          class="px-4 py-1.5 rounded-full text-xs font-medium tracking-wide transition-all duration-200 cursor-pointer"
+          :class="activeFilter === cat
+            ? 'bg-blue-600/30 text-blue-300 border border-blue-500/40 shadow-sm shadow-blue-500/10'
+            : 'bg-white/[0.03] text-slate-400 hover:text-white hover:bg-white/[0.06] border border-white/[0.06]'"
+        >
+          {{ cat }}
+        </button>
+      </div>
+
+      <!-- Projects Grid with Linear Spotlight & Browser Mockup -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
         <Motion
-          v-for="(project, index) in projects"
+          v-for="(project, index) in filteredProjects"
           :key="project.id ?? index"
-          :initial="{ opacity: 0, y: 30 }"
+          :initial="{ opacity: 0, y: 20 }"
           :while-in-view="{ opacity: 1, y: 0 }"
           :viewport="{ once: true, amount: 0.1 }"
           :transition="{
-            duration: 0.6,
-            delay: (index % 3) * 0.12,
+            duration: 0.45,
+            delay: (index % 3) * 0.08,
             ease: 'easeOut'
           }"
           @click="openProjectModal(project)"
-          class="group rounded-3xl bg-[#090e1a]/80 border border-white/10 overflow-hidden cursor-pointer backdrop-blur-xl transition-all duration-300 hover:border-blue-500/40 hover:shadow-2xl hover:shadow-blue-500/10 flex flex-col justify-between"
+          @mousemove="onMouseMove"
+          class="spotlight-card group rounded-3xl overflow-hidden cursor-pointer flex flex-col justify-between"
         >
-          <!-- Project Banner Image -->
-          <div class="relative h-56 w-full overflow-hidden bg-slate-900">
-            <NuxtImg
-              :src="project.image || '/images/project-preview.webp'"
-              :alt="project.title"
-              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-              loading="lazy"
-            />
-            <div class="absolute inset-0 bg-gradient-to-t from-[#090e1a] via-[#090e1a]/30 to-transparent"></div>
+          <!-- Browser Mockup Window Frame -->
+          <div>
+            <div class="px-4 py-2.5 bg-[#0a0f1d] border-b border-white/[0.08] flex items-center justify-between">
+              <!-- Window dots -->
+              <div class="flex items-center gap-1.5">
+                <div class="w-2.5 h-2.5 rounded-full bg-[#ff5f56]/80"></div>
+                <div class="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]/80"></div>
+                <div class="w-2.5 h-2.5 rounded-full bg-[#27c93f]/80"></div>
+              </div>
 
-            <!-- Top Live / Status Badge -->
-            <div class="absolute top-4 left-4 right-4 flex items-center justify-between">
+              <!-- URL bar mock -->
+              <div class="px-3 py-0.5 rounded-md bg-white/[0.03] border border-white/[0.05] text-[10px] font-mono text-slate-400 max-w-[170px] truncate flex items-center gap-1">
+                <Icon name="carbon:locked" size="10" class="text-emerald-400 shrink-0" />
+                <span>{{ project.liveUrl ? project.liveUrl.replace('https://', '') : 'preview.internal' }}</span>
+              </div>
+
+              <!-- Status indicator -->
               <span
                 v-if="project.liveUrl"
-                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/30 text-emerald-400 text-xs font-mono backdrop-blur-md"
+                class="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-400"
               >
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span>Live App</span>
+                <span>LIVE</span>
               </span>
-              <span
-                v-else
-                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900/80 border border-white/10 text-slate-300 text-xs font-mono backdrop-blur-md"
-              >
-                <span>Case Study</span>
-              </span>
+              <span v-else class="text-[10px] font-mono text-slate-500">CASE</span>
+            </div>
+
+            <!-- Project Banner Image -->
+            <div class="relative h-48 sm:h-52 w-full overflow-hidden bg-slate-900">
+              <NuxtImg
+                :src="project.image || '/images/project-preview.webp'"
+                :alt="project.title"
+                class="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
+                loading="lazy"
+                width="600"
+                height="340"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-[#0d1424] via-[#0d1424]/20 to-transparent"></div>
 
               <!-- Hover explore icon -->
-              <div class="w-8 h-8 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300">
+              <div class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-200">
                 <Icon name="carbon:arrow-up-right" size="16" />
               </div>
             </div>
           </div>
 
           <!-- Project Details Container -->
-          <div class="p-6 flex-1 flex flex-col justify-between">
+          <div class="p-5 sm:p-6 flex-1 flex flex-col justify-between">
             <div>
-              <h3 class="text-xl font-heading font-bold text-white group-hover:text-blue-400 transition-colors mb-2">
-                {{ project.title }}
-              </h3>
+              <div class="flex items-center justify-between gap-2 mb-1.5">
+                <h3 class="text-xl font-heading font-bold text-white group-hover:text-blue-400 transition-colors truncate">
+                  {{ project.title }}
+                </h3>
+              </div>
 
-              <p class="text-slate-400 text-sm leading-relaxed mb-6 line-clamp-2 font-light">
+              <p class="text-slate-300 text-sm leading-relaxed mb-5 line-clamp-2 font-normal">
                 {{ project.shortDesc || project.description }}
               </p>
             </div>
 
-            <!-- Technology Chips -->
-            <div class="pt-4 border-t border-white/[0.06] flex flex-wrap gap-1.5">
-              <span
-                v-for="tech in project.technologies.slice(0, 4)"
-                :key="tech"
-                class="px-2.5 py-1 rounded-md text-[11px] font-mono font-medium bg-white/[0.03] text-slate-300 border border-white/[0.08] group-hover:border-blue-500/20 group-hover:bg-blue-500/5 transition-colors"
-              >
-                {{ tech }}
-              </span>
-              <span
-                v-if="project.technologies.length > 4"
-                class="px-2 py-1 rounded-md text-[11px] font-mono text-slate-500 bg-white/[0.02]"
-              >
-                +{{ project.technologies.length - 4 }}
+            <!-- Technology Chips & Action -->
+            <div class="pt-3.5 border-t border-white/[0.06] flex items-center justify-between gap-2">
+              <div class="flex flex-wrap gap-1.5">
+                <span
+                  v-for="tech in project.technologies.slice(0, 3)"
+                  :key="tech"
+                  class="px-2 py-0.5 rounded-md text-[11px] font-mono font-medium bg-blue-500/10 text-blue-300 border border-blue-500/20"
+                >
+                  {{ tech }}
+                </span>
+                <span
+                  v-if="project.technologies.length > 3"
+                  class="px-2 py-0.5 rounded-md text-[11px] font-mono text-slate-500 bg-white/[0.02]"
+                >
+                  +{{ project.technologies.length - 3 }}
+                </span>
+              </div>
+
+              <span class="text-xs font-mono text-blue-400 group-hover:translate-x-1 transition-transform flex items-center gap-1 shrink-0">
+                <span>Details</span>
+                <Icon name="carbon:chevron-right" size="14" />
               </span>
             </div>
           </div>
@@ -166,7 +220,7 @@ const copyToClipboard = (text?: string) => {
     >
       <template #title>
         <div class="flex flex-col gap-1">
-          <span class="text-xs font-mono text-blue-400 uppercase tracking-wider">PROJECT DEEP DIVE</span>
+          <span class="text-xs font-mono text-blue-400 uppercase tracking-wider">PROJECT ARCHITECTURE DEEP DIVE</span>
           <h2 class="text-2xl sm:text-3xl font-heading font-black text-white">
             {{ selectedProject?.title }}
           </h2>
@@ -181,6 +235,8 @@ const copyToClipboard = (text?: string) => {
               :src="selectedProject?.image || '/images/project-preview.webp'"
               :alt="selectedProject?.title"
               class="w-full h-64 sm:h-80 object-cover"
+              width="800"
+              height="450"
             />
             <div class="absolute inset-0 bg-gradient-to-t from-[#090e1a] via-transparent to-transparent"></div>
           </div>
@@ -228,7 +284,7 @@ const copyToClipboard = (text?: string) => {
               <span>Project Architecture & Overview</span>
             </h3>
             <div class="p-5 rounded-2xl bg-white/[0.02] border border-white/10">
-              <p class="text-slate-200 text-sm sm:text-base leading-relaxed font-light">
+              <p class="text-slate-200 text-sm sm:text-base leading-relaxed font-normal">
                 {{ selectedProject?.details || selectedProject?.description }}
               </p>
             </div>
@@ -294,7 +350,7 @@ const copyToClipboard = (text?: string) => {
                 :href="selectedProject.liveUrl"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="btn-shimmer-primary px-4 py-2 rounded-xl text-xs font-semibold text-white flex items-center gap-1.5 cursor-pointer"
+                class="btn-primary-gradient px-4 py-2 rounded-xl text-xs font-semibold text-white flex items-center gap-1.5 cursor-pointer"
               >
                 <span>Launch Live</span>
                 <Icon name="carbon:arrow-up-right" size="14" />
@@ -312,7 +368,7 @@ const copyToClipboard = (text?: string) => {
             :href="selectedProject.link"
             target="_blank"
             rel="noopener noreferrer"
-            class="btn-glass-secondary px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-white flex items-center gap-2"
+            class="btn-secondary-subtle px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-white flex items-center gap-2"
           >
             <Icon name="line-md:github" size="18" />
             <span>View Source Code</span>
