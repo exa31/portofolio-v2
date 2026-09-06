@@ -2,7 +2,7 @@ name: Build & Deploy Portofolio v2 to VPS via GHCR
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build-and-deploy:
@@ -55,15 +55,15 @@ jobs:
         run: |
           ssh -p 31080 deploy@${{ secrets.VPS_HOST }} << 'EOF'
             set -e
-          
+
             export KUBECONFIG=/home/deploy/.kube/config         
-          
+
             NEW_IMAGE="ghcr.io/${{ github.repository_owner }}/portofolio-v2:${{ steps.vars.outputs.sha }}"
 
             kubectl set image deployment/portofolio-v2 \
-              -n dev-coffe \
+              -n portfolio \
               portofolio-v2=$NEW_IMAGE
 
             # kubectl rollout status deployment/portofolio-v2 \
-            #   -n dev-coffe
+            #   -n portfolio
           EOF
