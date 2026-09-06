@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {computed, ref} from 'vue'
-import type {Project} from "~/types/project";
+import type {Project, ProjectPreviewInput} from "~/types/project";
 import {useToastCustom} from "~/composables/useToastCustom";
 import {useProject} from "~/composables/useProject";
 import {useSkill} from "~/composables/useSkill";
@@ -35,6 +35,65 @@ const currentProject = ref<Project | null>(null)
 const errors = ref<FormErrors>({})
 const imagePreview = ref<string>('')
 const fileInputRef = ref<HTMLInputElement | null>(null)
+
+// Preview images state (Feature gallery)
+const previewItems = ref<ProjectPreviewInput[]>([])
+const previewFileInputRef = ref<HTMLInputElement | null>(null)
+
+const triggerPreviewFileInput = () => {
+  previewFileInputRef.value?.click()
+}
+
+const handlePreviewUpload = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const files = target.files
+  if (!files || files.length === 0) return
+
+  const maxSize = 5 * 1024 * 1024
+
+  Array.from(files).forEach((file) => {
+    if (!file.type.startsWith('image/')) {
+      toast.showErrorToast('Invalid File', `${file.name} is not an image file`)
+      return
+    }
+    if (file.size > maxSize) {
+      toast.showErrorToast('File Too Large', `${file.name} exceeds 5MB limit`)
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      previewItems.value.push({
+        id: crypto.randomUUID(),
+        file: file,
+        previewUrl: e.target?.result as string,
+        title: '',
+        caption: ''
+      })
+    }
+    reader.readAsDataURL(file)
+  })
+
+  target.value = ''
+}
+
+const removePreviewItem = (index: number) => {
+  previewItems.value.splice(index, 1)
+}
+
+const initPreviewItems = (project: Project) => {
+  if (project.preview_images && Array.isArray(project.preview_images)) {
+    previewItems.value = project.preview_images.map((img) => ({
+      id: crypto.randomUUID(),
+      url: img.url,
+      previewUrl: img.url,
+      title: img.title || '',
+      caption: img.caption || ''
+    }))
+  } else {
+    previewItems.value = []
+  }
+}
 
 // Fetch initial skills on SSR/CSR
 const {data: skillsData} = await useAsyncData('edit-skills', async () => {
@@ -160,13 +219,13 @@ const handleImageUpload = (event: Event) => {
   if (!file) return
 
   if (!file.type.startsWith('image/')) {
-    toast.showErrorToast('Error', 'Please select an image file',)
+    toast.showErrorToast('Error', 'Please select an image file')
     return
   }
 
   const maxSize = 5 * 1024 * 1024
   if (file.size > maxSize) {
-    toast.showErrorToast('Error', 'File size must be less than 5MB',)
+    toast.showErrorToast('Error', 'File size must be less than 5MB')
     return
   }
 
@@ -192,6 +251,7 @@ const toggleEditMode = () => {
     // Cancel edit
     formData.value = {...currentProject.value!}
     imagePreview.value = currentProject.value?.preview_image as string || ''
+    initPreviewItems(currentProject.value!)
     errors.value = {}
     isEditMode.value = false
   } else {
@@ -204,17 +264,31 @@ const saveProject = async () => {
   if (!validateForm() || !formData.value) return toast.showErrorToast('Error', 'Please fix the errors in the form before saving.')
 
   formData.value.id = projectId.value
-  const success = await updateProject(formData.value)
+  const success = await updateProject(formData.value, previewItems.value)
   if (success) {
-    currentProject.value = {...formData.value}
+    const updated = await fetchProjectById(projectId.value)
+    if (updated) {
+      currentProject.value = {
+        ...updated,
+        start_date: parseDateForInput(updated.start_date),
+        end_date: parseDateForInput(updated.end_date)
+      }
+      formData.value = {
+        ...updated,
+        start_date: parseDateForInput(updated.start_date),
+        end_date: parseDateForInput(updated.end_date)
+      }
+      imagePreview.value = updated.preview_image as string || ''
+      initPreviewItems(updated)
+    }
     isEditMode.value = false
   }
 }
 
 const deleteProjectHandler = async () => {
   toast.showConfirmationToast(
-      'Delete Skill',
-      'Are you sure you want to delete this skill? This action cannot be undone.',
+      'Delete Project',
+      'Are you sure you want to delete this project? This action cannot be undone.',
       async () => {
         const success = await deleteProject(projectId.value)
         if (success) {
@@ -249,6 +323,7 @@ if (import.meta.client) {
         end_date: parseDateForInput(projectData.value.end_date)
       }
       imagePreview.value = projectData.value.preview_image as string || ''
+      initPreviewItems(projectData.value)
     } else {
       navigateTo('/dashboard/projects')
     }
@@ -381,6 +456,138 @@ if (import.meta.client) {
                     alt="Project preview"
                     class="w-full h-full object-cover"
                 />
+              </div>
+            </div>
+          </div>
+
+          <!-- Feature Gallery & Screenshots Section -->
+          <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div class="flex items-center gap-2">
+                  <h3 class="text-lg font-bold text-white">Feature Gallery & Screenshots</h3>
+                  <span class="px-2 py-0.5 rounded-full text-[11px] font-mono font-medium bg-blue-500/15 text-blue-300 border border-blue-500/30">
+                    {{ isEditMode ? previewItems.length : (currentProject?.preview_images?.length || 0) }} {{ (isEditMode ? previewItems.length : (currentProject?.preview_images?.length || 0)) === 1 ? 'Preview' : 'Previews' }}
+                  </span>
+                </div>
+                <p class="text-xs text-white/50 mt-0.5">Deep-dive feature screenshots displayed in the portfolio showcase modal.</p>
+              </div>
+
+              <!-- Add button in Edit Mode -->
+              <div v-if="isEditMode">
+                <button
+                    @click="triggerPreviewFileInput"
+                    type="button"
+                    class="inline-flex cursor-pointer items-center gap-2 px-3.5 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-white text-xs font-semibold border border-white/20 transition-all"
+                >
+                  <Icon name="carbon:add-alt" size="16" class="text-blue-400"/>
+                  Add Screenshots
+                </button>
+                <input
+                    ref="previewFileInputRef"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    @change="handlePreviewUpload"
+                    class="hidden"
+                />
+              </div>
+            </div>
+
+            <!-- View Mode -->
+            <div v-if="!isEditMode">
+              <div v-if="currentProject?.preview_images?.length" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div
+                    v-for="(img, idx) in currentProject.preview_images"
+                    :key="idx"
+                    class="p-3 rounded-xl bg-white/[0.03] border border-white/10 space-y-2.5"
+                >
+                  <div class="relative h-44 rounded-lg overflow-hidden border border-white/10 bg-slate-900">
+                    <img
+                        :src="img.url"
+                        :alt="img.title || `Preview ${idx + 1}`"
+                        class="w-full h-full object-cover"
+                    />
+                    <span class="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/70 backdrop-blur-xs text-[10px] font-mono text-white/80">
+                      #{{ idx + 1 }}
+                    </span>
+                  </div>
+                  <div>
+                    <h4 class="text-sm font-semibold text-white">{{ img.title || 'Untitled Screenshot' }}</h4>
+                    <p v-if="img.caption" class="text-xs text-white/60 mt-0.5 leading-relaxed">{{ img.caption }}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div v-else class="text-center py-8 border border-dashed border-white/10 rounded-xl bg-white/[0.01]">
+                <Icon name="carbon:images" size="32" class="text-white/20 mx-auto mb-2"/>
+                <p class="text-sm text-white/50">No feature screenshots uploaded for this project yet.</p>
+                <p class="text-xs text-white/30 mt-1">Click "Edit Project" above to upload feature screenshots.</p>
+              </div>
+            </div>
+
+            <!-- Edit Mode -->
+            <div v-else>
+              <div
+                  v-if="previewItems.length === 0"
+                  @click="triggerPreviewFileInput"
+                  class="border-2 border-dashed border-white/10 hover:border-blue-500/40 rounded-xl p-8 text-center cursor-pointer transition-all bg-white/[0.01] hover:bg-white/[0.03]"
+              >
+                <div class="w-10 h-10 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center mx-auto mb-2">
+                  <Icon name="carbon:images" size="20"/>
+                </div>
+                <p class="text-sm font-medium text-white/80">No feature screenshots added yet</p>
+                <p class="text-xs text-white/40 mt-1">Click here to select images to showcase in the modal deep-dive viewer.</p>
+              </div>
+
+              <div v-else class="space-y-3">
+                <div
+                    v-for="(item, idx) in previewItems"
+                    :key="item.id || idx"
+                    class="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-3.5 rounded-xl bg-white/[0.03] border border-white/10 hover:border-white/20 transition-all"
+                >
+                  <!-- Thumbnail Preview -->
+                  <div class="relative w-full sm:w-36 h-24 rounded-lg overflow-hidden border border-white/10 bg-slate-900 shrink-0">
+                    <img
+                        :src="item.previewUrl"
+                        :alt="item.title || `Screenshot ${idx + 1}`"
+                        class="w-full h-full object-cover"
+                    />
+                    <span class="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-black/60 backdrop-blur-xs text-[10px] font-mono text-white/80">
+                      #{{ idx + 1 }}
+                    </span>
+                  </div>
+
+                  <!-- Inputs: Title & Caption -->
+                  <div class="flex-1 w-full space-y-2">
+                    <div>
+                      <input
+                          v-model="item.title"
+                          type="text"
+                          placeholder="Screenshot Title (e.g. Analytics Dashboard, Mobile UI)"
+                          class="w-full px-3 py-1.5 text-xs rounded-lg bg-white/10 border border-white/15 focus:border-blue-500/50 text-white placeholder:text-white/40 focus:outline-none transition-all"
+                      />
+                    </div>
+                    <div>
+                      <input
+                          v-model="item.caption"
+                          type="text"
+                          placeholder="Brief caption/description of this feature..."
+                          class="w-full px-3 py-1.5 text-xs rounded-lg bg-white/10 border border-white/15 focus:border-blue-500/50 text-white placeholder:text-white/40 focus:outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- Delete Action -->
+                  <button
+                      @click="removePreviewItem(idx)"
+                      type="button"
+                      class="p-2 rounded-lg hover:bg-red-500/20 text-white/50 hover:text-red-400 transition-all cursor-pointer shrink-0 self-end sm:self-center"
+                      title="Remove screenshot"
+                  >
+                    <Icon name="carbon:trash-can" size="18"/>
+                  </button>
+                </div>
               </div>
             </div>
           </div>

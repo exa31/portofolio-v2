@@ -12,7 +12,7 @@ export default withAuth(async (event) => {
     }
 
 
-    const body = formatNuxtFormData(formData, ["id_skills", "features"]);
+    const body = formatNuxtFormData(formData, ["id_skills", "features", "preview_metadata", "preview_files"]);
 
     const parsed = createProjectSchema.safeParse(body);
 

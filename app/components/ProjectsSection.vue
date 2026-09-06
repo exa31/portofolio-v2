@@ -1,12 +1,19 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
+interface PreviewImage {
+  url: string;
+  title?: string;
+  caption?: string;
+}
+
 interface Project {
   id?: number;
   title: string;
   shortDesc: string;
   description: string;
   image: string;
+  preview_images?: PreviewImage[];
   technologies: string[];
   link?: string;
   liveUrl?: string;
@@ -24,9 +31,45 @@ const selectedProject = ref<Project | null>(null)
 const isModalOpen = ref(false)
 const copied = ref(false)
 const activeFilter = ref('All')
+const activeSlideIndex = ref(0)
+
+const modalSlides = computed(() => {
+  if (!selectedProject.value) return []
+  const slides: PreviewImage[] = [
+    {
+      url: selectedProject.value.image || '/images/project-preview.webp',
+      title: 'Cover Overview',
+      caption: selectedProject.value.shortDesc || selectedProject.value.title
+    }
+  ]
+  if (selectedProject.value.preview_images?.length) {
+    slides.push(...selectedProject.value.preview_images)
+  }
+  return slides
+})
+
+const activeSlide = computed(() => {
+  if (!modalSlides.value.length) return null
+  return modalSlides.value[activeSlideIndex.value] || modalSlides.value[0]
+})
+
+const prevSlide = () => {
+  if (modalSlides.value.length <= 1) return
+  activeSlideIndex.value = (activeSlideIndex.value - 1 + modalSlides.value.length) % modalSlides.value.length
+}
+
+const nextSlide = () => {
+  if (modalSlides.value.length <= 1) return
+  activeSlideIndex.value = (activeSlideIndex.value + 1) % modalSlides.value.length
+}
+
+const setSlide = (index: number) => {
+  activeSlideIndex.value = index
+}
 
 const openProjectModal = (project: Project) => {
   selectedProject.value = project
+  activeSlideIndex.value = 0
   isModalOpen.value = true
   copied.value = false
 }
@@ -34,6 +77,7 @@ const openProjectModal = (project: Project) => {
 const closeModal = () => {
   isModalOpen.value = false
   selectedProject.value = null
+  activeSlideIndex.value = 0
 }
 
 const copyToClipboard = (text?: string) => {
@@ -229,16 +273,90 @@ const filteredProjects = computed(() => {
 
       <template #body>
         <div class="space-y-8">
-          <!-- Featured Image Display -->
-          <div class="relative rounded-2xl overflow-hidden border border-white/10 bg-slate-900">
-            <NuxtImg
-              :src="selectedProject?.image || '/images/project-preview.webp'"
-              :alt="selectedProject?.title"
-              class="w-full h-64 sm:h-80 object-cover"
-              width="800"
-              height="450"
-            />
-            <div class="absolute inset-0 bg-gradient-to-t from-[#090e1a] via-transparent to-transparent"></div>
+          <!-- Interactive Project Showcase & Gallery Carousel -->
+          <div class="space-y-3">
+            <!-- Main Display Frame -->
+            <div class="relative rounded-2xl overflow-hidden border border-white/15 bg-slate-950 shadow-2xl group h-64 sm:h-84 md:h-96">
+              <!-- Active Image -->
+              <NuxtImg
+                v-if="activeSlide"
+                :key="activeSlide.url"
+                :src="activeSlide.url"
+                :alt="activeSlide.title || selectedProject?.title || 'Project Preview'"
+                class="w-full h-full object-cover transition-all duration-300"
+                width="900"
+                height="500"
+              />
+
+              <!-- Top Floating Pill Badges -->
+              <div class="absolute top-4 inset-x-4 flex items-center justify-between pointer-events-none">
+                <div class="flex items-center gap-2">
+                  <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950/80 backdrop-blur-md border border-white/20 text-xs font-mono font-medium text-blue-300 shadow-lg">
+                    <Icon name="carbon:screen" size="14" class="text-blue-400" />
+                    <span>{{ activeSlide?.title || 'Feature Preview' }}</span>
+                  </span>
+                </div>
+
+                <span v-if="modalSlides.length > 1" class="px-2.5 py-1 rounded-full bg-slate-950/80 backdrop-blur-md border border-white/20 text-xs font-mono font-medium text-slate-300 shadow-lg">
+                  {{ activeSlideIndex + 1 }} / {{ modalSlides.length }}
+                </span>
+              </div>
+
+              <!-- Prev / Next Navigation Arrows (Only if multiple slides) -->
+              <div v-if="modalSlides.length > 1" class="absolute inset-y-0 inset-x-3 flex items-center justify-between pointer-events-none">
+                <button
+                  @click.stop="prevSlide"
+                  class="pointer-events-auto w-10 h-10 rounded-full bg-slate-950/70 hover:bg-blue-600/90 text-white/80 hover:text-white backdrop-blur-md border border-white/20 flex items-center justify-center transition-all duration-200 cursor-pointer shadow-lg hover:scale-110 active:scale-95"
+                  title="Previous image"
+                >
+                  <Icon name="carbon:chevron-left" size="20" />
+                </button>
+                <button
+                  @click.stop="nextSlide"
+                  class="pointer-events-auto w-10 h-10 rounded-full bg-slate-950/70 hover:bg-blue-600/90 text-white/80 hover:text-white backdrop-blur-md border border-white/20 flex items-center justify-center transition-all duration-200 cursor-pointer shadow-lg hover:scale-110 active:scale-95"
+                  title="Next image"
+                >
+                  <Icon name="carbon:chevron-right" size="20" />
+                </button>
+              </div>
+
+              <!-- Bottom Caption Bar (If caption exists) -->
+              <div
+                v-if="activeSlide?.caption"
+                class="absolute bottom-0 inset-x-0 p-3.5 sm:p-4 bg-gradient-to-t from-slate-950/95 via-slate-950/75 to-transparent border-t border-white/5"
+              >
+                <p class="text-xs sm:text-sm text-slate-200 font-normal leading-relaxed flex items-center gap-2">
+                  <Icon name="carbon:information-filled" size="16" class="text-blue-400 shrink-0" />
+                  <span>{{ activeSlide.caption }}</span>
+                </p>
+              </div>
+            </div>
+
+            <!-- Thumbnail Navigation Strip -->
+            <div v-if="modalSlides.length > 1" class="flex items-center gap-2.5 overflow-x-auto pb-1 pt-0.5 px-0.5 scrollbar-thin scrollbar-thumb-white/10">
+              <button
+                v-for="(slide, sIdx) in modalSlides"
+                :key="sIdx"
+                @click="setSlide(sIdx)"
+                class="relative w-20 sm:w-24 h-14 rounded-xl overflow-hidden border transition-all duration-200 shrink-0 cursor-pointer focus:outline-none"
+                :class="activeSlideIndex === sIdx
+                  ? 'border-blue-500 ring-2 ring-blue-500/40 opacity-100 scale-102 shadow-md shadow-blue-500/20'
+                  : 'border-white/10 opacity-50 hover:opacity-100 hover:border-white/30'"
+                :title="slide.title || `Slide ${sIdx + 1}`"
+              >
+                <img
+                  :src="slide.url"
+                  :alt="slide.title || `Thumbnail ${sIdx + 1}`"
+                  class="w-full h-full object-cover"
+                />
+                <span
+                  v-if="sIdx === 0"
+                  class="absolute top-1 left-1 px-1 rounded bg-black/70 text-[9px] font-mono text-blue-300"
+                >
+                  Cover
+                </span>
+              </button>
+            </div>
           </div>
 
           <!-- Quick Metrics Bar -->

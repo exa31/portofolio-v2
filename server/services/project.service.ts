@@ -2,12 +2,24 @@ import * as repository from "~~/server/repositories/project.repository";
 import { H3Event } from "h3";
 import type {
   CreateProjectInput,
+  ProjectPreviewImage,
   UpdateProjectInput,
 } from "~~/server/model/project.model";
 import { withTransaction } from "~~/server/db/postgres";
 import { HttpError } from "~~/server/errors/HttpError";
-import { get, set } from "~~/server/db/redis";
+import { get, set, del } from "~~/server/db/redis";
 import { getMinioClient } from "~~/server/lib/minio";
+import type { ParsedFile } from "~~/server/utils/common";
+
+export async function invalidateProjectsCache() {
+  try {
+    await del("projects:all");
+    await del("projects:status:true");
+    await del("projects:status:false");
+  } catch (e) {
+    // ignore cache errors
+  }
+}
 
 export const createProject = async (
   event: H3Event,
@@ -17,6 +29,49 @@ export const createProject = async (
     const minioClient = getMinioClient();
     const namaFile = `portofolio/${Date.now()}-${crypto.randomUUID()}`;
     body.url = minioClient.getPublicUrl("project", namaFile);
+
+    // Process preview images
+    const previewFiles = (Array.isArray(body.preview_files)
+      ? body.preview_files
+      : body.preview_files
+        ? [body.preview_files]
+        : []) as ParsedFile[];
+
+    const previewImages: ProjectPreviewImage[] = [];
+    const metadataList = Array.isArray(body.preview_metadata)
+      ? body.preview_metadata
+      : [];
+
+    for (let i = 0; i < metadataList.length; i++) {
+      const meta = metadataList[i];
+      if (!meta) continue;
+      const fileIdx = meta.file_index !== undefined ? meta.file_index : i;
+      const file = previewFiles[fileIdx];
+
+      if (file) {
+        const previewFileName = `portofolio/${Date.now()}-${crypto.randomUUID()}`;
+        const previewUrl = minioClient.getPublicUrl("project", previewFileName);
+        await minioClient.uploadFile(
+          "project",
+          previewFileName,
+          file.data,
+          file.contentType || "application/octet-stream",
+        );
+        previewImages.push({
+          url: previewUrl,
+          title: meta.title || "",
+          caption: meta.caption || "",
+        });
+      } else if (meta.url) {
+        previewImages.push({
+          url: meta.url,
+          title: meta.title || "",
+          caption: meta.caption || "",
+        });
+      }
+    }
+
+    body.preview_images = previewImages;
 
     const projectId = await repository.createProject(client, body);
     if (!projectId) {
@@ -39,8 +94,7 @@ export const createProject = async (
       );
     }
 
-    const projects = await repository.getAllProjects(client);
-    await set("projects:all", JSON.stringify(projects)); // Update cache with new projects list
+    await invalidateProjectsCache();
 
     await minioClient.uploadFile(
       "project",
@@ -59,9 +113,10 @@ export const createProject = async (
   });
 };
 
-export const getProjectsNoPagination = async (event: H3Event) => {
+export const getProjectsNoPagination = async (event: H3Event, status?: boolean) => {
   return withTransaction(async (client) => {
-    const cachedProjects = await get("projects:all");
+    const cacheKey = status !== undefined ? `projects:status:${status}` : "projects:all";
+    const cachedProjects = await get(cacheKey);
     if (cachedProjects) {
       const projects = JSON.parse(cachedProjects);
       return sendSuccess(
@@ -72,8 +127,8 @@ export const getProjectsNoPagination = async (event: H3Event) => {
       );
     }
 
-    const projects = await repository.getAllProjects(client);
-    await set("projects:all", JSON.stringify(projects)); // Cache the projects list
+    const projects = await repository.getAllProjects(client, status);
+    await set(cacheKey, JSON.stringify(projects)); // Cache the projects list
 
     return sendSuccess(
       event,
@@ -89,6 +144,7 @@ export const getProjectsByCursor = async (
   limit: number,
   cursor?: number,
   search?: string,
+  status?: boolean,
 ) => {
   return withTransaction(async (client) => {
     const projects = await repository.getProjectCursorPagination(
@@ -96,6 +152,7 @@ export const getProjectsByCursor = async (
       limit,
       search,
       cursor,
+      status,
     );
     return sendSuccess(
       event,
@@ -127,6 +184,56 @@ export const updateProject = async (
     } else {
       data.url = project.preview_image;
     }
+
+    // Process preview images
+    const previewFiles = (Array.isArray(data.preview_files)
+      ? data.preview_files
+      : data.preview_files
+        ? [data.preview_files]
+        : []) as ParsedFile[];
+
+    const updatedPreviewImages: ProjectPreviewImage[] = [];
+    const metadataList = Array.isArray(data.preview_metadata)
+      ? data.preview_metadata
+      : [];
+
+    for (let i = 0; i < metadataList.length; i++) {
+      const meta = metadataList[i];
+      if (!meta) continue;
+      if (meta.url && (meta.file_index === undefined || meta.file_index === null)) {
+        updatedPreviewImages.push({
+          url: meta.url,
+          title: meta.title || "",
+          caption: meta.caption || "",
+        });
+      } else {
+        const fileIdx = meta.file_index !== undefined ? meta.file_index : i;
+        const file = previewFiles[fileIdx];
+        if (file) {
+          const previewFileName = `portofolio/${Date.now()}-${crypto.randomUUID()}`;
+          const previewUrl = minioClient.getPublicUrl("project", previewFileName);
+          await minioClient.uploadFile(
+            "project",
+            previewFileName,
+            file.data,
+            file.contentType || "application/octet-stream",
+          );
+          updatedPreviewImages.push({
+            url: previewUrl,
+            title: meta.title || "",
+            caption: meta.caption || "",
+          });
+        } else if (meta.url) {
+          updatedPreviewImages.push({
+            url: meta.url,
+            title: meta.title || "",
+            caption: meta.caption || "",
+          });
+        }
+      }
+    }
+
+    data.preview_images = updatedPreviewImages;
 
     const ok = await repository.updateProject(client, data);
     if (!ok) {
@@ -162,16 +269,45 @@ export const updateProject = async (
       );
     }
 
-    const projects = await repository.getAllProjects(client);
-    await set("projects:all", JSON.stringify(projects)); // Update cache with new projects list
+    await invalidateProjectsCache();
 
-    if (data.image)
+    if (data.image) {
       await minioClient.uploadFile(
         "project",
         namaFile,
         data.image.data,
         data.image.contentType || "application/octet-stream",
       );
+      if (project.preview_image) {
+        const oldCoverObj = extractObjectName(project.preview_image);
+        if (oldCoverObj) {
+          try {
+            await minioClient.deleteFile("project", oldCoverObj);
+          } catch (e) {
+            console.error("Failed to delete old cover image:", e);
+          }
+        }
+      }
+    }
+
+    // Clean up removed preview images from MinIO
+    const oldPreviewImages: ProjectPreviewImage[] = Array.isArray(project.preview_images)
+      ? project.preview_images
+      : [];
+    const newUrls = new Set(updatedPreviewImages.map((p) => p.url));
+
+    for (const oldImg of oldPreviewImages) {
+      if (oldImg.url && !newUrls.has(oldImg.url)) {
+        const objectName = extractObjectName(oldImg.url);
+        if (objectName) {
+          try {
+            await minioClient.deleteFile("project", objectName);
+          } catch (err) {
+            console.error("Failed to delete removed preview image:", err);
+          }
+        }
+      }
+    }
 
     return sendSuccess(
       event,
@@ -200,13 +336,33 @@ export const deleteProject = async (event: H3Event, id: number) => {
       );
     }
 
-    const projects = await repository.getAllProjects(client);
-    await set("projects:all", JSON.stringify(projects)); // Update cache with new projects list
+    await invalidateProjectsCache();
 
     if (project.preview_image) {
       const objectName = extractObjectName(project.preview_image);
       if (objectName) {
-        await minioClient.deleteFile("project", objectName);
+        try {
+          await minioClient.deleteFile("project", objectName);
+        } catch (err) {
+          console.error("Failed to delete cover image on project delete:", err);
+        }
+      }
+    }
+
+    // Clean up all preview images
+    const previewImages: ProjectPreviewImage[] = Array.isArray(project.preview_images)
+      ? project.preview_images
+      : [];
+    for (const img of previewImages) {
+      if (img.url) {
+        const objectName = extractObjectName(img.url);
+        if (objectName) {
+          try {
+            await minioClient.deleteFile("project", objectName);
+          } catch (err) {
+            console.error("Failed to delete preview image on project delete:", err);
+          }
+        }
       }
     }
 

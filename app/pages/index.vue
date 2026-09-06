@@ -25,13 +25,13 @@ const config = useRuntimeConfig();
 const baseURL = config.public.apiBaseUrl;
 
 // Use useFetch with baseURL for SSR compatibility
-const { data: projectsData, pending: projectsLoading } = await useFetch<
+const { data: projectsData, pending: projectsLoading, refresh: refreshProjects } = await useFetch<
   BaseResponse<ProjectsResponse>
 >("/api/projects", {
   baseURL,
   query: {
     pagination: false,
-    limit: 6,
+    status: true,
   },
   watch: false,
 });
@@ -69,20 +69,23 @@ const user = computed(() => dataUser.value?.data);
 const projects = computed(() => {
   const apiProjects = projectsData.value?.data?.data ?? [];
 
-  // Map API projects to expected format for components
-  return apiProjects.map((p) => ({
-    ...p,
-    id: p.id,
-    title: p.name,
-    shortDesc: p.description || "",
-    description: p.description || "",
-    image: p.preview_image || "/images/project-preview.webp",
-    technologies: p.technologies || [],
-    link: p.repo_url,
-    liveUrl: p.live_url,
-    details: p.description,
-    features: p.features || [],
-  }));
+  // Map API projects to expected format for components (filter only published/active projects)
+  return apiProjects
+    .filter((p) => p.status === true)
+    .map((p) => ({
+      ...p,
+      id: p.id,
+      title: p.name,
+      shortDesc: p.description || "",
+      description: p.description || "",
+      image: p.preview_image || "/images/project-preview.webp",
+      preview_images: p.preview_images || [],
+      technologies: p.technologies || [],
+      link: p.repo_url,
+      liveUrl: p.live_url,
+      details: p.description,
+      features: p.features || [],
+    }));
 });
 
 const skills = computed(() => {

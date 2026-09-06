@@ -7,7 +7,8 @@ import {handleError} from "~~/server/utils/handleError";
 
 export default handleError(async (event) => {
     const parsed = await getValidatedQuery(event, query => paginationSchemaQuery.extend({
-        search: z.string().optional()
+        search: z.string().optional(),
+        status: z.preprocess((val) => val === 'true' || val === true ? true : val === 'false' || val === false ? false : undefined, z.boolean().optional())
     }).safeParse(query));
 
     if (!parsed.success) {
@@ -18,12 +19,12 @@ export default handleError(async (event) => {
 
 
     if (!query.pagination) {
-        return await getProjectsNoPagination(event)
+        return await getProjectsNoPagination(event, query.status)
     }
 
     const limit = query.limit ? query.limit : 10
     const cursor = query.cursor ? query.cursor : undefined
     const search = query.search ? query.search : undefined
 
-    return await getProjectsByCursor(event, limit, cursor, search)
+    return await getProjectsByCursor(event, limit, cursor, search, query.status)
 })

@@ -78,7 +78,7 @@ export const formatNuxtFormData = (
 
             body[name] = body[name]
                 ? mergeArray(body[name], file)
-                : file
+                : (forceArrayKeys.includes(name) ? [file] : file)
 
             continue
         }

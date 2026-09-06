@@ -7,8 +7,8 @@ export const createProject = async (
 ): Promise<number | undefined> => {
     const sql = `
         INSERT INTO projects ( name, image, description, start_date, end_date, status, features, live_url
-                             , repo_url)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id
+                             , repo_url, preview_images)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id
     `
     const values = [
         data.name,
@@ -20,6 +20,7 @@ export const createProject = async (
         data.features,
         data.live_url,
         data.repo_url,
+        JSON.stringify(data.preview_images || []),
     ]
 
     const result = await client.query<Partial<ProjectModel>>(sql, values)
@@ -32,16 +33,17 @@ export const updateProject = async (
 ): Promise<boolean> => {
     const sql = `
         UPDATE projects
-        SET name        = $1,
-            image       = $2,
-            description = $3,
-            start_date  = $4,
-            end_date    = $5,
-            status      = $6,
-            features    = $7,
-            live_url    = $8,
-            repo_url    = $9
-        WHERE id = $10
+        SET name           = $1,
+            image          = $2,
+            description    = $3,
+            start_date     = $4,
+            end_date       = $5,
+            status         = $6,
+            features       = $7,
+            live_url       = $8,
+            repo_url       = $9,
+            preview_images = $10
+        WHERE id = $11
     `
     const values = [
         data.name,
@@ -53,6 +55,7 @@ export const updateProject = async (
         data.features,
         data.live_url,
         data.repo_url,
+        JSON.stringify(data.preview_images || []),
         data.id,
     ]
     const result = await client.query(sql, values)
@@ -82,6 +85,7 @@ export const getProjectById = async (
         SELECT p.id,
                p.name,
                p.image           AS preview_image,
+               p.preview_images,
                p.description,
                p.start_date,
                p.end_date,
@@ -108,12 +112,14 @@ export const getProjectCursorPagination = async (
     client: PoolClient,
     limit: number,
     search?: string,
-    cursor?: number
+    cursor?: number,
+    status?: boolean
 ): Promise<ProjectModel[]> => {
     let sql = `
         SELECT p.id,
                p.name,
                p.image           AS preview_image,
+               p.preview_images,
                p.description,
                p.start_date,
                p.end_date,
@@ -129,35 +135,44 @@ export const getProjectCursorPagination = async (
                  JOIN skills s ON s.id = ps.skill_id
     `
     const values: any[] = []
+    const conditions: string[] = []
 
     if (cursor) {
-        sql += ` WHERE p.id > $1`
         values.push(cursor)
+        conditions.push(`p.id > $${values.length}`)
     }
     if (search) {
-        sql += cursor ? ` AND` : ` WHERE`
-        sql += ` p.name ILIKE $${values.length + 1}`
         values.push(`%${search}%`)
+        conditions.push(`p.name ILIKE $${values.length}`)
+    }
+    if (status !== undefined) {
+        values.push(status)
+        conditions.push(`p.status = $${values.length}`)
     }
 
+    if (conditions.length > 0) {
+        sql += ` WHERE ` + conditions.join(' AND ')
+    }
 
+    values.push(limit)
     sql += `
     GROUP BY p.id       
-     ORDER BY p.id ASC LIMIT $${values.length + 1}
+     ORDER BY p.id ASC LIMIT $${values.length}
      `
-    values.push(limit)
 
     const result = await client.query(sql, values)
     return result.rows
 }
 
 export const getAllProjects = async (
-    client: PoolClient
+    client: PoolClient,
+    status?: boolean
 ): Promise<ProjectModel[]> => {
-    const sql = `
+    let sql = `
         SELECT p.id,
                p.name,
                p.image           AS preview_image,
+               p.preview_images,
                p.description,
                p.start_date,
                p.end_date,
@@ -171,10 +186,18 @@ export const getAllProjects = async (
         FROM projects p
                  JOIN project_skills ps on p.id = ps.project_id
                  JOIN skills s on ps.skill_id = s.id
+    `
+    const values: any[] = []
+    if (status !== undefined) {
+        values.push(status)
+        sql += ` WHERE p.status = $1`
+    }
+
+    sql += `
         GROUP BY p.id
         ORDER BY p.name ASC
     `
-    const result = await client.query(sql)
+    const result = await client.query(sql, values)
     return result.rows
 }
 
