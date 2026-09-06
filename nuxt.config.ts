@@ -132,6 +132,7 @@ export default defineNuxtConfig({
       brotli: true,
     },
     routeRules: {
+      "/": { prerender: false },
       "/dashboard/**": { prerender: false },
       "/login": { prerender: false },
       "/api/**": { prerender: false },
@@ -139,7 +140,7 @@ export default defineNuxtConfig({
     },
     minify: true,
     prerender: {
-      crawlLinks: true,
+      crawlLinks: false,
       routes: ["/privacy", "/terms"],
     },
   },

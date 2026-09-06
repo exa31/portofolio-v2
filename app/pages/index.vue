@@ -20,15 +20,12 @@ const siteDescription =
 const authorName = "Eka";
 const ogImage = `${siteUrl}/images/og-image.webp`; // TODO: Create OG image
 
-// ========== FETCH DATA FROM API (SSR-compatible) ==========
-const config = useRuntimeConfig();
-const baseURL = config.public.apiBaseUrl;
-
-// Use useFetch with baseURL for SSR compatibility
+// ========== FETCH DATA FROM API (SSR dynamic) ==========
+// In Nuxt, internal API routes (/api/*) are automatically resolved in-memory during SSR
+// and via relative URLs on the client, avoiding external HTTP network loops.
 const { data: projectsData, pending: projectsLoading, refresh: refreshProjects } = await useFetch<
   BaseResponse<ProjectsResponse>
 >("/api/projects", {
-  baseURL,
   query: {
     pagination: false,
     status: true,
@@ -39,7 +36,6 @@ const { data: projectsData, pending: projectsLoading, refresh: refreshProjects }
 const { data: skillsData, pending: skillsLoading } = await useFetch<
   BaseResponse<SkillsResponse>
 >("/api/skills", {
-  baseURL,
   query: {
     pagination: false,
   },
@@ -49,7 +45,6 @@ const { data: skillsData, pending: skillsLoading } = await useFetch<
 const { data: journeysData, pending: journeysLoading } = await useFetch<
   BaseResponse<JourneysResponse>
 >("/api/journeys", {
-  baseURL,
   query: {
     pagination: false,
   },
@@ -59,7 +54,6 @@ const { data: journeysData, pending: journeysLoading } = await useFetch<
 const { data: dataUser, pending: loadingUser } = await useFetch<
   BaseResponse<UserSettingsModel>
 >("/api/settings", {
-  baseURL,
   watch: false,
 });
 
